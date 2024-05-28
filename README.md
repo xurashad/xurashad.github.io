@@ -2,7 +2,7 @@
 
 ## This is my profile
 
-In this website YinTine (Janice)
+In this website 
 
 > [!NOTE]
 > This website still under construction
