@@ -28,7 +28,7 @@ nav ul li a {
 
 main {
     padding: 20px;
-    min-height: 100vh; /* Ensure the main content takes at least full viewport height */
+    min-height: 200vh; /* Ensure the main content takes at least full viewport height */
 }
 
 footer {
@@ -39,12 +39,4 @@ footer {
     position: relative; /* Ensure the footer is at the bottom */
     bottom: 0;
     width: 100%;
-}
-
-.hidden-content {
-    display: none; /* Ensure this class is not applied to important content */
-}
-
-.visible-content {
-    display: block; /* Ensure important content is visible */
 }
