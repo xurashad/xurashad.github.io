@@ -40,3 +40,11 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+.hidden-content {
+    display: none; /* Ensure this class is not applied to important content */
+}
+
+.visible-content {
+    display: block; /* Ensure important content is visible */
+}
