@@ -1,15 +1,7 @@
-body, html {
+body {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* This ensures the wrapper takes at least the full viewport height */
 }
 
 header {
@@ -35,7 +27,6 @@ nav ul li a {
 }
 
 main {
-    flex: 1; /* This allows the main content to grow and fill the available space */
     padding: 20px;
 }
 
@@ -44,4 +35,7 @@ footer {
     color: white;
     text-align: center;
     padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }
