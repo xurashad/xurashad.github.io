@@ -28,6 +28,7 @@ nav ul li a {
 
 main {
     padding: 20px;
+    min-height: 100vh; /* Ensure the main content takes at least full viewport height */
 }
 
 footer {
@@ -35,7 +36,7 @@ footer {
     color: white;
     text-align: center;
     padding: 10px 0;
-    position: fixed;
+    position: relative; /* Ensure the footer is at the bottom */
     bottom: 0;
     width: 100%;
 }
