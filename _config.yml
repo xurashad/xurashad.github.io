@@ -1,10 +1,3 @@
 title: My GitHub Page
 description: A description of my project
 theme: minima
-# Optional customizations
-header-includes:
-  - <style>
-    body {
-      background-color: #f0f0f0;
-    }
-    </style>
