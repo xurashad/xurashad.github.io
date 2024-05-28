@@ -1,7 +1,20 @@
+/* Ensure full height for html and body */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure the wrapper takes at least the full viewport height */
 }
 
 header {
@@ -27,6 +40,7 @@ nav ul li a {
 }
 
 main {
+    flex: 1; /* Allows the main content to grow and fill available space */
     padding: 20px;
 }
 
