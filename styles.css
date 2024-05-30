@@ -60,7 +60,7 @@ footer {
     text-align: center;
     opacity: 0;
     transform: translateY(50px);
-    animation: fadeInUp 1s ease-out forwards;
+    animation: fadeInDown 1s ease-out forwards;
 }
 
 /* Animation keyframes */
