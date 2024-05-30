@@ -59,7 +59,7 @@ footer {
 .content {
     text-align: center;
     opacity: 0;
-    transform: translateY(50px);
+    transform: translateY(-50px);
     animation: fadeInDown 1s ease-out forwards;
 }
 
