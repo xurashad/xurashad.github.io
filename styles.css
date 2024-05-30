@@ -64,7 +64,7 @@ footer {
 }
 
 /* Animation keyframes */
-@keyframes fadeInUp {
+@keyframes fadeInDown {
     to {
         opacity: 1;
         transform: translateY(0);
