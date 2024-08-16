@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Example</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: black;
+            font-size: 25px;
+        }
+        .dark-mode {
+            background-color: black;
+            color: white;
+        }
+        /* Updated styles for the navigation bar */
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .navbar li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        .navbar li a:hover {
+            background-color: #111;
+        }
+        /* Updated styles for the dark mode toggle button */
+        #dark-mode-toggle {
+            background-color: #8B0000; /* Changed to dark crimson red */
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #dark-mode-toggle:hover {
+            background-color: #6B0000; /* Darker shade for hover effect */
+        }
+
+        /* Remove the fixed positioning */
+        #dark-mode-toggle {
+            position: static;
+            top: auto;
+            right: auto;
+        }
+        /* Adjust main content padding */
+        .content {
+            padding: 25px;
+        }
+
+        /* Add these new styles for the responsive navigation */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .navbar ul {
+                position: fixed;
+                left: -250px;
+                top: 0;
+                height: 100%;
+                width: 250px;
+                background-color: #333;
+                flex-direction: column;
+                transition: left 0.3s ease;
+                z-index: 1000; /* Add this line */
+            }
+
+            .navbar ul.active {
+                left: 0;
+            }
+
+            .navbar li {
+                width: 100%;
+            }
+
+            .navbar li a {
+                padding: 20px;
+            }
+        }
+
+        /* Add these new styles for the hero section */
+        .hero {
+            background-image: url('pics/5.jpeg');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            color: white;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            opacity: 0;
+            animation: fadeDown 1s ease-out forwards;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <script>
+        // Modify this function in the head section
+        function applyDarkMode() {
+            if (localStorage.getItem('darkMode') === null || localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-toggle').textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('dark-mode-toggle').textContent = 'Dark Mode';
+            }
+        }
+
+        // Apply dark mode on page load
+        document.addEventListener('DOMContentLoaded', applyDarkMode);
+    </script>
+</head>
+<body>
+    <!-- Updated navigation bar with the toggle button -->
+    <nav class="navbar">
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <ul id="menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="aboutme.html">About Me</a></li>
+            <li><a href="science.html">Science</a></li>
+            <li><a href="philosophy.html">Philosophy</a></li>
+            <li><a href="books.html">Books</a></li>
+            <li><a href="palestine.html">Palestine</a></li>
+            <li><a href="contact.html">Contact Me</a></li>
+        </ul>
+        <button id="dark-mode-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </nav>
+
+    <!-- Add this new hero section after the navigation -->
+    <div class="hero">
+        <h1 id="main-heading">Palestine</h1>
+    </div>
+
+    <div class="content">
+        <h1>Palestine</h1>
+        
+        <section id="history">
+            <h2>History of Palestine</h2>
+            <p>Brief overview of Palestinian history...</p>
+        </section>
+
+        <section id="culture">
+            <h2>Palestinian Culture</h2>
+            <p>Information about Palestinian traditions, art, and cuisine...</p>
+        </section>
+
+        <section id="current-situation">
+            <h2>Current Situation</h2>
+            <p>Overview of the current political and humanitarian situation...</p>
+        </section>
+
+        <section id="resources">
+            <h2>Resources and Further Reading</h2>
+            <ul>
+                <li><a href="#">Link to resource 1</a></li>
+                <li><a href="#">Link to resource 2</a></li>
+                <li><a href="#">Link to resource 3</a></li>
+            </ul>
+        </section>
+
+        <section id="how-to-help">
+            <h2>How to Help</h2>
+            <p>Information on ways to support Palestinian causes and humanitarian efforts...</p>
+        </section>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            if (localStorage.getItem('darkMode') === 'disabled') {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+            applyDarkMode();
+        }
+
+        // Add this new function to toggle the menu
+        function toggleMenu() {
+            const menu = document.getElementById('menu');
+            menu.classList.toggle('active');
+        }
+
+        // Add this new function to trigger the animation
+        function animateHeading() {
+            const heading = document.getElementById('main-heading');
+            heading.style.animation = 'none';
+            heading.offsetHeight; // Trigger reflow
+            heading.style.animation = null;
+        }
+
+        // Modify the DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode();
+            animateHeading();
+        });
+    </script>
+</body>
+</html>
