@@ -4,64 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Books - Rashatopia</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="animation.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: white;
-            color: black;
-            font-size: 25px;
-        }
-        .dark-mode {
-            background-color: black;
-            color: white;
-        }
-        .navbar {
-            background-color: #333;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        .navbar ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-        .navbar li a {
-            display: block;
-            color: white;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
-        .navbar li a:hover {
-            background-color: #111;
-        }
-        #dark-mode-toggle {
-            background-color: #8B0000; /* Changed to dark crimson red */
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-            position: static;
-            top: auto;
-            right: auto;
-        }
-        #dark-mode-toggle:hover {
-            background-color: #6B0000; /* Darker shade for hover effect */
-        }
-        .content {
-            padding: 25px;
-        }
+        /* Add these new styles */
         .hero {
             background-image: url('pics/2.jpeg');
             background-size: cover;
@@ -73,78 +19,7 @@
             position: relative;
             z-index: 1;
         }
-        .hero h1 {
-            color: white;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            opacity: 0;
-            animation: fadeDown 1s ease-out forwards;
-        }
-        @keyframes fadeDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Add these new styles for the responsive navigation */
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-        }
-
-        @media screen and (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .navbar ul {
-                position: fixed;
-                left: -250px;
-                top: 0;
-                height: 100%;
-                width: 250px;
-                background-color: #333;
-                flex-direction: column;
-                transition: left 0.3s ease;
-                z-index: 1000;
-            }
-
-            .navbar ul.active {
-                left: 0;
-            }
-
-            .navbar li {
-                width: 100%;
-            }
-
-            .navbar li a {
-                padding: 20px;
-            }
-        }
     </style>
-    <script>
-        function applyDarkMode() {
-            if (localStorage.getItem('darkMode') === null || localStorage.getItem('darkMode') === 'enabled') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('dark-mode-toggle').textContent = 'Light Mode';
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.getElementById('dark-mode-toggle').textContent = 'Dark Mode';
-            }
-        }
-        document.addEventListener('DOMContentLoaded', applyDarkMode);
-    </script>
 </head>
 <body>
     <nav class="navbar">
@@ -158,7 +33,11 @@
             <li><a href="palestine.html">Palestine</a></li>
             <li><a href="contact.html">Contact Me</a></li>
         </ul>
-        <button id="dark-mode-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        <label class="toggle" aria-label="Toggle dark mode">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span>☀️</span>
+            <span>🌙</span>
+        </label>
     </nav>
 
     <div class="hero">
@@ -169,33 +48,5 @@
         <p>Here you can find information about my favorite books and recommendations.</p>
         <!-- Add your book content here -->
     </div>
-
-    <script>
-        function toggleDarkMode() {
-            if (localStorage.getItem('darkMode') === 'disabled') {
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                localStorage.setItem('darkMode', 'disabled');
-            }
-            applyDarkMode();
-        }
-
-        function animateHeading() {
-            const heading = document.getElementById('main-heading');
-            heading.style.animation = 'none';
-            heading.offsetHeight;
-            heading.style.animation = null;
-        }
-
-        function toggleMenu() {
-            const menu = document.getElementById('menu');
-            menu.classList.toggle('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            applyDarkMode();
-            animateHeading();
-        });
-    </script>
 </body>
 </html>
