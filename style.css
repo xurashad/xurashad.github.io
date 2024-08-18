@@ -103,6 +103,18 @@ body {
     z-index: 1;
 }
 
+/* New hyperlink styles */
+a {
+    color: #8B0000; /* Default color */
+    text-decoration: none; /* Remove underline */
+}
+a:visited {
+    color: #8B0000; /* Color for visited links */
+}
+a:hover {
+    color: #6B0000; /* Color on hover */
+}
+
 /* Updated styles for the dark mode toggle */
 .toggle {
     position: relative;
