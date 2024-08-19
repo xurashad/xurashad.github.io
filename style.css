@@ -8,8 +8,12 @@ body {
 }
 /* Updated styles for the navigation bar */
 .navbar {
-    background-color: #333;
-    overflow: hidden;
+    position: sticky; /* Change to sticky */
+    top: 0; /* Position it at the top */
+    width: 100%; /* Full width */
+    z-index: 1000; /* Ensure it stays above other content */
+    background-color: #333; /* Keep the background color */
+    overflow: hidden; /* Prevents overflow when scrollbar appears */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,6 +35,17 @@ body {
 .navbar li a:hover {
     background-color: #111;
 }
+
+/* New styles for the toggle button */
+.toggle {
+    position: absolute;
+    right: 30px; /* Adjusted to avoid intersection with the scrollbar */
+    top: 0px; /* Adjusted to align with the navbar */
+    width: 72px; /* Set a fixed width */
+    height: 30px; /* Set a fixed height */
+    bottom: 0px;
+}
+
 /* Adjust main content padding */
 .content {
     padding: 25px;
