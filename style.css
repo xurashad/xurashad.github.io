@@ -10,7 +10,7 @@ body {
 .navbar {
     position: sticky; /* Change to sticky */
     top: 0; /* Position it at the top */
-    width: 100%; /* Full width */
+    width: 100%; /* Change to 100% to prevent overflow */
     z-index: 1000; /* Ensure it stays above other content */
     background-color: #333; /* Keep the background color */
     overflow: hidden; /* Prevents overflow when scrollbar appears */
