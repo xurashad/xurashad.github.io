@@ -1,603 +1,612 @@
 <!DOCTYPE html>
+
 <html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Personal Portfolio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            keyframes: {
-              'fade-in': {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              },
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Personal Portfolio</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+            extend: {
+                keyframes: {
+                'fade-in': {
+                    '0%': { opacity: '0', transform: 'translateY(10px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                },
+                animation: {
+                'fade-in': 'fade-in 0.5s ease-out forwards',
+                },
             },
-            animation: {
-              'fade-in': 'fade-in 0.5s ease-out forwards',
             },
-          },
-        },
-      }
-    </script>
-    <style>
-      /* Simple class to hide elements */
-      .hidden {
-        display: none;
-      }
-    </style>
-<link rel="stylesheet" href="/index.css">
-</head>
-<body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300">
+        }
+        </script>
+        <style>
+        /* Simple class to hide elements */
+        .hidden {
+            display: none;
+        }
+        </style>
+    </head>
 
-<div class="flex min-h-screen">
-    <!-- Navbar -->
-    <nav class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm p-2 sm:p-4 flex flex-col items-center sm:items-start space-y-2 border-r border-slate-200/80 dark:border-slate-700/50 sticky top-0 h-screen">
-      <div class="p-2 mb-6 hidden sm:block">
-        <h1 class="text-2xl font-bold text-teal-600 dark:text-teal-400">R. Hamidi</h1>
-        <p class="text-slate-500 dark:text-slate-400 text-sm">Theoretical Physicist</p>
-      </div>
-      <div class="p-2 mb-6 sm:hidden">
-        <div class="w-10 h-10 bg-teal-500 dark:bg-teal-400 rounded-full flex items-center justify-center text-white dark:text-slate-900 font-bold text-lg">
-          JD
-        </div>
-      </div>
-      <ul class="flex flex-col space-y-2">
-        <li>
-          <button data-page="Home" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">Home</span>
-          </button>
-        </li>
-        <li>
-          <button data-page="Apps" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">Apps</span>
-          </button>
-        </li>
-        <li>
-          <button data-page="Posts" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">Posts</span>
-          </button>
-        </li>
-        <li>
-          <button data-page="Documents" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">Documents</span>
-          </button>
-        </li>
-        <li>
-          <button data-page="CV" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">CV</span>
-          </button>
-        </li>
-         <li>
-          <button data-page="Contact" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
-            <div class="flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
-            </div>
-            <span class="hidden sm:inline-block font-medium">Contact</span>
-          </button>
-        </li>
-      </ul>
-      <div class="mt-auto w-full">
-         <button id="theme-toggle" class="flex items-center justify-center sm:justify-start space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Switch theme mode">
-            <div class="flex-shrink-0">
-                <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
-                <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg>
-            </div>
-            <span id="theme-toggle-text" class="hidden sm:inline-block font-medium"></span>
-        </button>
-      </div>
-    </nav>
+    <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300">
 
-    <!-- Main Content -->
-    <main class="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto">
-        <div class="max-w-4xl mx-auto">
-            
-            <!-- Home Section -->
-            <section id="page-Home" class="page-content animate-fade-in space-y-8">
-                <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
-                    <img src="https://picsum.photos/seed/homepage/200/200" alt="Profile" class="w-40 h-40 rounded-full object-cover border-4 border-slate-200 dark:border-slate-700 shadow-lg">
-                    <div class="text-center md:text-left">
-                    <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">Rashad Hamidi</h1>
-                    <p class="text-xl text-teal-500 dark:text-teal-400 mt-2">Theoretical Physicist</p>
+        <div class="flex min-h-screen">
+            <!-- Navbar -->
+            <nav class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm p-2 sm:p-4 flex flex-col items-center sm:items-start space-y-2 border-r border-slate-200/80 dark:border-slate-700/50 sticky top-0 h-screen">
+                <div class="p-2 mb-6 hidden sm:block">
+                    <h1 class="text-2xl font-bold text-teal-600 dark:text-teal-400">J. Doe</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Frontend Engineer</p>
+                </div>
+                <div class="p-2 mb-6 sm:hidden">
+                    <div class="w-10 h-10 bg-teal-500 dark:bg-teal-400 rounded-full flex items-center justify-center text-white dark:text-slate-900 font-bold text-lg">
+                    JD
                     </div>
                 </div>
-                <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                    <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-4">About Me</h2>
-                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                    I am a passionate frontend engineer with over a decade of experience in building beautiful, responsive, and highly performant web applications. My expertise lies in the React ecosystem, TypeScript, and modern UI/UX design principles. I thrive on solving complex problems and creating intuitive user experiences. I have a deep understanding of Gemini API and how to leverage its power to build next-generation AI-powered applications.
-                    </p>
-                </div>
-                <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                    <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-4">What I Do</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-600 dark:text-slate-300">
-                        <div class="flex items-start space-x-3">
-                            <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
-                            <p>Theoretical Physics.</p>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
-                            <p>Philosophy.</p>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
-                            <p>Programming.</p>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
-                            <p>AI Research.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Apps Section -->
-            <section id="page-Apps" class="page-content hidden animate-fade-in">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">My Applications</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
-                        <img src="https://picsum.photos/seed/app1/400/300" alt="AI Story Generator" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">AI Story Generator</h3>
-                            <p class="text-slate-600 dark:text-slate-400 mb-4">A web app that uses the Gemini API to generate short stories for children based on user prompts.</p>
-                            <div class="flex space-x-4">
-                                <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
-                                <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                <ul class="flex flex-col space-y-2">
+                    <li>
+                        <button data-page="Home" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
                             </div>
-                        </div>
-                    </div>
-                    <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
-                        <img src="https://picsum.photos/seed/app2/400/300" alt="Interactive Data Dashboard" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Interactive Data Dashboard</h3>
-                            <p class="text-slate-600 dark:text-slate-400 mb-4">A complex dashboard for visualizing real-time data using React and D3.js, with customizable charts.</p>
-                            <div class="flex space-x-4">
-                                <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
-                                <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                            <span class="hidden sm:inline-block font-medium">Home</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button data-page="Apps" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                </svg>
                             </div>
-                        </div>
-                    </div>
-                    <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
-                        <img src="https://picsum.photos/seed/app3/400/300" alt="E-commerce Platform UI" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">E-commerce Platform UI</h3>
-                            <p class="text-slate-600 dark:text-slate-400 mb-4">A sleek, modern, and fully responsive user interface for an online store, built with Next.js.</p>
-                            <div class="flex space-x-4">
-                                <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
-                                <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                            <span class="hidden sm:inline-block font-medium">Apps</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button data-page="Posts" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                </svg>
                             </div>
-                        </div>
-                    </div>
-                    <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
-                        <img src="https://picsum.photos/seed/app4/400/300" alt="Personal Finance Tracker" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Personal Finance Tracker</h3>
-                            <p class="text-slate-600 dark:text-slate-400 mb-4">A PWA to track expenses and manage budgets, featuring secure authentication and data persistence.</p>
-                            <div class="flex space-x-4">
-                                <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
-                                <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                            <span class="hidden sm:inline-block font-medium">Posts</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button data-page="Documents" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
                             </div>
+                            <span class="hidden sm:inline-block font-medium">Documents</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button data-page="CV" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <span class="hidden sm:inline-block font-medium">CV</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button data-page="Contact" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="hidden sm:inline-block font-medium">Contact</span>
+                        </button>
+                    </li>
+                </ul>
+                <div class="mt-auto w-full">
+                    <button id="theme-toggle" class="flex items-center justify-center sm:justify-start space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Switch theme mode">
+                        <div class="flex-shrink-0">
+                            <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
                         </div>
-                    </div>
+                        <span id="theme-toggle-text" class="hidden sm:inline-block font-medium"></span>
+                    </button>
                 </div>
-            </section>
+            </nav>
 
-            <!-- Posts Section -->
-            <section id="page-Posts" class="page-content hidden animate-fade-in">
-                 <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Recent Posts</h2>
-                <div class="space-y-6">
-                    <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">October 26, 2023</p>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Mastering React Hooks: A Deep Dive into useEffect</h3>
-                        <p class="text-slate-600 dark:text-slate-300 mb-4">Explore the intricacies of the useEffect hook in React. Learn about dependency arrays, cleanup functions, and common pitfalls to avoid infinite loops and memory leaks.</p>
-                        <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
-                    </div>
-                    <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">September 15, 2023</p>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Building AI-Powered Apps with the Gemini API and React</h3>
-                        <p class="text-slate-600 dark:text-slate-300 mb-4">A step-by-step guide to integrating Google's Gemini API into a React application to create dynamic, intelligent, and interactive user experiences.</p>
-                        <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
-                    </div>
-                    <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">August 02, 2023</p>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Why Tailwind CSS is a Game-Changer for Frontend Development</h3>
-                        <p class="text-slate-600 dark:text-slate-300 mb-4">An opinion piece on the benefits of utility-first CSS frameworks like Tailwind, and how they can drastically improve development speed and maintainability.</p>
-                        <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
-                    </div>
-                </div>
-            </section>
-
-             <!-- Documents Section -->
-            <section id="page-Documents" class="page-content hidden animate-fade-in">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Documents & Resources</h2>
-                
-                <!-- Academic Documents -->
-                <div class="mb-8">
-                    <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Academic Documents</h3>
-                    <div class="space-y-6">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <div>
-                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Final Exam: Computational Physics</h3>
-                                <p class="text-slate-600 dark:text-slate-400 mt-1">Download the final exam for Computational Physics.</p>
-                            </div>
-                            <a href="documents/final_exam_comp_phys.pdf" download="final_exam_comp_phys.pdf" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download (PDF)
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Professional Documents -->
-                <div class="mb-8">
-                    <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Professional Documents</h3>
-                    <div class="space-y-6">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <div>
-                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Whitepaper: The Future of AI in Web Development</h3>
-                                <p class="text-slate-600 dark:text-slate-400 mt-1">An in-depth analysis of emerging AI trends and their impact on frontend engineering.</p>
-                            </div>
-                            <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download (PDF)
-                            </a>
-                        </div>
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <div>
-                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Case Study: Performance Optimization</h3>
-                                <p class="text-slate-600 dark:text-slate-400 mt-1">Details on how we improved load times by 50% and reduced bundle size.</p>
-                            </div>
-                            <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download (PDF)
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Certifications -->
-                <div class="mb-8">
-                    <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Certifications</h3>
-                    <div class="space-y-6">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <div>
-                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Advanced TypeScript Specialist</h3>
-                                <p class="text-slate-600 dark:text-slate-400 mt-1">Official certification demonstrating expert-level proficiency in TypeScript.</p>
-                            </div>
-                            <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download (PNG)
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-             <!-- CV Section -->
-            <section id="page-CV" class="page-content hidden animate-fade-in">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Curriculum Vitae</h2>
-                    <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md font-medium hover:bg-teal-600 transition-colors">Download PDF</a>
-                </div>
-
-                <div class="bg-white/50 dark:bg-slate-800/50 p-6 sm:p-8 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+            <!-- Main Content -->
+            <main class="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto">
+                <div class="max-w-4xl mx-auto">
                     
-                    <!-- Experience section -->
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Experience</h3>
+                    <!-- Home Section -->
+                    <section id="page-Home" class="page-content animate-fade-in space-y-8">
+                        <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
+                            <img src="https://picsum.photos/seed/homepage/200/200" alt="Profile" class="w-40 h-40 rounded-full object-cover border-4 border-slate-200 dark:border-slate-700 shadow-lg">
+                            <div class="text-center md:text-left">
+                            <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">Rashad Hamidi</h1>
+                            <p class="text-xl text-teal-500 dark:text-teal-400 mt-2">Theoretical Physicist</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                            <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-4">About Me</h2>
+                            <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            I am a passionate frontend engineer with over a decade of experience in building beautiful, responsive, and highly performant web applications. My expertise lies in the React ecosystem, TypeScript, and modern UI/UX design principles. I thrive on solving complex problems and creating intuitive user experiences. I have a deep understanding of Gemini API and how to leverage its power to build next-generation AI-powered applications.
+                            </p>
+                        </div>
+                        <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                            <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-4">What I Do</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-600 dark:text-slate-300">
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
+                                    <p>Theoretical Physics.</p>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
+                                    <p>Philosophy.</p>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
+                                    <p>Programming.</p>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-teal-500 dark:text-teal-400 mt-1">✓</span>
+                                    <p>AI Research.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Apps Section -->
+                    <section id="page-Apps" class="page-content hidden animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">My Applications</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="https://picsum.photos/seed/app1/400/300" alt="AI Story Generator" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">AI Story Generator</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">A web app that uses the Gemini API to generate short stories for children based on user prompts.</p>
+                                    <div class="flex space-x-4">
+                                        <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
+                                        <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="https://picsum.photos/seed/app2/400/300" alt="Interactive Data Dashboard" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Interactive Data Dashboard</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">A complex dashboard for visualizing real-time data using React and D3.js, with customizable charts.</p>
+                                    <div class="flex space-x-4">
+                                        <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
+                                        <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="https://picsum.photos/seed/app3/400/300" alt="E-commerce Platform UI" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">E-commerce Platform UI</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">A sleek, modern, and fully responsive user interface for an online store, built with Next.js.</p>
+                                    <div class="flex space-x-4">
+                                        <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
+                                        <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="https://picsum.photos/seed/app4/400/300" alt="Personal Finance Tracker" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Personal Finance Tracker</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">A PWA to track expenses and manage budgets, featuring secure authentication and data persistence.</p>
+                                    <div class="flex space-x-4">
+                                        <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View Live</a>
+                                        <a href="#" class="bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Source Code</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Posts Section -->
+                    <section id="page-Posts" class="page-content hidden animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Recent Posts</h2>
                         <div class="space-y-6">
-                            <div>
-                                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
-                                <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">Senior Frontend Engineer</h4>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2018 - Present</p>
-                                </div>
-                                <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Tech Solutions Inc.</p>
-                                <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li>Led the development of a high-traffic e-commerce platform using React and Next.js.</li>
-                                <li>Architected and implemented a state management solution with Redux Toolkit, improving performance by 30%.</li>
-                                <li>Mentored junior developers and established best practices for code reviews and testing.</li>
-                                </ul>
+                            <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">October 26, 2023</p>
+                                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Mastering React Hooks: A Deep Dive into useEffect</h3>
+                                <p class="text-slate-600 dark:text-slate-300 mb-4">Explore the intricacies of the useEffect hook in React. Learn about dependency arrays, cleanup functions, and common pitfalls to avoid infinite loops and memory leaks.</p>
+                                <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
                             </div>
-                            <div>
-                                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
-                                <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">Frontend Developer</h4>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2015 - 2018</p>
-                                </div>
-                                <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Digital Innovations LLC</p>
-                                <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li>Developed and maintained client-facing dashboards using React and D3.js.</li>
-                                <li>Collaborated with UI/UX designers to create responsive and accessible user interfaces.</li>
-                                <li>Migrated a legacy AngularJS application to a modern React codebase.</li>
-                                </ul>
+                            <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">September 15, 2023</p>
+                                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Building AI-Powered Apps with the Gemini API and React</h3>
+                                <p class="text-slate-600 dark:text-slate-300 mb-4">A step-by-step guide to integrating Google's Gemini API into a React application to create dynamic, intelligent, and interactive user experiences.</p>
+                                <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
+                            </div>
+                            <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">August 02, 2023</p>
+                                <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-3">Why Tailwind CSS is a Game-Changer for Frontend Development</h3>
+                                <p class="text-slate-600 dark:text-slate-300 mb-4">An opinion piece on the benefits of utility-first CSS frameworks like Tailwind, and how they can drastically improve development speed and maintainability.</p>
+                                <a href="#" class="text-teal-500 dark:text-teal-400 font-medium hover:text-teal-600 dark:hover:text-teal-300 transition-colors">Read More →</a>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Education section -->
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Education</h3>
-                        <div class="mb-6">
-                             <div>
-                                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
-                                <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">
-                                    MSc in Particles, Strings and Cosmology
-                                    <span class="text-teal-500 dark:text-teal-400 font-semibold">(Distinction)</span>
-                                </h4>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2021 - 2022</p>
-                                </div>
-                                <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Durham University</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Introductory Field Theory</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Field Theory I & II</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">General Relativity</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Group Theory</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Electrodynamics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Standard Model</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Cosmology I & II</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Conformal Field Theory</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Supersymmetry</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Chromodynamics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Astroparticle Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Neutrino Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Renormalisation Group</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">String Theory</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Scuttering Amplitudes</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Non-Perturbative Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Flavour Physics and Effective Field Theories</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Higgs Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Introduction to AdS/CFT</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Practical guide to analytic loop integration</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                             <div>
-                                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
-                                <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">
-                                    MSc in Physics
-                                    <span class="text-teal-500 dark:text-teal-400 font-semibold">(Distinction)</span>
-                                </h4>
-                                <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2017 - 2021</p>
-                                </div>
-                                <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Birzeit University</p>
-                                
-                                <!-- Mathematics Courses -->
-                                <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Mathematics:</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Calculus I, II & III</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Foundations of Mathematics (Logic)</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Linear Algebra & Advanced Linear Algebra</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Ordinary Differential Equations</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Partial Differential Equations</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Numerical Methods</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Abstract Algebra</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematical Analysis</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Statistics & Probability Theory</span>
-                                </div>
-                                </div>
-
-                                <!-- Physics Courses -->
-                                <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Physics:</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">General Physics I, II & III with Labs</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Modern Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Medical Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Astronomy</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Vibrations and Waves</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Optics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Analog Electronics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematical Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Classical Mechanics I, II & master</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Electromagnetic Theory I & II</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Mechanics I & II</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Thermal Physics and Statistical Mechanics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Computational Physics</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Advanced Physics Lab</span>
-                                </div>
-
-                                <!-- Visitor Courses -->
-                                <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Visitor Courses:</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Matrix Theory (master)</span>
-                                    <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Partial Differential Equations (master)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    <!-- Awards and Scholarships section -->
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Awards and Scholarships</h3>
+                    <!-- Documents Section -->
+                    <section id="page-Documents" class="page-content hidden animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Documents & Resources</h2>
                         
-                        <!-- PhD -->
-                        <div class="mb-6">
-                            <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">PhD at Durham University</h4>
-                            <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li><span class="text-slate-500 dark:text-slate-400">[2022 - 2026]</span> STFC Scholarship</li>
-                            </ul>
+                        <!-- Academic Documents -->
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Academic Documents</h3>
+                            <div class="space-y-6">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Final Exam: Computational Physics</h3>
+                                        <p class="text-slate-600 dark:text-slate-400 mt-1">Download the final exam for Computational Physics.</p>
+                                    </div>
+                                    <a href="documents/final_exam_comp_phys.pdf" download="final_exam_comp_phys.pdf" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Download (PDF)
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- MSc -->
-                        <div class="mb-6">
-                            <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">MSc at Durham University</h4>
-                            <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li><span class="text-slate-500 dark:text-slate-400">[2021 - 2022]</span> Global Masters Scholarship</li>
-                            </ul>
+                        <!-- Professional Documents -->
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Professional Documents</h3>
+                            <div class="space-y-6">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Whitepaper: The Future of AI in Web Development</h3>
+                                        <p class="text-slate-600 dark:text-slate-400 mt-1">An in-depth analysis of emerging AI trends and their impact on frontend engineering.</p>
+                                    </div>
+                                    <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Download (PDF)
+                                    </a>
+                                </div>
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Case Study: Performance Optimization</h3>
+                                        <p class="text-slate-600 dark:text-slate-400 mt-1">Details on how we improved load times by 50% and reduced bundle size.</p>
+                                    </div>
+                                    <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Download (PDF)
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- BSc -->
-                        <div class="mb-6">
-                            <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">BSc at Birzeit University</h4>
-                            <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Honour Scholarship</li>
-                                <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Mosa Naser Scholarship for Physics</li>
-                                <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Paltel Scholarship</li>
-                                <li><span class="text-slate-500 dark:text-slate-400">[2017]</span> Science Faculty Scholarship</li>
-                            </ul>
+                        <!-- Certifications -->
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Certifications</h3>
+                            <div class="space-y-6">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Advanced TypeScript Specialist</h3>
+                                        <p class="text-slate-600 dark:text-slate-400 mt-1">Official certification demonstrating expert-level proficiency in TypeScript.</p>
+                                    </div>
+                                    <a href="#" download="" class="flex items-center justify-center mt-4 sm:mt-0 sm:ml-6 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 py-2 px-4 rounded-md text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Download (PNG)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CV Section -->
+                    <section id="page-CV" class="page-content hidden animate-fade-in">
+                        <div class="flex justify-between items-center mb-8">
+                            <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Curriculum Vitae</h2>
+                            <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md font-medium hover:bg-teal-600 transition-colors">Download PDF</a>
                         </div>
 
-                        <!-- Pre-University -->
-                        <div class="mb-6">
-                            <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Pre-University Awards</h4>
-                            <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
-                                <li><span class="text-slate-500 dark:text-slate-400">[2013 & 2014]</span> FLL Robot Nationwide Award</li>
-                                <li><span class="text-slate-500 dark:text-slate-400">[2006 - 2017]</span> Academic Excellence Awards</li>
-                            </ul>
+                        <div class="bg-white/50 dark:bg-slate-800/50 p-6 sm:p-8 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                            
+                            <!-- Experience section -->
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Experience</h3>
+                                <div class="space-y-6">
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
+                                            <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">Senior Frontend Engineer</h4>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2018 - Present</p>
+                                        </div>
+                                        <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Tech Solutions Inc.</p>
+                                        <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                            <li>Led the development of a high-traffic e-commerce platform using React and Next.js.</li>
+                                            <li>Architected and implemented a state management solution with Redux Toolkit, improving performance by 30%.</li>
+                                            <li>Mentored junior developers and established best practices for code reviews and testing.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
+                                            <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">Frontend Developer</h4>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2015 - 2018</p>
+                                        </div>
+                                        <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Digital Innovations LLC</p>
+                                        <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                            <li>Developed and maintained client-facing dashboards using React and D3.js.</li>
+                                            <li>Collaborated with UI/UX designers to create responsive and accessible user interfaces.</li>
+                                            <li>Migrated a legacy AngularJS application to a modern React codebase.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Education section -->
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Education</h3>
+                                <div class="mb-6">
+                                    <div>
+                                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
+                                            <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">
+                                                MSc in Particles, Strings and Cosmology
+                                                <span class="text-teal-500 dark:text-teal-400 font-semibold">(Distinction)</span>
+                                            </h4>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2021 - 2022</p>
+                                        </div>
+                                        <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Durham University</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Introductory Field Theory</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Field Theory I & II</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">General Relativity</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Group Theory</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Electrodynamics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Standard Model</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Cosmology I & II</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Conformal Field Theory</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Supersymmetry</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Chromodynamics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Astroparticle Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Neutrino Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Renormalisation Group</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">String Theory</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Scuttering Amplitudes</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Non-Perturbative Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Flavour Physics and Effective Field Theories</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Higgs Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Introduction to AdS/CFT</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Practical guide to analytic loop integration</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-1">
+                                        <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">
+                                            MSc in Physics
+                                            <span class="text-teal-500 dark:text-teal-400 font-semibold">(Distinction)</span>
+                                        </h4>
+                                        <p class="text-slate-500 dark:text-slate-400 text-sm sm:text-base">2017 - 2021</p>
+                                    </div>
+                                        <p class="text-lg text-slate-600 dark:text-slate-300 italic mb-2">Birzeit University</p>
+                                        
+                                        <!-- Mathematics Courses -->
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Mathematics:</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Calculus I, II & III</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Foundations of Mathematics (Logic)</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Linear Algebra & Advanced Linear Algebra</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Ordinary Differential Equations</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Partial Differential Equations</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Numerical Methods</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Abstract Algebra</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematical Analysis</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Statistics & Probability Theory</span>
+                                        </div>
+
+                                        <!-- Physics Courses -->
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Physics:</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">General Physics I, II & III with Labs</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Modern Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Medical Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Astronomy</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Vibrations and Waves</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Optics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Analog Electronics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematical Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Classical Mechanics I, II & master</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Electromagnetic Theory I & II</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Quantum Mechanics I & II</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Thermal Physics and Statistical Mechanics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Computational Physics</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Advanced Physics Lab</span>
+                                        </div>
+
+                                        <!-- Visitor Courses -->
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-2">Visitor Courses:</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Matrix Theory (master)</span>
+                                            <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Partial Differential Equations (master)</span>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <!-- Awards and Scholarships section -->
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Awards and Scholarships</h3>
+                                
+                                <!-- PhD -->
+                                <div class="mb-6">
+                                    <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">PhD at Durham University</h4>
+                                    <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2022 - 2026]</span> STFC Scholarship</li>
+                                    </ul>
+                                </div>
+
+                                <!-- MSc -->
+                                <div class="mb-6">
+                                    <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">MSc at Durham University</h4>
+                                    <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2021 - 2022]</span> Global Masters Scholarship</li>
+                                    </ul>
+                                </div>
+
+                                <!-- BSc -->
+                                <div class="mb-6">
+                                    <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">BSc at Birzeit University</h4>
+                                    <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Honour Scholarship</li>
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Mosa Naser Scholarship for Physics</li>
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2017 - 2021]</span> Paltel Scholarship</li>
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2017]</span> Science Faculty Scholarship</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Pre-University -->
+                                <div class="mb-6">
+                                    <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Pre-University Awards</h4>
+                                    <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1">
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2013 & 2014]</span> FLL Robot Nationwide Award</li>
+                                        <li><span class="text-slate-500 dark:text-slate-400">[2006 - 2017]</span> Academic Excellence Awards</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Skills section -->
+                            <div class="mb-8">
+                                <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Skills</h3>
+                                <div class="flex flex-wrap gap-2">
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Math</span>
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Physics</span>
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Programming</span>
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematica</span>
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Python</span>
+                                <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">LaTeX</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Skills section -->
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold text-teal-500 dark:text-teal-400 mb-4 pb-2 border-b-2 border-slate-200 dark:border-slate-700">Skills</h3>
-                        <div class="flex flex-wrap gap-2">
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Math</span>
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Physics</span>
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Programming</span>
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Mathematica</span>
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">Python</span>
-                           <span class="bg-teal-100 text-teal-800 dark:bg-slate-700 dark:text-teal-300 text-sm font-medium px-3 py-1 rounded-full">LaTeX</span>
+                    </section>
+
+                    <!-- Contact Section -->
+                    <section id="page-Contact" class="page-content hidden animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Get In Touch</h2>
+                        <p class="text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">
+                            I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <a href="mailto:rashad.m.hamidi@durham.ac.uk" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">Email</p>
+                                    <p class="text-slate-500 dark:text-slate-400">rashad.m.hamidi@durham.ac.uk</p>
+                                </div>
+                            </a>
+                            <a href="https://github.com/xurashad/" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">GitHub</p>
+                                    <p class="text-slate-500 dark:text-slate-400">xurashad</p>
+                                </div>
+                            </a>
+                            <a href="https://www.linkedin.com/in/rashad-hamidi/" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">LinkedIn</p>
+                                    <p class="text-slate-500 dark:text-slate-400">Rashad Hamidi</p>
+                                </div>
+                            </a>
                         </div>
-                    </div>
+                    </section>
                 </div>
-                </div>
-
-            </section>
-
-             <!-- Contact Section -->
-            <section id="page-Contact" class="page-content hidden animate-fade-in">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Get In Touch</h2>
-                <p class="text-slate-600 dark:text-slate-400 mb-8 max-w-2xl">
-                    I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <a href="mailto:johndoe@email.com" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
-                        <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">Email</p>
-                            <p class="text-slate-500 dark:text-slate-400">johndoe@email.com</p>
-                        </div>
-                    </a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
-                        <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">GitHub</p>
-                            <p class="text-slate-500 dark:text-slate-400">johndoe</p>
-                        </div>
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
-                        <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-lg font-semibold text-slate-800 dark:text-slate-100">LinkedIn</p>
-                            <p class="text-slate-500 dark:text-slate-400">johndoe</p>
-                        </div>
-                    </a>
-                </div>
-            </section>
+            </main>
         </div>
-    </main>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const navButtons = document.querySelectorAll('.nav-button');
-        const pages = document.querySelectorAll('.page-content');
+        <!-- THEME TOGGLE SCRIPT -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const themeToggle = document.getElementById('theme-toggle');
+                const themeIconSun = document.getElementById('theme-icon-sun');
+                const themeIconMoon = document.getElementById('theme-icon-moon');
+                const themeToggleText = document.getElementById('theme-toggle-text');
+                const htmlElement = document.documentElement;
 
-        // --- THEME TOGGLE ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeToggleText = document.getElementById('theme-toggle-text');
+                const navButtons = document.querySelectorAll('.nav-button');
+                const contentSections = document.querySelectorAll('.page-content');
 
-        function applyTheme(theme) {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                themeToggleText.innerText = 'Light Mode';
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeToggleText.innerText = 'Dark Mode';
-            }
-            localStorage.setItem('theme', theme);
-        }
-
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = localStorage.getItem('theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(newTheme);
-        });
-
-        // --- PAGE NAVIGATION ---
-        function setActivePage(pageName) {
-            pages.forEach(page => {
-                if (page.id === `page-${pageName}`) {
-                    page.classList.remove('hidden');
-                } else {
-                    page.classList.add('hidden');
+                // --- THEME LOGIC ---
+                function applyTheme(theme) {
+                    if (theme === 'dark') {
+                        htmlElement.classList.add('dark');
+                        themeIconSun.classList.remove('hidden');
+                        themeIconMoon.classList.add('hidden');
+                        themeToggleText.textContent = 'Light Mode';
+                    } else {
+                        htmlElement.classList.remove('dark');
+                        themeIconSun.classList.add('hidden');
+                        themeIconMoon.classList.remove('hidden');
+                        themeToggleText.textContent = 'Dark Mode';
+                    }
+                    localStorage.setItem('theme', theme);
                 }
-            });
 
-            navButtons.forEach(button => {
-                const buttonPage = button.dataset.page;
-                if (buttonPage === pageName) {
-                    button.classList.add(...activeClasses);
-                    button.classList.remove(...inactiveClasses);
-                } else {
-                    button.classList.remove(...activeClasses);
-                    button.classList.add(...inactiveClasses);
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = htmlElement.classList.contains('dark') ? 'light' : 'dark';
+                    applyTheme(currentTheme);
+                });
+
+                // --- NAVIGATION LOGIC ---
+                function setActivePage(pageName) {
+                    contentSections.forEach(section => {
+                        if (section.id === `page-${pageName}`) {
+                            section.classList.remove('hidden');
+                        } else {
+                            section.classList.add('hidden');
+                        }
+                    });
+
+                    navButtons.forEach(button => {
+                        const buttonPage = button.dataset.page;
+                        // Active styles
+                        const activeClasses = ['bg-teal-500/10', 'text-teal-600', 'dark:bg-teal-400/10', 'dark:text-teal-300'];
+                        // Inactive styles
+                        const inactiveClasses = ['text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-200/50', 'dark:hover:bg-slate-700/50', 'hover:text-slate-700', 'dark:hover:text-slate-200'];
+
+                        if (buttonPage === pageName) {
+                            button.classList.add(...activeClasses);
+                            button.classList.remove(...inactiveClasses);
+                        } else {
+                            button.classList.remove(...activeClasses);
+                            button.classList.add(...inactiveClasses);
+                        }
+                    });
                 }
+
+                navButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const pageName = button.dataset.page;
+                        setActivePage(pageName);
+                    });
+                });
+
+                // --- INITIALIZATION ---
+                const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
+                applyTheme(savedTheme);
+                setActivePage('Home'); // Default to home page
             });
-        }
+        </script>
 
-        navButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const pageName = button.dataset.page;
-                setActivePage(pageName);
-            });
-        });
-
-        // --- INITIALIZATION ---
-        const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
-        applyTheme(savedTheme);
-        setActivePage('Home'); // Default to home page
-    });
-</script>
-
-<script type="module" src="/index.tsx"></script>
-</body>
+    </body>
 </html>
