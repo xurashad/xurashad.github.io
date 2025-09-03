@@ -35,7 +35,6 @@
       }
     }
     </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-900 text-white font-sans">
     <div id="root"></div>
@@ -320,14 +319,6 @@
         };
         
         // --- Mandelbrot Canvas Component (from components/MandelbrotCanvas.tsx) ---
-        const DragBox = ({ box }) => {
-          if (!box || box.width <= 2 || box.height <= 2) return null;
-          return React.createElement("div", {
-              className: "absolute border-2 border-dashed border-white pointer-events-none",
-              style: { left: box.x, top: box.y, width: box.width, height: box.height }
-            });
-        };
-
         const MandelbrotCanvas = forwardRef(({ state, dispatch, setUndoPoint }, ref) => {
           const { settings, workerCount, isComputing } = state;
           const canvasRef = useRef(null);
@@ -335,11 +326,9 @@
           const offscreenCanvasRef = useRef(null);
           const workersRef = useRef([]);
           const jobIdRef = useRef(0);
-          const [dragBox, setDragBox] = useState(null);
-          const isDraggingRef = useRef(false);
           const isPanningRef = useRef(false);
           const panStartRef = useRef({ x: 0, y: 0 });
-          const [cursor, setCursor] = useState('crosshair');
+          const [cursor, setCursor] = useState('grab');
 
           useEffect(() => () => workersRef.current.forEach(w => w.terminate()), []);
 
@@ -443,84 +432,82 @@
 
           const handlePointerDown = (e) => {
             if (isComputing) return;
-            const rect = containerRef.current.getBoundingClientRect();
-            const x = e.clientX - rect.left, y = e.clientY - rect.top;
             e.preventDefault();
-            if (e.pointerType === 'mouse' && e.button === 2) {
+            if (e.button === 0) { // Left mouse button
               isPanningRef.current = true;
               panStartRef.current = { x: e.clientX, y: e.clientY };
               setCursor('grabbing');
-            } else {
-              isDraggingRef.current = true;
-              setDragBox({ x, y, width: 0, height: 0, startX: x, startY: y });
             }
           };
           
           const handlePointerMove = (e) => {
-            if (isPanningRef.current || !isDraggingRef.current || !dragBox) return;
-            e.preventDefault();
-            const rect = containerRef.current.getBoundingClientRect();
-            const currentX = e.clientX - rect.left, currentY = e.clientY - rect.top;
-            let width = Math.abs(currentX - dragBox.startX), height = Math.abs(currentY - dragBox.startY);
-            const canvasAspect = settings.width / settings.height;
-            if (width / height > canvasAspect) height = width / canvasAspect; else width = height * canvasAspect;
-            setDragBox({ ...dragBox,
-              x: Math.min(dragBox.startX, dragBox.startX + (currentX > dragBox.startX ? 1 : -1) * width),
-              y: Math.min(dragBox.startY, dragBox.startY + (currentY > dragBox.startY ? 1 : -1) * height),
-              width, height });
+            if (isPanningRef.current) {
+              e.preventDefault();
+            }
           };
 
           const handlePointerUp = (e) => {
+            if (!isPanningRef.current) return;
+            isPanningRef.current = false;
+            setCursor('grab');
+
+            const dxPixels = e.clientX - panStartRef.current.x;
+            const dyPixels = e.clientY - panStartRef.current.y;
+            
+            if (Math.abs(dxPixels) < 5 && Math.abs(dyPixels) < 5) return;
+
+            const { xmin, xmax, ymin, ymax, width, height } = settings;
+            const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
+            
+            const dxComplex = (dxPixels / width) * (xmaxNum - xminNum);
+            const dyComplex = (dyPixels / height) * (ymaxNum - yminNum);
+            
+            const newXmin = xminNum - dxComplex;
+            const newXmax = xmaxNum - dxComplex;
+            const newYmin = yminNum + dyComplex;
+            const newYmax = ymaxNum + dyComplex;
+            
+            setUndoPoint(settings);
+            dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
+          };
+          
+          const handleWheel = useCallback((e) => {
+            if (isComputing) return;
+            e.preventDefault();
+            
+            const zoomFactor = e.deltaY < 0 ? 0.8 : 1.25;
+            const rect = containerRef.current.getBoundingClientRect();
+            const mouseXOnCanvas = e.clientX - rect.left;
+            const mouseYOnCanvas = e.clientY - rect.top;
+
             const { xmin, xmax, ymin, ymax, width, height } = settings;
             const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
 
-            if (isPanningRef.current) {
-              isPanningRef.current = false; setCursor('crosshair');
-              const dxPixels = e.clientX - panStartRef.current.x, dyPixels = e.clientY - panStartRef.current.y;
-              const dxComplex = (dxPixels / width) * (xmaxNum - xminNum), dyComplex = (dyPixels / height) * (ymaxNum - yminNum);
-              const [newXmin, newXmax] = [xminNum - dxComplex, xmaxNum - dxComplex];
-              const [newYmin, newYmax] = [yminNum + dyComplex, ymaxNum + dyComplex];
-              setUndoPoint(settings);
-              dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
-              return;
-            }
+            const mouseXComplex = xminNum + (mouseXOnCanvas / width) * (xmaxNum - xminNum);
+            const mouseYComplex = ymaxNum - (mouseYOnCanvas / height) * (ymaxNum - yminNum);
 
-            if (!isDraggingRef.current) return;
-            isDraggingRef.current = false;
-            
-            if (!dragBox || dragBox.width <= 5 || dragBox.height <= 5) {
-              setDragBox(null);
-              const zoomFactor = e.shiftKey ? 2.0 : 0.5;
-              const rect = containerRef.current.getBoundingClientRect();
-              const clickX = e.clientX - rect.left, clickY = e.clientY - rect.top;
-              const mouseX = xminNum + (clickX / width) * (xmaxNum - xminNum);
-              const mouseY = ymaxNum - (clickY / height) * (ymaxNum - yminNum);
-              const newWidth = (xmaxNum - xminNum) * zoomFactor, newHeight = (ymaxNum - yminNum) * zoomFactor;
-              const newXmin = mouseX - (clickX / width) * newWidth, newXmax = newXmin + newWidth;
-              const newYmax = mouseY + (clickY / height) * newHeight, newYmin = newYmax - newHeight;
-              setUndoPoint(settings);
-              dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
-            } else {
-              const newXmin = xminNum + (dragBox.x / width) * (xmaxNum - xminNum);
-              const newXmax = xminNum + ((dragBox.x + dragBox.width) / width) * (xmaxNum - xminNum);
-              const newYmax = ymaxNum - (dragBox.y / height) * (ymaxNum - yminNum);
-              const newYmin = ymaxNum - ((dragBox.y + dragBox.height) / height) * (ymaxNum - yminNum);
-              setUndoPoint(settings);
-              dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
-            }
-            setDragBox(null);
-          };
-          
+            const newWidthComplex = (xmaxNum - xminNum) * zoomFactor;
+            const newHeightComplex = (ymaxNum - yminNum) * zoomFactor;
+
+            const newXmin = mouseXComplex - (mouseXOnCanvas / width) * newWidthComplex;
+            const newXmax = newXmin + newWidthComplex;
+            const newYmax = mouseYComplex + (mouseYOnCanvas / height) * newHeightComplex;
+            const newYmin = newYmax - newHeightComplex;
+
+            setUndoPoint(settings);
+            dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
+          }, [isComputing, settings, dispatch, setUndoPoint]);
+
           return React.createElement("div", {
               ref: containerRef, className: `relative w-full h-full touch-none`,
               style: { cursor: isComputing ? 'wait' : cursor },
               onPointerDown: handlePointerDown, onPointerMove: handlePointerMove,
               onPointerUp: handlePointerUp, onContextMenu: e => e.preventDefault(),
-              onPointerLeave: () => { isDraggingRef.current = false; isPanningRef.current = false; setDragBox(null); setCursor('crosshair'); }
+              onWheel: handleWheel,
+              onPointerLeave: () => { isPanningRef.current = false; setCursor('grab'); }
             },
             React.createElement("canvas", { ref: canvasRef, width: settings.width, height: settings.height, className: "w-full h-full object-contain" }),
-            isComputing && React.createElement("div", { className: "absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" }, React.createElement("div", { className: "w-24 h-24 border-4 border-dashed rounded-full animate-spin border-cyan-400" })),
-            React.createElement(DragBox, { box: dragBox })
+            isComputing && React.createElement("div", { className: "absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" }, React.createElement("div", { className: "w-24 h-24 border-4 border-dashed rounded-full animate-spin border-cyan-400" }))
           );
         });
 
@@ -627,7 +614,7 @@
                          ),
                          React.createElement(Button, { onClick: () => canvasRef.current?.stopComputation(), disabled: !state.isComputing, className: "w-full !bg-red-600 hover:!bg-red-500" }, "Stop")
                        ),
-                       React.createElement(ControlGroup, { title: "Navigation" }, React.createElement("div", { className: "text-xs text-gray-400 space-y-2" }, React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Zoom In/Out:"), " Click/tap on the image. Use Shift+Click to zoom out."), React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Zoom to Area:"), " Drag a box on the image."), React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Pan:"), " Drag the image using the right mouse button."))),
+                       React.createElement(ControlGroup, { title: "Navigation" }, React.createElement("div", { className: "text-xs text-gray-400 space-y-2" }, React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Zoom:"), " Use the mouse wheel to zoom in and out."), React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Pan:"), " Click and drag with the left mouse button to move the view."))),
                        React.createElement(ControlGroup, { title: "Zoom Controls" },
                          React.createElement(LabelInput, { label: "Zoom In By" }, React.createElement(Select, { value: zoomInFactor, onChange: e => setZoomInFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "0.5" }, "2x"), React.createElement("option", { value: "0.2" }, "5x"), React.createElement("option", { value: "0.1" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomInFactor), disabled: state.isComputing }, "Zoom In"),
                          React.createElement(LabelInput, { label: "Zoom Out By" }, React.createElement(Select, { value: zoomOutFactor, onChange: e => setZoomOutFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "2" }, "2x"), React.createElement("option", { value: "5" }, "5x"), React.createElement("option", { value: "10" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomOutFactor), disabled: state.isComputing }, "Zoom Out")
@@ -672,6 +659,5 @@
         const root = ReactDOM.createRoot(rootElement);
         root.render(React.createElement(React.StrictMode, null, React.createElement(App, null)));
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
