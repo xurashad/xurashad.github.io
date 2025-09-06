@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feynman Diagram Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-white">
+    <div id="root"></div>
+    <script type="module">
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// --- From types.ts ---
+var ParticleType;
+(function (ParticleType) {
+    ParticleType["Fermion"] = "fermion";
+    ParticleType["Photon"] = "photon";
+    ParticleType["Gluon"] = "gluon";
+    ParticleType["Higgs"] = "higgs";
+    ParticleType["Ghost"] = "ghost";
+    ParticleType["Scalar"] = "scalar";
+})(ParticleType || (ParticleType = {}));
+
+// --- From constants.ts ---
+const PALETTE_ITEMS = [
+    { type: 'vertex', label: 'Vertex' },
+    { type: ParticleType.Fermion, label: 'Fermion' },
+    { type: ParticleType.Photon, label: 'Photon' },
+    { type: ParticleType.Gluon, label: 'Gluon' },
+    { type: ParticleType.Higgs, label: 'Higgs' },
+    { type: ParticleType.Ghost, label: 'Ghost' },
+    { type: ParticleType.Scalar, label: 'Scalar' },
+    { type: 'text', label: 'Text Label'},
+    { type: 'ellipse', label: 'Ellipse' },
+    { type: 'rectangle', label: 'Rectangle' },
+];
+const SNAP_RADIUS = 10;
+const VERTEX_RADIUS = 8;
+const HANDLE_RADIUS = 6;
+const GRID_SPACING = 20;
+const ARROW_SIZE = 10;
+const BEND_SNAP_VALUE = 10;
+const DEFAULT_ELLIPSE_RADIUS = 40;
+const DEFAULT_RECT_WIDTH = 120;
+const DEFAULT_RECT_HEIGHT = 80;
+
+// --- From services/latexExporter.ts ---
+const getParticleStyle = (type) => {
+    switch (type) {
+        case ParticleType.Fermion:
+            return 'fermion';
+        case ParticleType.Photon:
+            return 'photon';
+        case ParticleType.Gluon:
+            return 'gluon';
+        case ParticleType.Higgs:
+            return 'scalar'; // 'scalar' is used for Higgs in tikz-feynman
+        case ParticleType.Ghost:
+            return 'ghost';
+        case ParticleType.Scalar:
+            return 'plain';
+        default:
+            return '';
+    }
+};
+const generateLatex = (diagramState) => {
+    const { vertices, particles, textLabels, ellipses, rectangles } = diagramState;
+    
+    if (vertices.length === 0 && particles.length === 0 && textLabels.length === 0 && ellipses.length === 0 && rectangles.length === 0) {
+        return '% No diagram elements to export.';
+    }
+
+    const preamble = [
+        '\\documentclass[tikz, border=2pt]{standalone}',
+        '\\usepackage{tikz-feynman}',
+        '\\begin{document}',
+        '\\begin{tikzpicture}',
+        '  \\begin{feynman}',
+    ].join('\n');
+
+    const postamble = [
+        '  \\end{feynman}',
+        '\\end{tikzpicture}',
+        '\\end{document}',
+    ].join('\n');
+
+    const scale = 0.04;
+    const allVertices = new Map();
+
+    // Add user-defined vertices
+    vertices.forEach(v => allVertices.set(v.id.toString(), { x: v.x, y: v.y }));
+
+    const particleExportData = particles.map(p => {
+        let startId = p.startVertex?.toString();
+        let endId = p.endVertex?.toString();
+
+        // Create implicit vertices for unattached particle ends
+        if (startId === null || startId === undefined) {
+            startId = `p${p.id}_start`;
+            if (!allVertices.has(startId)) {
+                allVertices.set(startId, { x: p.startX, y: p.startY });
+            }
+        }
+        if (endId === null || endId === undefined) {
+            endId = `p${p.id}_end`;
+            if (!allVertices.has(endId)) {
+                allVertices.set(endId, { x: p.endX, y: p.endY });
+            }
+        }
+        
+        return { ...p, startVertexId: startId, endVertexId: endId };
+    });
+
+    // Define ALL vertex positions (user-placed and implicit) without drawing them
+    const vertexDefinitionLines = Array.from(allVertices.entries()).map(([id, pos]) => {
+        return `      \\vertex (${id}) at (${(pos.x * scale).toFixed(2)}, ${(-pos.y * scale).toFixed(2)});`;
+    }).join('\n');
+
+    // Generate TikZ commands to explicitly draw the user-placed vertices as dots
+    const vertexDrawLines = vertices.map(v => 
+        `      \\filldraw[black] (${v.id}) circle (2pt);`
+    ).join('\n');
+
+
+    const particleLines = particleExportData
+        .map(p => {
+            const style = getParticleStyle(p.type);
+            const bend = p.bend;
+            let bendStr = '';
+            if (Math.abs(bend) > 1) { // Threshold to avoid tiny bends
+                const bendDegrees = Math.round(bend * 0.5);
+                // A positive bend on the canvas (y-axis down) is a counter-clockwise curve.
+                // When exporting to LaTeX, we flip the y-axis (y -> -y). This reflection
+                // turns a counter-clockwise curve into a clockwise curve.
+                // In tikz-feynman, a clockwise curve is 'bend right'.
+                bendStr = bendDegrees > 0 ? `, bend right=${bendDegrees}` : `, bend left=${-bendDegrees}`;
+            }
+            return `      (${p.startVertexId}) -- [${style}${bendStr}] (${p.endVertexId});`;
+        }).join('\n');
+        
+    const textLines = textLabels.map(label => 
+        `      \\node at (${(label.x * scale).toFixed(2)}, ${(-label.y * scale).toFixed(2)}) {${label.text}};`
+    ).join('\n');
+    
+    const shapeLines = [
+        ...rectangles.map(r => {
+            const x1 = ((r.x - r.width / 2) * scale).toFixed(2);
+            const y1 = (-(r.y - r.height / 2) * scale).toFixed(2);
+            const x2 = ((r.x + r.width / 2) * scale).toFixed(2);
+            const y2 = (-(r.y + r.height / 2) * scale).toFixed(2);
+            return `    \\draw (${x1}, ${y1}) rectangle (${x2}, ${y2});`;
+        }),
+        ...ellipses.map(e => {
+            const x = (e.x * scale).toFixed(2);
+            const y = (-e.y * scale).toFixed(2);
+            const rx = (e.rx * scale).toFixed(2);
+            if (e.rx === e.ry) {
+                return `    \\draw (${x}, ${y}) circle (${rx});`;
+            }
+            const ry = (e.ry * scale).toFixed(2);
+            return `    \\draw (${x}, ${y}) ellipse (${rx} and ${ry});`;
+        })
+    ].join('\n');
+
+    const diagramBlock = [
+        '    \\diagram* {',
+        particleLines,
+        '      };',
+    ].join('\n');
+
+    return [preamble, vertexDefinitionLines, textLines, shapeLines, diagramBlock, vertexDrawLines, postamble].filter(Boolean).join('\n\n');
+};
+
+// --- From components/Instructions.tsx ---
+const InfoIcon = () => (
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5 mr-2 inline-block text-cyan-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" }))
+);
+
+const Instructions = () => {
+    return (
+        React.createElement("div", { className: "bg-gray-800 p-3 rounded-lg text-xs md:text-sm text-gray-300 mb-4 border border-gray-700" },
+            React.createElement("h3", { className: "font-bold mb-2 flex items-center" }, React.createElement(InfoIcon, null), "How to Use"),
+            React.createElement("ul", { className: "list-disc list-inside space-y-1" },
+                React.createElement("li", null, "Drag components from the palette onto the canvas."),
+                React.createElement("li", null, "Drag vertices to move. Drag particle handles to reshape."),
+                React.createElement("li", null, "Click and drag the background to select items, or hold ", React.createElement("code", { className: "bg-gray-600 rounded px-1.5 py-1" }, "Shift"), " and click to add/remove from selection."),
+                React.createElement("li", null, "Drag any selected item to move the whole group."),
+                React.createElement("li", null, "Press ", React.createElement("code", { className: "bg-gray-600 rounded px-1.5 py-1" }, "Delete"), " or use the header button to remove selected items."),
+                React.createElement("li", null, "Double-click text to edit (supports LaTeX in export).")))
+    );
+};
+
+// --- From components/Palette.tsx ---
+const getIcon = (item) => {
+    switch (item.type) {
+        case 'vertex':
+            return React.createElement("div", { className: "w-5 h-5 bg-cyan-400 rounded-full" });
+        case ParticleType.Fermion:
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("line", { x1: "0", y1: "12", x2: "24", y2: "12", stroke: "currentColor", strokeWidth: "2" }), React.createElement("polyline", { points: "10 7, 15 12, 10 17", fill: "none", stroke: "currentColor", strokeWidth: "2" }));
+        case ParticleType.Photon:
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("path", { d: "M 0 12 C 4 6, 8 18, 12 12 S 20 6, 24 12", stroke: "currentColor", fill: "none", strokeWidth: "2" }));
+        case ParticleType.Gluon:
+             return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("path", { d: "M 0 12 C 3 12, 3 8, 6 8 S 9 16, 12 16 S 15 8, 18 8 S 21 12, 24 12", stroke: "currentColor", fill: "none", strokeWidth: "2", strokeLinecap: "round" }));
+        case ParticleType.Higgs:
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("line", { x1: "0", y1: "12", x2: "24", y2: "12", stroke: "currentColor", strokeWidth: "2", strokeDasharray: "4 2" }));
+        case ParticleType.Ghost:
+             return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("line", { x1: "0", y1: "12", x2: "24", y2: "12", stroke: "currentColor", strokeWidth: "2", strokeDasharray: "1 3", strokeLinecap: "round" }));
+        case ParticleType.Scalar:
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("line", { x1: "0", y1: "12", x2: "24", y2: "12", stroke: "currentColor", strokeWidth: "2" }));
+        case 'text':
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "currentColor" }, React.createElement("path", { d: "M 5 4 h 14 v 3 h -5 v 12 h -4 v -12 H 5 V 4 z" }));
+        case 'ellipse':
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("circle", { cx: "12", cy: "12", r: "9", stroke: "currentColor", strokeWidth: "2", fill: "none" }));
+        case 'rectangle':
+            return React.createElement("svg", { width: "24", height: "24", viewBox: "0 0 24 24" }, React.createElement("rect", { x: "3", y: "6", width: "18", height: "12", stroke: "currentColor", strokeWidth: "2", fill: "none" }));
+        default:
+            return null;
+    }
+};
+const DraggableItem = ({ item, onDragStart, className }) => {
+    const handleDragStart = (e) => {
+        if (onDragStart) {
+            onDragStart(e);
+        } else {
+            e.dataTransfer.setData('application/json', JSON.stringify(item));
+        }
+    };
+    return (
+        React.createElement("div", { draggable: true, onDragStart: handleDragStart, className: `flex items-center space-x-3 p-3 cursor-grab active:cursor-grabbing hover:bg-gray-600 transition-colors duration-200 ${className}` },
+            React.createElement("div", { className: "w-6 h-6 flex items-center justify-center text-cyan-400" }, getIcon(item)),
+            React.createElement("span", { className: "font-medium" }, item.label))
+    );
+};
+const Palette = () => {
+    return (
+        React.createElement("aside", { className: "w-64 bg-gray-800 p-4 space-y-4 overflow-y-auto border-r border-gray-700 shadow-lg" },
+            React.createElement("h2", { className: "text-lg font-semibold text-gray-300 border-b border-gray-600 pb-2 mb-4" }, "Components"),
+            PALETTE_ITEMS.map(item => (
+                React.createElement(DraggableItem, { key: item.label, item: item, className: "bg-gray-700 rounded-lg" }))),
+            React.createElement(Instructions, null))
+    );
+};
+
+// --- From components/ExportModal.tsx ---
+const ExportModal = ({ code, onClose }) => {
+    const [copyButtonText, setCopyButtonText] = useState('Copy to Clipboard');
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code).then(() => {
+            setCopyButtonText('Copied!');
+            setTimeout(() => setCopyButtonText('Copy to Clipboard'), 2000);
+        });
+    };
+    useEffect(() => {
+        const handleEsc = (event) => {
+           if (event.key === 'Escape') {
+              onClose();
+           }
+        };
+        window.addEventListener('keydown', handleEsc);
+    
+        return () => {
+          window.removeEventListener('keydown', handleEsc);
+        };
+    }, [onClose]);
+
+    return (
+        React.createElement("div", { className: "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300", onClick: onClose },
+            React.createElement("div", { className: "bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-2xl mx-4 transform transition-transform duration-300 scale-95", onClick: (e) => e.stopPropagation() },
+                React.createElement("div", { className: "flex justify-between items-center mb-4" },
+                    React.createElement("h2", { className: "text-2xl font-bold text-cyan-400" }, "Export to LaTeX"),
+                    React.createElement("button", { onClick: onClose, className: "text-gray-400 hover:text-white text-2xl" }, "\u00D7")),
+                React.createElement("p", { className: "text-sm text-gray-400 mb-4" },
+                    "Copy the code below. You'll need the ",
+                    React.createElement("code", { className: "bg-gray-700 p-1 rounded text-xs" }, "tikz-feynman"),
+                    " package in your LaTeX document."),
+                React.createElement("div", { className: "bg-gray-900 rounded-md p-4 relative" },
+                    React.createElement("pre", { className: "text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap font-mono max-h-80" },
+                        React.createElement("code", null, code))),
+                React.createElement("div", { className: "mt-6 flex justify-end" },
+                    React.createElement("button", { onClick: handleCopy, className: "bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 w-48 text-center" }, copyButtonText))))
+    );
+};
+
+// --- From components/Header.tsx ---
+const ExportIcon = () => (
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5 mr-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" }))
+);
+const DeleteIcon = () => (
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5 mr-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }))
+);
+const DuplicateIcon = () => (
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5 mr-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" }))
+);
+const Header = ({ onExport, onDelete, onDuplicate, isSelectionActive }) => {
+    return (
+        React.createElement("header", { className: "flex items-center justify-between p-4 bg-gray-800 border-b border-gray-700 shadow-md" },
+            React.createElement("h1", { className: "text-xl md:text-2xl font-bold text-cyan-400 tracking-wider" }, "Feynman Diagram Generator"),
+            React.createElement("div", { className: "flex items-center space-x-4" },
+                React.createElement("button", { onClick: onDelete, disabled: !isSelectionActive, className: "flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600 disabled:hover:scale-100" },
+                    React.createElement(DeleteIcon, null),
+                    "Delete Selected"),
+                React.createElement("button", { onClick: onDuplicate, disabled: !isSelectionActive, className: "flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-purple-600 disabled:hover:scale-100" },
+                    React.createElement(DuplicateIcon, null),
+                    "Duplicate"),
+                React.createElement("button", { onClick: onExport, className: "flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg" },
+                    React.createElement(ExportIcon, null),
+                    "Export to LaTeX")))
+    );
+};
+
+// --- From components/Canvas.tsx ---
+const ParticleLine = React.memo(({ particle }) => {
+    const { startX, startY, endX, endY, type, bend } = particle;
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length === 0)
+        return null;
+    // Midpoint of the baseline
+    const mx = startX + dx / 2;
+    const my = startY + dy / 2;
+    // Control point for the quadratic bezier curve
+    const cpx = mx - (dy / length) * bend;
+    const cpy = my + (dx / length) * bend;
+    const curvePath = `M ${startX} ${startY} Q ${cpx} ${cpy} ${endX} ${endY}`;
+    const getBezierPoint = useCallback((t) => {
+        const x = (1 - t) ** 2 * startX + 2 * (1 - t) * t * cpx + t ** 2 * endX;
+        const y = (1 - t) ** 2 * startY + 2 * (1 - t) * t * cpy + t ** 2 * endY;
+        return { x, y };
+    }, [startX, startY, cpx, cpy, endX, endY]);
+    const getBezierTangent = useCallback((t) => {
+        const dx = 2 * (1 - t) * (cpx - startX) + 2 * t * (endX - cpx);
+        const dy = 2 * (1 - t) * (cpy - startY) + 2 * t * (endY - cpy);
+        return { dx, dy };
+    }, [startX, startY, cpx, cpy, endX, endY]);
+    const getParticlePath = () => {
+        switch (type) {
+            case ParticleType.Photon: {
+                if (length < 2)
+                    return null;
+                const segments = 50;
+                const amplitude = 5;
+                const waves = Math.max(1, length / 25);
+                let pathData = `M ${startX} ${startY}`;
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    const { x, y } = getBezierPoint(t);
+                    const { dx, dy } = getBezierTangent(t);
+                    const tangentLength = Math.sqrt(dx * dx + dy * dy);
+                    if (tangentLength === 0)
+                        continue;
+                    const normalX = -dy / tangentLength;
+                    const normalY = dx / tangentLength;
+                    const offset = amplitude * Math.sin(t * waves * Math.PI * 2);
+                    pathData += ` L ${x + normalX * offset} ${y + normalY * offset}`;
+                }
+                return React.createElement("path", { d: pathData, stroke: "#34d399", fill: "none", strokeWidth: "2" });
+            }
+            case ParticleType.Gluon: {
+                if (length < 2)
+                    return null;
+                const coilAmplitude = 8;
+                const coilLoops = Math.max(1, Math.round(length / 20));
+                const numSegments = coilLoops * 4; // 4 points per loop for up/down/center states
+                const points = [];
+                for (let i = 0; i <= numSegments; i++) {
+                    const t = i / numSegments;
+                    const basePt = getBezierPoint(t);
+                    const tangent = getBezierTangent(t);
+                    const angle = Math.atan2(tangent.dy, tangent.dx);
+                    const normal = { x: -Math.sin(angle), y: Math.cos(angle) };
+                    const phase = (i % 4);
+                    let offset = 0;
+                    if (phase === 1)
+                        offset = coilAmplitude;
+                    if (phase === 3)
+                        offset = -coilAmplitude;
+                    points.push({
+                        x: basePt.x + normal.x * offset,
+                        y: basePt.y + normal.y * offset
+                    });
+                }
+                let d = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p0 = (i > 0) ? points[i - 1] : points[i];
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    const p3 = (i < points.length - 2) ? points[i + 2] : p2;
+                    // Catmull-Rom to Bezier conversion for a smooth curve
+                    const tension = 1 / 6;
+                    const cp1 = {
+                        x: p1.x + (p2.x - p0.x) * tension,
+                        y: p1.y + (p2.y - p0.y) * tension
+                    };
+                    const cp2 = {
+                        x: p2.x - (p3.x - p1.x) * tension,
+                        y: p2.y - (p3.y - p1.y) * tension
+                    };
+                    d += ` C ${cp1.x},${cp1.y} ${cp2.x},${cp2.y} ${p2.x},${p2.y}`;
+                }
+                return React.createElement("path", { d: d, stroke: "#f472b6", fill: "none", strokeWidth: "2" });
+            }
+            case ParticleType.Higgs:
+                return React.createElement("path", { d: curvePath, stroke: "#fbbf24", strokeWidth: "2", strokeDasharray: "5,5", fill: "none" });
+            case ParticleType.Ghost:
+                return React.createElement("path", { d: curvePath, stroke: "#a78bfa", strokeWidth: "2", strokeDasharray: "2,4", strokeLinecap: "round", fill: "none" });
+            case ParticleType.Scalar:
+                return React.createElement("path", { d: curvePath, stroke: "#a8a29e", strokeWidth: "2", fill: "none" });
+            case ParticleType.Fermion:
+                // Midpoint on the actual curve (for t=0.5)
+                const midX = 0.25 * startX + 0.5 * cpx + 0.25 * endX;
+                const midY = 0.25 * startY + 0.5 * cpy + 0.25 * endY;
+                // Tangent at t=0.5
+                const tangent = getBezierTangent(0.5);
+                const tangentAngle = Math.atan2(tangent.dy, tangent.dx);
+                return (React.createElement("g", null,
+                    React.createElement("path", { d: curvePath, stroke: "#60a5fa", fill: "none", strokeWidth: "2" }),
+                    React.createElement("path", { d: `M 0 ${-ARROW_SIZE / 2.5} L ${ARROW_SIZE} 0 L 0 ${ARROW_SIZE / 2.5} z`, fill: "#60a5fa", transform: `translate(${midX}, ${midY}) rotate(${tangentAngle * 180 / Math.PI})` })));
+            default:
+                return React.createElement("path", { d: curvePath, stroke: "#60a5fa", strokeWidth: "2", fill: "none" });
+        }
+    };
+    return getParticlePath();
+});
+const Canvas = ({ diagramState, onDrop, setDiagramState, selection, onSelectionChange }) => {
+    const svgRef = useRef(null);
+    const [draggingObject, setDraggingObject] = useState(null);
+    const [editingLabel, setEditingLabel] = useState(null);
+    const [dragOverSnapPos, setDragOverSnapPos] = useState(null);
+    const [selectionBox, setSelectionBox] = useState(null);
+    const dragStartRef = useRef(null);
+    const getSVGCoordinates = (e) => {
+        if (!svgRef.current)
+            return { x: 0, y: 0 };
+        const pt = svgRef.current.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const screenCTM = svgRef.current.getScreenCTM();
+        if (screenCTM) {
+            return pt.matrixTransform(screenCTM.inverse());
+        }
+        return { x: 0, y: 0 };
+    };
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        const coords = getSVGCoordinates(e);
+        const snappedCoords = {
+            x: Math.round(coords.x / GRID_SPACING) * GRID_SPACING,
+            y: Math.round(coords.y / GRID_SPACING) * GRID_SPACING,
+        };
+        setDragOverSnapPos(snappedCoords);
+    };
+    const handleDragLeave = () => {
+        setDragOverSnapPos(null);
+    };
+    const handleDropInternal = (e) => {
+        e.preventDefault();
+        setDragOverSnapPos(null);
+        onSelectionChange({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+        const data = e.dataTransfer.getData('application/json');
+        if (data) {
+            const item = JSON.parse(data);
+            const coords = getSVGCoordinates(e);
+            const snappedCoords = {
+                x: Math.round(coords.x / GRID_SPACING) * GRID_SPACING,
+                y: Math.round(coords.y / GRID_SPACING) * GRID_SPACING,
+            };
+            onDrop(item, snappedCoords);
+        }
+    };
+    const handleResizeHandleMouseDown = (e, type, id, handle) => {
+        e.stopPropagation();
+        if (type === 'ellipse') {
+            setDraggingObject({ type: 'resize-ellipse', id, handle: handle });
+        }
+        else if (type === 'rectangle') {
+            setDraggingObject({ type: 'resize-rectangle', id, corner: handle });
+        }
+    };
+    const handleItemMouseDown = (e, itemType, id) => {
+        e.stopPropagation();
+        if (editingLabel?.id === id && itemType === 'text')
+            return;
+        setEditingLabel(null);
+        const isSelected = (itemType === 'vertex' && selection.vertices.has(id)) ||
+            (itemType === 'particle' && selection.particles.has(id)) ||
+            (itemType === 'text' && selection.textLabels.has(id)) ||
+            (itemType === 'ellipse' && selection.ellipses.has(id)) ||
+            (itemType === 'rectangle' && selection.rectangles.has(id));
+        let currentSelection = selection;
+        if (e.shiftKey) {
+            const newSelection = {
+                vertices: new Set(selection.vertices),
+                particles: new Set(selection.particles),
+                textLabels: new Set(selection.textLabels),
+                ellipses: new Set(selection.ellipses),
+                rectangles: new Set(selection.rectangles),
+            };
+            if (itemType === 'vertex') {
+                isSelected ? newSelection.vertices.delete(id) : newSelection.vertices.add(id);
+            }
+            else if (itemType === 'particle') {
+                isSelected ? newSelection.particles.delete(id) : newSelection.particles.add(id);
+            }
+            else if (itemType === 'text') {
+                isSelected ? newSelection.textLabels.delete(id) : newSelection.textLabels.add(id);
+            }
+            else if (itemType === 'ellipse') {
+                isSelected ? newSelection.ellipses.delete(id) : newSelection.ellipses.add(id);
+            }
+            else if (itemType === 'rectangle') {
+                isSelected ? newSelection.rectangles.delete(id) : newSelection.rectangles.add(id);
+            }
+            onSelectionChange(newSelection);
+            currentSelection = newSelection;
+        }
+        else {
+            const isHandle = e.target.dataset.handle;
+            if (itemType === 'particle' && !isSelected && isHandle) {
+                setDraggingObject({ type: isHandle, id });
+                return;
+            }
+            if (!isSelected) {
+                const newSelection = { vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() };
+                if (itemType === 'vertex')
+                    newSelection.vertices.add(id);
+                if (itemType === 'particle')
+                    newSelection.particles.add(id);
+                if (itemType === 'text')
+                    newSelection.textLabels.add(id);
+                if (itemType === 'ellipse')
+                    newSelection.ellipses.add(id);
+                if (itemType === 'rectangle')
+                    newSelection.rectangles.add(id);
+                onSelectionChange(newSelection);
+                currentSelection = newSelection;
+            }
+        }
+        setDraggingObject({ type: 'selection' });
+        dragStartRef.current = {
+            mousePos: getSVGCoordinates(e),
+            initialState: JSON.parse(JSON.stringify(diagramState)),
+            selection: currentSelection,
+            shiftKey: e.shiftKey,
+        };
+    };
+    const handleLabelUpdate = (id, newText) => {
+        setDiagramState({
+            ...diagramState,
+            textLabels: diagramState.textLabels.map(l => l.id === id ? { ...l, text: newText } : l),
+        });
+        setEditingLabel(null);
+    };
+    const handleTextDoubleClick = (id, currentText) => {
+        setDraggingObject(null);
+        onSelectionChange({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+        setEditingLabel({ id, text: currentText });
+    };
+    const handleMouseDown = (e) => {
+        if (e.target !== svgRef.current)
+            return;
+        setEditingLabel(null);
+        const startPos = getSVGCoordinates(e);
+        setSelectionBox({ x: startPos.x, y: startPos.y, width: 0, height: 0 });
+        // Store drag start info to differentiate clicks from drags and handle shift key.
+        dragStartRef.current = {
+            mousePos: startPos,
+            initialState: diagramState,
+            selection: selection,
+            shiftKey: e.shiftKey,
+        };
+    };
+    const handleMouseMove = (e) => {
+        if (selectionBox && !draggingObject) {
+            const startX = selectionBox.x;
+            const startY = selectionBox.y;
+            const currentPos = getSVGCoordinates(e);
+            setSelectionBox({ ...selectionBox, width: currentPos.x - startX, height: currentPos.y - startY });
+            return;
+        }
+        if (!draggingObject)
+            return;
+        const { x, y } = getSVGCoordinates(e);
+        const { vertices, particles } = diagramState;
+        if (draggingObject.type === 'selection') {
+            if (!dragStartRef.current)
+                return;
+            const { mousePos: startMousePos, initialState, selection: dragSelection } = dragStartRef.current;
+            const dx = x - startMousePos.x;
+            const dy = y - startMousePos.y;
+            const snappedDx = Math.round(dx / GRID_SPACING) * GRID_SPACING;
+            const snappedDy = Math.round(dy / GRID_SPACING) * GRID_SPACING;
+            const newVertices = initialState.vertices.map(v => dragSelection.vertices.has(v.id) ? { ...v, x: v.x + snappedDx, y: v.y + snappedDy } : v);
+            const newParticles = initialState.particles.map(p => {
+                let newP = { ...p };
+                if (dragSelection.particles.has(p.id)) {
+                    newP.startX += snappedDx;
+                    newP.startY += snappedDy;
+                    newP.endX += snappedDx;
+                    newP.endY += snappedDy;
+                    if (p.startVertex && !dragSelection.vertices.has(p.startVertex))
+                        newP.startVertex = null;
+                    if (p.endVertex && !dragSelection.vertices.has(p.endVertex))
+                        newP.endVertex = null;
+                }
+                else {
+                    if (p.startVertex && dragSelection.vertices.has(p.startVertex)) {
+                        const v = newVertices.find(v => v.id === p.startVertex);
+                        newP.startX = v.x;
+                        newP.startY = v.y;
+                    }
+                    if (p.endVertex && dragSelection.vertices.has(p.endVertex)) {
+                        const v = newVertices.find(v => v.id === p.endVertex);
+                        newP.endX = v.x;
+                        newP.endY = v.y;
+                    }
+                }
+                return newP;
+            });
+            const newTextLabels = initialState.textLabels.map(l => dragSelection.textLabels.has(l.id) ? { ...l, x: l.x + snappedDx, y: l.y + snappedDy } : l);
+            const newEllipses = initialState.ellipses.map(c => dragSelection.ellipses.has(c.id) ? { ...c, x: c.x + snappedDx, y: c.y + snappedDy } : c);
+            const newRectangles = initialState.rectangles.map(r => dragSelection.rectangles.has(r.id) ? { ...r, x: r.x + snappedDx, y: r.y + snappedDy } : r);
+            setDiagramState({ vertices: newVertices, particles: newParticles, textLabels: newTextLabels, ellipses: newEllipses, rectangles: newRectangles });
+        }
+        else if (draggingObject.type === 'resize-ellipse') {
+            const newEllipses = diagramState.ellipses.map(el => {
+                if (el.id !== draggingObject.id)
+                    return el;
+                let { rx, ry } = el;
+                const { handle } = draggingObject;
+                const gridStep = GRID_SPACING / 2;
+                if (handle.includes('e') || handle.includes('w')) {
+                    const dist = Math.abs(x - el.x);
+                    rx = Math.max(gridStep, Math.round(dist / gridStep) * gridStep);
+                }
+                if (handle.includes('n') || handle.includes('s')) {
+                    const dist = Math.abs(y - el.y);
+                    ry = Math.max(gridStep, Math.round(dist / gridStep) * gridStep);
+                }
+                return { ...el, rx, ry };
+            });
+            setDiagramState({ ...diagramState, ellipses: newEllipses });
+        }
+        else if (draggingObject.type === 'resize-rectangle') {
+            const newRectangles = diagramState.rectangles.map(r => {
+                if (r.id !== draggingObject.id)
+                    return r;
+                const { corner } = draggingObject;
+                const { x: centerX, y: centerY, width, height } = r;
+                const halfWidth = width / 2;
+                const halfHeight = height / 2;
+                const snappedX = Math.round(x / GRID_SPACING) * GRID_SPACING;
+                const snappedY = Math.round(y / GRID_SPACING) * GRID_SPACING;
+                let newX = centerX, newY = centerY, newWidth = width, newHeight = height;
+                if (corner.includes('left') || corner.includes('right')) {
+                    const fixedX = corner.includes('left') ? centerX + halfWidth : centerX - halfWidth;
+                    newWidth = Math.abs(snappedX - fixedX);
+                    if (newWidth < GRID_SPACING)
+                        newWidth = GRID_SPACING;
+                    newX = (snappedX + fixedX) / 2;
+                }
+                if (corner.includes('top') || corner.includes('bottom')) {
+                    const fixedY = corner.includes('top') ? centerY + halfHeight : centerY - halfHeight;
+                    newHeight = Math.abs(snappedY - fixedY);
+                    if (newHeight < GRID_SPACING)
+                        newHeight = GRID_SPACING;
+                    newY = (snappedY + fixedY) / 2;
+                }
+                return { ...r, x: newX, y: newY, width: newWidth, height: newHeight };
+            });
+            setDiagramState({ ...diagramState, rectangles: newRectangles });
+        }
+        else { // Handle individual reshape drags
+            const snappedX = Math.round(x / GRID_SPACING) * GRID_SPACING;
+            const snappedY = Math.round(y / GRID_SPACING) * GRID_SPACING;
+            if (draggingObject.type === 'particle_bend') {
+                const newParticles = particles.map(p => {
+                    if (p.id !== draggingObject.id)
+                        return p;
+                    const { startX, startY, endX, endY } = p;
+                    const dx = endX - startX, dy = endY - startY;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    if (length === 0)
+                        return p;
+                    const mx = startX + dx / 2, my = startY + dy / 2;
+                    const mdx = x - mx, mdy = y - my;
+                    const px = -dy / length, py = dx / length;
+                    const bend = mdx * px + mdy * py;
+                    return { ...p, bend: Math.round(bend / BEND_SNAP_VALUE) * BEND_SNAP_VALUE };
+                });
+                setDiagramState({ ...diagramState, particles: newParticles });
+            }
+            else if (draggingObject.type === 'particle_start' || draggingObject.type === 'particle_end') {
+                const newParticles = particles.map(p => {
+                    if (p.id !== draggingObject.id)
+                        return p;
+                    let closest = null;
+                    let minDistance = SNAP_RADIUS;
+                    vertices.forEach(v => {
+                        const distance = Math.sqrt((v.x - x) ** 2 + (v.y - y) ** 2);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closest = v;
+                        }
+                    });
+                    if (draggingObject.type === 'particle_start') {
+                        return { ...p, startX: closest ? closest.x : snappedX, startY: closest ? closest.y : snappedY, startVertex: closest ? closest.id : null };
+                    }
+                    else {
+                        return { ...p, endX: closest ? closest.x : snappedX, endY: closest ? closest.y : snappedY, endVertex: closest ? closest.id : null };
+                    }
+                });
+                setDiagramState({ ...diagramState, particles: newParticles });
+            }
+        }
+    };
+    const handleMouseUp = () => {
+        if (selectionBox) {
+            const { x, y, width, height } = selectionBox;
+            const dragDistance = Math.hypot(width, height);
+            // It was a click, not a drag
+            if (dragDistance < 5) {
+                // If it was a simple click on the background (not shift-click), clear selection.
+                if (!dragStartRef.current?.shiftKey) {
+                    onSelectionChange({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+                }
+            }
+            else { // It was a drag, so perform selection
+                const x1 = Math.min(x, x + width);
+                const y1 = Math.min(y, y + height);
+                const x2 = Math.max(x, x + width);
+                const y2 = Math.max(y, y + height);
+                const itemsInBox = { vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() };
+                diagramState.vertices.forEach(v => { if (v.x >= x1 && v.x <= x2 && v.y >= y1 && v.y <= y2)
+                    itemsInBox.vertices.add(v.id); });
+                diagramState.particles.forEach(p => {
+                    const { startX, startY, endX, endY, bend } = p;
+                    const dx = endX - startX;
+                    const dy = endY - startY;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    let minX = Math.min(startX, endX);
+                    let maxX = Math.max(startX, endX);
+                    let minY = Math.min(startY, endY);
+                    let maxY = Math.max(startY, endY);
+                    if (length > 0 && bend !== 0) {
+                        const mx = startX + dx / 2;
+                        const my = startY + dy / 2;
+                        const cpx = mx - (dy / length) * bend;
+                        const cpy = my + (dx / length) * bend;
+                        minX = Math.min(minX, cpx);
+                        maxX = Math.max(maxX, cpx);
+                        minY = Math.min(minY, cpy);
+                        maxY = Math.max(maxY, cpy);
+                    }
+                    const pBox = { x1: minX, y1: minY, x2: maxX, y2: maxY };
+                    if (x1 < pBox.x2 && x2 > pBox.x1 && y1 < pBox.y2 && y2 > pBox.y1) {
+                        itemsInBox.particles.add(p.id);
+                    }
+                });
+                diagramState.textLabels.forEach(l => { if (l.x >= x1 && l.x <= x2 && l.y >= y1 && l.y <= y2)
+                    itemsInBox.textLabels.add(l.id); });
+                diagramState.ellipses.forEach(e => {
+                    const eBox = { x1: e.x - e.rx, y1: e.y - e.ry, x2: e.x + e.rx, y2: e.y + e.ry };
+                    if (x1 < eBox.x2 && x2 > eBox.x1 && y1 < eBox.y2 && y2 > eBox.y1) {
+                        itemsInBox.ellipses.add(e.id);
+                    }
+                });
+                diagramState.rectangles.forEach(r => {
+                    const rBox = { x1: r.x - r.width / 2, y1: r.y - r.height / 2, x2: r.x + r.width / 2, y2: r.y + r.height / 2 };
+                    if (x1 < rBox.x2 && x2 > rBox.x1 && y1 < rBox.y2 && y2 > rBox.y1) {
+                        itemsInBox.rectangles.add(r.id);
+                    }
+                });
+                const initialSelection = dragStartRef.current?.selection || { vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() };
+                if (dragStartRef.current?.shiftKey) {
+                    onSelectionChange({
+                        vertices: new Set([...initialSelection.vertices, ...itemsInBox.vertices]),
+                        particles: new Set([...initialSelection.particles, ...itemsInBox.particles]),
+                        textLabels: new Set([...initialSelection.textLabels, ...itemsInBox.textLabels]),
+                        ellipses: new Set([...initialSelection.ellipses, ...itemsInBox.ellipses]),
+                        rectangles: new Set([...initialSelection.rectangles, ...itemsInBox.rectangles]),
+                    });
+                }
+                else {
+                    onSelectionChange(itemsInBox);
+                }
+            }
+        }
+        setSelectionBox(null);
+        setDraggingObject(null);
+        dragStartRef.current = null;
+    };
+    const isSingleSelection = (type) => {
+        const totalSelection = selection.vertices.size + selection.particles.size + selection.textLabels.size + selection.ellipses.size + selection.rectangles.size;
+        return totalSelection === 1 && selection[type === 'ellipse' ? 'ellipses' : 'rectangles'].size === 1;
+    };
+    return (React.createElement("div", { className: "w-full h-full bg-gray-800 rounded-lg border-2 border-dashed border-gray-600 overflow-hidden relative shadow-inner" },
+        React.createElement("svg", { ref: svgRef, className: "w-full h-full cursor-default min-w-[2000px] min-h-[2000px]", onDragOver: handleDragOver, onDragLeave: handleDragLeave, onDrop: handleDropInternal, onMouseDown: handleMouseDown, onMouseMove: handleMouseMove, onMouseUp: handleMouseUp, onMouseLeave: handleMouseUp },
+            React.createElement("defs", null,
+                React.createElement("pattern", { id: "grid", width: GRID_SPACING, height: GRID_SPACING, patternUnits: "userSpaceOnUse" },
+                    React.createElement("path", { d: `M ${GRID_SPACING} 0 L 0 0 0 ${GRID_SPACING}`, fill: "none", stroke: "rgba(107, 114, 128, 0.2)", strokeWidth: "1" }))),
+            React.createElement("rect", { width: "100%", height: "100%", fill: "url(#grid)" }),
+            diagramState.rectangles.map(r => {
+                const isSelected = selection.rectangles.has(r.id);
+                let cursor = isSelected ? 'grab' : 'move';
+                if (draggingObject) {
+                    cursor = 'grabbing';
+                }
+                return (React.createElement("rect", { key: r.id, x: r.x - r.width / 2, y: r.y - r.height / 2, width: r.width, height: r.height, fill: "rgba(168, 162, 158, 0.2)", stroke: isSelected ? 'white' : '#a8a29e', strokeWidth: "2", className: `cursor-${cursor}`, onMouseDown: e => handleItemMouseDown(e, 'rectangle', r.id) }));
+            }),
+            diagramState.ellipses.map(e => {
+                const isSelected = selection.ellipses.has(e.id);
+                let cursor = isSelected ? 'grab' : 'move';
+                if (draggingObject) {
+                    cursor = 'grabbing';
+                }
+                return (React.createElement("ellipse", { key: e.id, cx: e.x, cy: e.y, rx: e.rx, ry: e.ry, fill: "rgba(168, 162, 158, 0.2)", stroke: isSelected ? 'white' : '#a8a29e', strokeWidth: "2", className: `cursor-${cursor}`, onMouseDown: ev => handleItemMouseDown(ev, 'ellipse', e.id) }));
+            }),
+            isSingleSelection('ellipse') && (() => {
+                const ellipse = diagramState.ellipses.find(e => selection.ellipses.has(e.id));
+                const { x, y, rx, ry } = ellipse;
+                const handles = {
+                    'n': { cx: x, cy: y - ry, cursor: 'cursor-ns-resize' },
+                    's': { cx: x, cy: y + ry, cursor: 'cursor-ns-resize' },
+                    'w': { cx: x - rx, cy: y, cursor: 'cursor-ew-resize' },
+                    'e': { cx: x + rx, cy: y, cursor: 'cursor-ew-resize' },
+                    'nw': { cx: x - rx, cy: y - ry, cursor: 'cursor-nwse-resize' },
+                    'ne': { cx: x + rx, cy: y - ry, cursor: 'cursor-nesw-resize' },
+                    'sw': { cx: x - rx, cy: y + ry, cursor: 'cursor-nesw-resize' },
+                    'se': { cx: x + rx, cy: y + ry, cursor: 'cursor-nwse-resize' },
+                };
+                return React.createElement("g", null, Object.entries(handles).map(([key, props]) => (React.createElement("circle", { key: key, ...props, r: HANDLE_RADIUS, fill: "white", stroke: "#22d3ee", strokeWidth: "2", onMouseDown: (e) => handleResizeHandleMouseDown(e, 'ellipse', ellipse.id, key) }))));
+            })(),
+            isSingleSelection('rectangle') && (() => {
+                const rect = diagramState.rectangles.find(r => selection.rectangles.has(r.id));
+                const x = rect.x - rect.width / 2;
+                const y = rect.y - rect.height / 2;
+                const handles = {
+                    'top-left': { cx: x, cy: y, cursor: 'cursor-nwse-resize' },
+                    'top-right': { cx: x + rect.width, cy: y, cursor: 'cursor-nesw-resize' },
+                    'bottom-left': { cx: x, cy: y + rect.height, cursor: 'cursor-nesw-resize' },
+                    'bottom-right': { cx: x + rect.width, cy: y + rect.height, cursor: 'cursor-nwse-resize' },
+                    'top': { cx: x + rect.width / 2, cy: y, cursor: 'cursor-ns-resize' },
+                    'bottom': { cx: x + rect.width / 2, cy: y + rect.height, cursor: 'cursor-ns-resize' },
+                    'left': { cx: x, cy: y + rect.height / 2, cursor: 'cursor-ew-resize' },
+                    'right': { cx: x + rect.width, cy: y + rect.height / 2, cursor: 'cursor-ew-resize' },
+                };
+                return Object.entries(handles).map(([key, props]) => (React.createElement("circle", { key: key, ...props, r: HANDLE_RADIUS, fill: "white", stroke: "#22d3ee", strokeWidth: "2", onMouseDown: (e) => handleResizeHandleMouseDown(e, 'rectangle', rect.id, key) })));
+            })(),
+            diagramState.particles.map(p => React.createElement(ParticleLine, { key: p.id, particle: p })),
+            diagramState.particles.map(p => {
+                const isSelected = selection.particles.has(p.id);
+                let handleFill = isSelected ? '#22d3ee' : '#f59e0b';
+                let cursor = isSelected ? 'grab' : 'move';
+                if (draggingObject) {
+                    cursor = 'grabbing';
+                }
+                const dx = p.endX - p.startX;
+                const dy = p.endY - p.startY;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                if (length === 0)
+                    return null;
+                const bendHandleX = p.startX + dx / 2 - (dy / length) * p.bend;
+                const bendHandleY = p.startY + dy / 2 + (dx / length) * p.bend;
+                return (React.createElement("g", { key: `handles-${p.id}` },
+                    React.createElement("circle", { cx: p.startX, cy: p.startY, r: HANDLE_RADIUS, fill: handleFill, className: `cursor-${cursor}`, onMouseDown: (e) => handleItemMouseDown(e, 'particle', p.id), "data-handle": "particle_start" }),
+                    React.createElement("circle", { cx: p.endX, cy: p.endY, r: HANDLE_RADIUS, fill: handleFill, className: `cursor-${cursor}`, onMouseDown: (e) => handleItemMouseDown(e, 'particle', p.id), "data-handle": "particle_end" }),
+                    React.createElement("circle", { cx: bendHandleX, cy: bendHandleY, r: HANDLE_RADIUS, fill: isSelected ? '#22d3ee' : '#8b5cf6', className: `cursor-${cursor}`, onMouseDown: (e) => handleItemMouseDown(e, 'particle', p.id), "data-handle": "particle_bend" })));
+            }),
+            diagramState.vertices.map(v => {
+                const isSelected = selection.vertices.has(v.id);
+                let cursor = isSelected ? 'grab' : 'move';
+                if (draggingObject) {
+                    cursor = 'grabbing';
+                }
+                return (React.createElement("circle", { key: v.id, cx: v.x, cy: v.y, r: VERTEX_RADIUS, fill: "#22d3ee", stroke: isSelected ? 'white' : 'none', strokeWidth: "2", className: `cursor-${cursor}`, onMouseDown: (e) => handleItemMouseDown(e, 'vertex', v.id) }));
+            }),
+            diagramState.textLabels.map(label => {
+                const isSelected = selection.textLabels.has(label.id);
+                let cursor = isSelected ? 'grab' : 'move';
+                if (draggingObject) {
+                    cursor = 'grabbing';
+                }
+                if (editingLabel && editingLabel.id === label.id) {
+                    return (React.createElement("foreignObject", { key: `editing-${label.id}`, x: label.x - 75, y: label.y - 15, width: "150", height: "30" },
+                        React.createElement("input", { type: "text", value: editingLabel.text, onChange: (e) => setEditingLabel({ ...editingLabel, text: e.target.value }), onBlur: () => handleLabelUpdate(label.id, editingLabel.text), onKeyDown: (e) => {
+                                if (e.key === 'Enter')
+                                    handleLabelUpdate(label.id, editingLabel.text);
+                                if (e.key === 'Escape')
+                                    setEditingLabel(null);
+                            }, autoFocus: true, className: "w-full h-full bg-gray-700 text-white text-center border border-cyan-400 rounded focus:outline-none focus:ring-2 focus:ring-cyan-300", style: { fontFamily: 'sans-serif', fontSize: '16px' } })));
+                }
+                return (React.createElement("g", { key: label.id, onMouseDown: e => handleItemMouseDown(e, 'text', label.id), onDoubleClick: () => handleTextDoubleClick(label.id, label.text), className: `cursor-${cursor}` },
+                    isSelected && React.createElement("rect", { x: label.x - 25, y: label.y - 12, width: "50", height: "24", fill: "none", stroke: "white", strokeWidth: "1", strokeDasharray: "2 2" }),
+                    React.createElement("text", { x: label.x, y: label.y, fill: "white", className: "select-none", dominantBaseline: "middle", textAnchor: "middle", fontSize: "16", fontFamily: "sans-serif" }, label.text)));
+            }),
+            dragOverSnapPos && (React.createElement("circle", { cx: dragOverSnapPos.x, cy: dragOverSnapPos.y, r: VERTEX_RADIUS, fill: "rgba(34, 211, 238, 0.5)", stroke: "#22d3ee", strokeWidth: "2", style: { pointerEvents: 'none' } })),
+            selectionBox && (React.createElement("rect", { x: selectionBox.width > 0 ? selectionBox.x : selectionBox.x + selectionBox.width, y: selectionBox.height > 0 ? selectionBox.y : selectionBox.y + selectionBox.height, width: Math.abs(selectionBox.width), height: Math.abs(selectionBox.height), fill: "rgba(34, 211, 238, 0.2)", stroke: "#22d3ee", strokeWidth: "1", strokeDasharray: "3 3" })))));
+};
+
+// --- From App.tsx ---
+const App = () => {
+  const [diagramState, setDiagramState] = useState({
+    vertices: [],
+    particles: [],
+    textLabels: [],
+    ellipses: [],
+    rectangles: [],
+  });
+  const [selection, setSelection] = useState({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [latexCode, setLatexCode] = useState('');
+
+  const handleDrop = (item, position) => {
+    setSelection({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+    setDiagramState(prevState => {
+      if (item.type === 'vertex') {
+        const newVertex = {
+          id: Date.now(),
+          x: position.x,
+          y: position.y,
+        };
+        return { ...prevState, vertices: [...prevState.vertices, newVertex] };
+      } else if (item.type === 'text') {
+        const newLabel = {
+            id: Date.now(),
+            x: position.x,
+            y: position.y,
+            text: 'Label',
+        };
+        return { ...prevState, textLabels: [...prevState.textLabels, newLabel] };
+      } else if (item.type === 'ellipse') {
+        const newEllipse = {
+            id: Date.now(),
+            x: position.x,
+            y: position.y,
+            rx: item.radius ?? DEFAULT_ELLIPSE_RADIUS,
+            ry: item.radius ?? DEFAULT_ELLIPSE_RADIUS,
+        };
+        return { ...prevState, ellipses: [...prevState.ellipses, newEllipse] };
+      } else if (item.type === 'rectangle') {
+        const newRectangle = {
+            id: Date.now(),
+            x: position.x,
+            y: position.y,
+            width: item.width ?? DEFAULT_RECT_WIDTH,
+            height: item.height ?? DEFAULT_RECT_HEIGHT,
+        };
+        return { ...prevState, rectangles: [...prevState.rectangles, newRectangle] };
+      }
+      else {
+        const halfLength = 1.5 * GRID_SPACING;
+        const newParticle = {
+          id: Date.now(),
+          type: item.type,
+          startX: position.x - halfLength,
+          startY: position.y,
+          endX: position.x + halfLength,
+          endY: position.y,
+          startVertex: null,
+          endVertex: null,
+          bend: 0,
+        };
+        return { ...prevState, particles: [...prevState.particles, newParticle] };
+      }
+    });
+  };
+
+  const handleExport = () => {
+    const code = generateLatex(diagramState);
+    setLatexCode(code);
+    setIsModalOpen(true);
+  };
+  
+  const handleDelete = useCallback(() => {
+    if (selection.vertices.size === 0 && selection.particles.size === 0 && selection.textLabels.size === 0 && selection.ellipses.size === 0 && selection.rectangles.size === 0) {
+        return;
+    }
+
+    setDiagramState(prevState => {
+        const newVertices = prevState.vertices.filter(v => !selection.vertices.has(v.id));
+        const newTextLabels = prevState.textLabels.filter(l => !selection.textLabels.has(l.id));
+        const newEllipses = prevState.ellipses.filter(c => !selection.ellipses.has(c.id));
+        const newRectangles = prevState.rectangles.filter(r => !selection.rectangles.has(r.id));
+
+
+        // First, filter out particles that are explicitly selected
+        const remainingParticles = prevState.particles.filter(p => !selection.particles.has(p.id));
+
+        // Next, for unselected particles, detach them from any deleted vertices
+        const updatedParticles = remainingParticles.map(p => {
+            let newP = { ...p };
+            if (p.startVertex && selection.vertices.has(p.startVertex)) {
+                newP.startVertex = null;
+            }
+            if (p.endVertex && selection.vertices.has(p.endVertex)) {
+                newP.endVertex = null;
+            }
+            return newP;
+        });
+
+        return {
+            vertices: newVertices,
+            particles: updatedParticles,
+            textLabels: newTextLabels,
+            ellipses: newEllipses,
+            rectangles: newRectangles,
+        };
+    });
+
+    // Clear selection after deletion
+    setSelection({ vertices: new Set(), particles: new Set(), textLabels: new Set(), ellipses: new Set(), rectangles: new Set() });
+  }, [selection]);
+
+  const handleDuplicate = useCallback(() => {
+    if (selection.vertices.size === 0 && selection.particles.size === 0 && selection.textLabels.size === 0 && selection.ellipses.size === 0 && selection.rectangles.size === 0) {
+        return;
+    }
+
+    const now = Date.now();
+    const offset = GRID_SPACING;
+    let idCounter = 0;
+
+    const newSelection = {
+        vertices: new Set(),
+        particles: new Set(),
+        textLabels: new Set(),
+        ellipses: new Set(),
+        rectangles: new Set(),
+    };
+
+    const vertexIdMap = new Map();
+
+    setDiagramState(prevState => {
+        const newVertices = prevState.vertices
+            .filter(v => selection.vertices.has(v.id))
+            .map(v => {
+                const newId = now + (idCounter++);
+                vertexIdMap.set(v.id, newId);
+                newSelection.vertices.add(newId);
+                return { ...v, id: newId, x: v.x + offset, y: v.y + offset };
+            });
+
+        const newParticles = prevState.particles
+            .filter(p => selection.particles.has(p.id))
+            .map(p => {
+                const newId = now + (idCounter++);
+                newSelection.particles.add(newId);
+                return {
+                    ...p,
+                    id: newId,
+                    startX: p.startX + offset,
+                    startY: p.startY + offset,
+                    endX: p.endX + offset,
+                    endY: p.endY + offset,
+                    startVertex: p.startVertex ? (vertexIdMap.get(p.startVertex) ?? null) : null,
+                    endVertex: p.endVertex ? (vertexIdMap.get(p.endVertex) ?? null) : null,
+                };
+            });
+            
+        const newTextLabels = prevState.textLabels
+            .filter(l => selection.textLabels.has(l.id))
+            .map(l => {
+                const newId = now + (idCounter++);
+                newSelection.textLabels.add(newId);
+                return { ...l, id: newId, x: l.x + offset, y: l.y + offset };
+            });
+
+        const newEllipses = prevState.ellipses
+            .filter(e => selection.ellipses.has(e.id))
+            .map(e => {
+                const newId = now + (idCounter++);
+                newSelection.ellipses.add(newId);
+                return { ...e, id: newId, x: e.x + offset, y: e.y + offset };
+            });
+
+        const newRectangles = prevState.rectangles
+            .filter(r => selection.rectangles.has(r.id))
+            .map(r => {
+                const newId = now + (idCounter++);
+                newSelection.rectangles.add(newId);
+                return { ...r, id: newId, x: r.x + offset, y: r.y + offset };
+            });
+        
+        return {
+            vertices: [...prevState.vertices, ...newVertices],
+            particles: [...prevState.particles, ...newParticles],
+            textLabels: [...prevState.textLabels, ...newTextLabels],
+            ellipses: [...prevState.ellipses, ...newEllipses],
+            rectangles: [...prevState.rectangles, ...newRectangles],
+        };
+    });
+
+    setSelection(newSelection);
+}, [selection]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleDelete();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        handleDuplicate();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleDelete, handleDuplicate]);
+
+
+  const updateDiagramState = useCallback((newState) => {
+    setDiagramState(newState);
+  }, []);
+  
+  const isSelectionActive = selection.vertices.size > 0 || selection.particles.size > 0 || selection.textLabels.size > 0 || selection.ellipses.size > 0 || selection.rectangles.size > 0;
+
+  return (
+    React.createElement("div", { className: "flex flex-col h-screen bg-gray-900 text-gray-200 font-sans" },
+      React.createElement(Header, {
+        onExport: handleExport,
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+        isSelectionActive: isSelectionActive
+      }),
+      React.createElement("div", { className: "flex flex-grow overflow-hidden" },
+        React.createElement(Palette, null),
+        React.createElement("div", { className: "flex-grow flex flex-col p-4 md:p-6 lg:p-8 relative overflow-auto" },
+          React.createElement(Canvas, {
+            diagramState: diagramState,
+            onDrop: handleDrop,
+            setDiagramState: updateDiagramState,
+            selection: selection,
+            onSelectionChange: setSelection
+          }))),
+      isModalOpen && React.createElement(ExportModal, { code: latexCode, onClose: () => setIsModalOpen(false) }))
+  );
+};
+
+// --- From index.tsx ---
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  React.createElement(React.StrictMode, null, React.createElement(App, null))
+);
+    </script>
+  </body>
+</html>

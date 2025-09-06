@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,7 +256,8 @@
         const SettingsIcon = () => React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2.4l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2.4l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" }), React.createElement("circle", { cx: "12", cy: "12", r: "3" }));
         const SaveIcon = () => React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" }), React.createElement("polyline", { points: "17 21 17 13 7 13 7 21" }), React.createElement("polyline", { points: "7 3 7 8 15 8" }));
         const RandomIcon = () => React.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round"}, React.createElement("path", {d: "M3 7v6h6"}), React.createElement("path", {d: "M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"}), React.createElement("path", {d: "m21 16-4-4 4-4"}), React.createElement("path", {d: "m3 8 4 4-4 4"}));
-        
+        const SidebarToggleIcon = ({ isOpen }) => React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: `transition-transform duration-300 ${isOpen ? '' : 'rotate-180'}` }, React.createElement("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2", ry: "2" }), React.createElement("line", { x1: "9", y1: "3", x2: "9", y2: "21" }), React.createElement("polyline", { points: `14 9 17 12 14 15` }));
+
         const Button = ({ onClick, disabled, children, className, title }) => React.createElement("button", { onClick, disabled, title, className: `px-3 py-2 text-sm font-semibold rounded-md flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-400 ${disabled ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600 text-white'} ${className}` }, children);
         const ControlGroup = ({ title, children }) => React.createElement("details", { open: true, className: "border-b border-gray-700" }, React.createElement("summary", { className: "py-3 px-4 text-sm font-bold uppercase tracking-wider text-gray-400 cursor-pointer hover:bg-gray-800 transition-colors list-none flex items-center justify-between" }, title, React.createElement("svg", { className: "w-4 h-4 text-gray-500 transition-transform duration-200 transform details-arrow", viewBox: "0 0 24 24" }, React.createElement("path", { d: "M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z", fill: "currentColor" }))), React.createElement("div", { className: "p-4 space-y-4" }, children));
         const LabelInput = ({ label, children }) => React.createElement("label", { className: "grid grid-cols-2 items-center gap-2 text-sm" }, React.createElement("span", { className: "text-gray-300" }, label), children);
@@ -273,24 +275,27 @@
             };
 
             const handleAddStop = () => {
-                const newStops = [...palette.stops, { pos: 1, color: [1, 1, 1] }]
-                    .sort((a, b) => a.pos - b.pos);
-                
+                const currentStops = palette.stops;
                 let maxGap = 0;
-                let insertPos = 0;
-                let insertColor = [0,0,0];
-
-                for (let i = 0; i < newStops.length - 1; i++) {
-                    const gap = newStops[i+1].pos - newStops[i].pos;
+                let insertIndex = -1;
+        
+                for (let i = 0; i < currentStops.length - 1; i++) {
+                    const gap = currentStops[i+1].pos - currentStops[i].pos;
                     if (gap > maxGap) {
                         maxGap = gap;
-                        insertPos = newStops[i].pos + gap / 2;
-                        insertColor = newStops[i].color.map((c, j) => (c + newStops[i+1].color[j]) / 2);
+                        insertIndex = i;
                     }
                 }
-                
-                newStops.push({ pos: insertPos, color: insertColor });
-                setPalette({ ...palette, stops: newStops.sort((a, b) => a.pos - b.pos) });
+        
+                if (insertIndex !== -1) {
+                    const startStop = currentStops[insertIndex];
+                    const endStop = currentStops[insertIndex + 1];
+                    const newPos = startStop.pos + maxGap / 2;
+                    const newColor = startStop.color.map((c, j) => (c + endStop.color[j]) / 2);
+                    const newStops = [...currentStops, { pos: newPos, color: newColor }]
+                        .sort((a, b) => a.pos - b.pos);
+                    setPalette({ ...palette, stops: newStops });
+                }
             };
 
             const handleRemoveStop = (index) => {
@@ -343,8 +348,13 @@
           const isPanningRef = useRef(false);
           const panStartRef = useRef({ x: 0, y: 0 });
           const [cursor, setCursor] = useState('grab');
+          const debounceTimerRef = useRef(null);
+          const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
 
-          useEffect(() => () => workersRef.current.forEach(w => w.terminate()), []);
+          useEffect(() => () => {
+              workersRef.current.forEach(w => w.terminate());
+              clearTimeout(debounceTimerRef.current);
+            }, []);
 
           const stopComputation = useCallback(() => {
             jobIdRef.current++;
@@ -354,20 +364,53 @@
             dispatch({ type: 'SET_STATUS', payload: 'Computation stopped by user.' });
             dispatch({ type: 'SET_PROGRESS', payload: 0 });
           }, [dispatch]);
+          
+          const commitViewTransform = useCallback((transform) => {
+                const { xmin, xmax, ymin, ymax, width, height } = settings;
+                const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
+                const xRange = xmaxNum - xminNum;
+                const yRange = ymaxNum - yminNum;
 
-          const zoom = useCallback((zoomFactor) => {
+                const newCenterPxX = (width / 2 - transform.x) / transform.scale;
+                const newCenterPxY = (height / 2 - transform.y) / transform.scale;
+
+                const newCenterX = xminNum + (newCenterPxX / width) * xRange;
+                const newCenterY = ymaxNum - (newCenterPxY / height) * yRange;
+
+                const newXRange = xRange / transform.scale;
+                const newYRange = yRange / transform.scale;
+
+                const newLimits = {
+                    xmin: (newCenterX - newXRange / 2).toPrecision(16),
+                    xmax: (newCenterX + newXRange / 2).toPrecision(16),
+                    ymin: (newCenterY - newYRange / 2).toPrecision(16),
+                    ymax: (newCenterY + newYRange / 2).toPrecision(16),
+                };
+
+                setUndoPoint(settings);
+                dispatch({ type: 'SET_LIMITS', payload: newLimits });
+                setViewTransform({ x: 0, y: 0, scale: 1 });
+            }, [settings, dispatch, setUndoPoint]);
+
+           const zoom = useCallback((zoomFactor) => {
             if (isComputing) return;
-            const { xmin, xmax, ymin, ymax } = settings;
-            const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
-            const centerX = xminNum + (xmaxNum - xminNum) / 2;
-            const centerY = yminNum + (ymaxNum - yminNum) / 2;
-            const newWidth = (xmaxNum - xminNum) * zoomFactor;
-            const newHeight = (ymaxNum - yminNum) * zoomFactor;
-            const newXmin = centerX - newWidth / 2, newXmax = centerX + newWidth / 2;
-            const newYmin = centerY - newHeight / 2, newYmax = centerY + newHeight / 2;
-            setUndoPoint(settings);
-            dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
-          }, [isComputing, settings, dispatch, setUndoPoint]);
+
+            const { width, height } = settings;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            const newScale = viewTransform.scale * (1 / zoomFactor);
+            const newX = centerX + (viewTransform.x - centerX) * (1 / zoomFactor);
+            const newY = centerY + (viewTransform.y - centerY) * (1 / zoomFactor);
+
+            setViewTransform({ x: newX, y: newY, scale: newScale });
+
+            clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = setTimeout(() => {
+                commitViewTransform({ x: newX, y: newY, scale: newScale });
+            }, 300);
+        }, [isComputing, settings, viewTransform, commitViewTransform]);
+
 
           useImperativeHandle(ref, () => ({ stopComputation, zoom, getCanvas: () => canvasRef.current }), [stopComputation, zoom]);
           
@@ -444,6 +487,7 @@
 
           useEffect(() => { startComputation(); }, [settings, workerCount, startComputation]);
 
+
           const handlePointerDown = (e) => {
             if (isComputing) return;
             e.preventDefault();
@@ -466,8 +510,9 @@
             }
 
             if (e.button === 0) { // Left mouse button
+              clearTimeout(debounceTimerRef.current);
               isPanningRef.current = true;
-              panStartRef.current = { x: e.clientX, y: e.clientY };
+              panStartRef.current = { x: e.clientX, y: e.clientY, transform: { ...viewTransform } };
               setCursor('grabbing');
             }
           };
@@ -475,6 +520,13 @@
           const handlePointerMove = (e) => {
             if (isPanningRef.current) {
               e.preventDefault();
+              const dx = e.clientX - panStartRef.current.x;
+              const dy = e.clientY - panStartRef.current.y;
+              setViewTransform({
+                  x: panStartRef.current.transform.x + dx,
+                  y: panStartRef.current.transform.y + dy,
+                  scale: panStartRef.current.transform.scale
+              });
             }
           };
 
@@ -486,21 +538,12 @@
             const dxPixels = e.clientX - panStartRef.current.x;
             const dyPixels = e.clientY - panStartRef.current.y;
             
-            if (Math.abs(dxPixels) < 5 && Math.abs(dyPixels) < 5) return;
-
-            const { xmin, xmax, ymin, ymax, width, height } = settings;
-            const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
+            if (Math.abs(dxPixels) < 5 && Math.abs(dyPixels) < 5) {
+                setViewTransform(panStartRef.current.transform);
+                return;
+            }
             
-            const dxComplex = (dxPixels / width) * (xmaxNum - xminNum);
-            const dyComplex = (dyPixels / height) * (ymaxNum - yminNum);
-            
-            const newXmin = xminNum - dxComplex;
-            const newXmax = xmaxNum - dxComplex;
-            const newYmin = yminNum + dyComplex;
-            const newYmax = ymaxNum + dyComplex;
-            
-            setUndoPoint(settings);
-            dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
+            commitViewTransform(viewTransform);
           };
           
           const handleWheel = useCallback((e) => {
@@ -509,36 +552,37 @@
             
             const zoomFactor = e.deltaY < 0 ? 0.8 : 1.25;
             const rect = containerRef.current.getBoundingClientRect();
-            const mouseXOnCanvas = e.clientX - rect.left;
-            const mouseYOnCanvas = e.clientY - rect.top;
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const newScale = viewTransform.scale / zoomFactor;
+            const newX = mouseX + (viewTransform.x - mouseX) / zoomFactor;
+            const newY = mouseY + (viewTransform.y - mouseY) / zoomFactor;
 
-            const { xmin, xmax, ymin, ymax, width, height } = settings;
-            const [xminNum, xmaxNum, yminNum, ymaxNum] = [xmin, xmax, ymin, ymax].map(parseFloat);
+            setViewTransform({ x: newX, y: newY, scale: newScale });
 
-            const mouseXComplex = xminNum + (mouseXOnCanvas / width) * (xmaxNum - xminNum);
-            const mouseYComplex = ymaxNum - (mouseYOnCanvas / height) * (ymaxNum - yminNum);
+            clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = setTimeout(() => {
+                commitViewTransform({ x: newX, y: newY, scale: newScale });
+            }, 300);
 
-            const newWidthComplex = (xmaxNum - xminNum) * zoomFactor;
-            const newHeightComplex = (ymaxNum - yminNum) * zoomFactor;
-
-            const newXmin = mouseXComplex - (mouseXOnCanvas / width) * newWidthComplex;
-            const newXmax = newXmin + newWidthComplex;
-            const newYmax = mouseYComplex + (mouseYOnCanvas / height) * newHeightComplex;
-            const newYmin = newYmax - newHeightComplex;
-
-            setUndoPoint(settings);
-            dispatch({ type: 'SET_LIMITS', payload: { xmin: newXmin.toPrecision(16), xmax: newXmax.toPrecision(16), ymin: newYmin.toPrecision(16), ymax: newYmax.toPrecision(16) }});
-          }, [isComputing, settings, dispatch, setUndoPoint]);
+          }, [isComputing, settings, dispatch, setUndoPoint, viewTransform, commitViewTransform]);
 
           return React.createElement("div", {
-              ref: containerRef, className: `relative w-full h-full touch-none`,
+              ref: containerRef, className: `relative w-full h-full touch-none overflow-hidden`,
               style: { cursor: isComputing ? 'wait' : cursor },
               onPointerDown: handlePointerDown, onPointerMove: handlePointerMove,
               onPointerUp: handlePointerUp, onContextMenu: e => e.preventDefault(),
               onWheel: handleWheel,
-              onPointerLeave: () => { isPanningRef.current = false; setCursor('grab'); }
+              onPointerLeave: () => { if(isPanningRef.current) {isPanningRef.current = false; setCursor('grab'); setViewTransform(panStartRef.current.transform);} }
             },
-            React.createElement("canvas", { ref: canvasRef, width: settings.width, height: settings.height, className: "w-full h-full object-contain" }),
+            React.createElement("canvas", { 
+                ref: canvasRef, 
+                width: settings.width, 
+                height: settings.height, 
+                className: "w-full h-full object-contain",
+                style: { transform: `translate(${viewTransform.x}px, ${viewTransform.y}px) scale(${viewTransform.scale})` }
+             }),
             isComputing && React.createElement("div", { className: "absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" }, React.createElement("div", { className: "w-24 h-24 border-4 border-dashed rounded-full animate-spin border-cyan-400" }))
           );
         });
@@ -583,6 +627,7 @@
             const canvasRef = useRef(null);
             const [zoomInFactor, setZoomInFactor] = useState(0.5);
             const [zoomOutFactor, setZoomOutFactor] = useState(2.0);
+            const [isSidebarOpen, setIsSidebarOpen] = useState(true);
             const state = undoState.present;
             
             const setUndoPoint = useCallback((newSettings) => {
@@ -644,51 +689,58 @@
             
             return React.createElement("div", { className: "h-screen w-screen flex flex-col bg-gray-900 overflow-hidden" },
                 React.createElement("header", { className: "flex-shrink-0 bg-gray-800 border-b border-gray-700 p-2 flex items-center justify-between z-10" },
-                    React.createElement("h1", { className: "text-xl font-bold text-cyan-300" }, "Fractal Explorer"),
+                    React.createElement("div", { className: "flex items-center gap-4" },
+                        React.createElement("button", { onClick: () => setIsSidebarOpen(!isSidebarOpen), title: isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar", className: "p-1 rounded-md hover:bg-gray-700 transition-colors text-gray-300 hover:text-white" },
+                           React.createElement(SidebarToggleIcon, { isOpen: isSidebarOpen })
+                        ),
+                        React.createElement("h1", { className: "text-xl font-bold text-cyan-300" }, "Fractal Explorer")
+                    ),
                     React.createElement("div", { className: "flex items-center space-x-2" },
                       React.createElement(Button, { onClick: () => dispatchWithUndo({ type: 'UNDO' }), disabled: !canUndo, title: "Undo" }, React.createElement(UndoIcon, null)),
                       React.createElement(Button, { onClick: () => dispatchWithUndo({ type: 'REDO' }), disabled: !canRedo, title: "Redo" }, React.createElement(RedoIcon, null))
                     )
                 ),
                 React.createElement("main", { className: "flex-1 flex overflow-hidden" },
-                    React.createElement("aside", { className: "w-80 flex-shrink-0 bg-gray-800 overflow-y-auto" },
-                       React.createElement(ControlGroup, { title: "Fractal Type" },
-                          React.createElement("div", {className: "grid grid-cols-2 gap-2"},
-                            React.createElement(Button, {onClick: () => { setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_FRACTAL_TYPE', payload: 'Mandelbrot'})}, disabled: state.settings.fractalType === 'Mandelbrot', className: state.settings.fractalType === 'Mandelbrot' ? '!bg-cyan-600' : ''}, "Mandelbrot"),
-                            React.createElement(Button, {onClick: () => { setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_FRACTAL_TYPE', payload: 'Julia'})}, disabled: state.settings.fractalType === 'Julia', className: state.settings.fractalType === 'Julia' ? '!bg-cyan-600' : ''}, "Julia")
-                          )
-                       ),
-                       React.createElement(ControlGroup, { title: "View" },
-                         React.createElement(LabelInput, { label: "Image Size" }, React.createElement(Select, { value: `${state.settings.width} ${state.settings.height}`, onChange: e => handleSizeChange(e.target.value), disabled: state.isComputing }, Object.entries(imageSizeOptions).map(([val, text]) => React.createElement("option", { key: val, value: val }, text)))),
-                         React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                            React.createElement(Button, { onClick: handleRestoreDefaults, disabled: state.isComputing }, "Restore Defaults"),
-                            React.createElement(Button, { onClick: handleSaveImage, disabled: state.isComputing }, React.createElement(SaveIcon, null), " Save Image")
-                         ),
-                         React.createElement(Button, { onClick: () => canvasRef.current?.stopComputation(), disabled: !state.isComputing, className: "w-full !bg-red-600 hover:!bg-red-500" }, "Stop")
-                       ),
-                       React.createElement(ControlGroup, { title: "Navigation" }, React.createElement("div", { className: "text-xs text-gray-400 space-y-2" }, 
-                           React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Zoom:"), " Use the mouse wheel to zoom in and out."),
-                           React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Pan:"), " Click and drag with the left mouse button."),
-                           React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Select Julia Set:"), " Shift-click on the Mandelbrot view to generate a Julia set.")
-                       )),
-                       React.createElement(ControlGroup, { title: "Zoom Controls" },
-                         React.createElement(LabelInput, { label: "Zoom In By" }, React.createElement(Select, { value: zoomInFactor, onChange: e => setZoomInFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "0.5" }, "2x"), React.createElement("option", { value: "0.2" }, "5x"), React.createElement("option", { value: "0.1" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomInFactor), disabled: state.isComputing }, "Zoom In"),
-                         React.createElement(LabelInput, { label: "Zoom Out By" }, React.createElement(Select, { value: zoomOutFactor, onChange: e => setZoomOutFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "2" }, "2x"), React.createElement("option", { value: "5" }, "5x"), React.createElement("option", { value: "10" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomOutFactor), disabled: state.isComputing }, "Zoom Out")
-                       ),
-                       React.createElement(JuliaSetControls, null),
-                       React.createElement(ControlGroup, { title: "Render" },
-                          React.createElement(LabelInput, { label: "Max Iterations" }, React.createElement(Input, { type: "number", value: state.settings.maxIterations, onChange: e => { setUndoPoint(state.settings); dispatchWithUndo({ type: 'SET_MAX_ITERATIONS', payload: parseInt(e.target.value, 10) }) }, disabled: state.isComputing, min: "50", step: "50" })),
-                           React.createElement(LabelInput, { label: "Workers" }, React.createElement(Select, { value: state.workerCount, onChange: e => dispatchWithUndo({ type: 'SET_WORKER_COUNT', payload: parseInt(e.target.value, 10) }), disabled: state.isComputing }, [1, 2, 4, 6, 8, 12, 16].filter(c => c <= (navigator.hardwareConcurrency || 16)).map(c => React.createElement("option", { key: c, value: c }, c)))),
-                           React.createElement("label", { className: "flex items-center space-x-2 text-sm" }, React.createElement("input", { type: "checkbox", className: "form-checkbox bg-gray-700 border-gray-600 text-cyan-400 focus:ring-cyan-500", checked: state.settings.interlaced, onChange: e => dispatchWithUndo({ type: 'SET_RENDER_OPTION', payload: { key: 'interlaced', value: e.target.checked } }) }), React.createElement("span", null, "Interlaced Draw"))
-                       ),
-                       React.createElement(ControlGroup, { title: "Palette" },
-                          React.createElement(LabelInput, { label: "Palette Length" }, React.createElement(Input, { type: "number", value: state.settings.paletteLength, onChange: e => {setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_PALETTE_LENGTH', payload: parseInt(e.target.value)})}, disabled: state.isComputing, min: "2", step: "10" })),
-                           React.createElement(LabelInput, { label: "Palette Offset (%)" }, React.createElement(Input, { type: "range", min: "0", max: "100", value: state.settings.paletteOffset * 100, onChange: e => dispatchWithUndo({ type: 'SET_PALETTE_OFFSET', payload: parseInt(e.target.value) / 100 }) })),
-                          React.createElement(LabelInput, { label: "Standard Palette" }, React.createElement(Select, { value: currentPaletteName, onChange: e => {setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_PALETTE', payload: standardPalettes[e.target.value]})}}, Object.keys(standardPalettes).map(name => React.createElement("option", { key: name, value: name }, name)), currentPaletteName === 'Custom' && React.createElement("option", { key: "Custom", value: "Custom", disabled: true }, "Custom"))),
-                          React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                            React.createElement(Button, { onClick: handleRandomPalette, disabled: state.isComputing }, React.createElement(RandomIcon, null), " Randomize"),
-                            React.createElement(Button, { onClick: () => dispatchWithUndo({ type: 'TOGGLE_EDITOR' }) }, React.createElement(SettingsIcon, null), " Edit Palette")
-                          )
+                    React.createElement("aside", { className: `flex-shrink-0 bg-gray-800 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-80' : 'w-0 -translate-x-full'}` },
+                       React.createElement("div", { className: "w-80" },
+                           React.createElement(ControlGroup, { title: "Fractal Type" },
+                              React.createElement("div", {className: "grid grid-cols-2 gap-2"},
+                                React.createElement(Button, {onClick: () => { setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_FRACTAL_TYPE', payload: 'Mandelbrot'})}, disabled: state.settings.fractalType === 'Mandelbrot', className: state.settings.fractalType === 'Mandelbrot' ? '!bg-cyan-600' : ''}, "Mandelbrot"),
+                                React.createElement(Button, {onClick: () => { setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_FRACTAL_TYPE', payload: 'Julia'})}, disabled: state.settings.fractalType === 'Julia', className: state.settings.fractalType === 'Julia' ? '!bg-cyan-600' : ''}, "Julia")
+                              )
+                           ),
+                           React.createElement(ControlGroup, { title: "View" },
+                             React.createElement(LabelInput, { label: "Image Size" }, React.createElement(Select, { value: `${state.settings.width} ${state.settings.height}`, onChange: e => handleSizeChange(e.target.value), disabled: state.isComputing }, Object.entries(imageSizeOptions).map(([val, text]) => React.createElement("option", { key: val, value: val }, text)))),
+                             React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                                React.createElement(Button, { onClick: handleRestoreDefaults, disabled: state.isComputing }, "Restore Defaults"),
+                                React.createElement(Button, { onClick: handleSaveImage, disabled: state.isComputing }, React.createElement(SaveIcon, null), " Save Image")
+                             ),
+                             React.createElement(Button, { onClick: () => canvasRef.current?.stopComputation(), disabled: !state.isComputing, className: "w-full !bg-red-600 hover:!bg-red-500" }, "Stop")
+                           ),
+                           React.createElement(ControlGroup, { title: "Navigation" }, React.createElement("div", { className: "text-xs text-gray-400 space-y-2" }, 
+                               React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Zoom:"), " Use the mouse wheel to zoom in and out."),
+                               React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Pan:"), " Click and drag with the left mouse button."),
+                               React.createElement("p", null, React.createElement("strong", { className: "text-gray-200" }, "Select Julia Set:"), " Shift-click on the Mandelbrot view to generate a Julia set.")
+                           )),
+                           React.createElement(ControlGroup, { title: "Zoom Controls" },
+                             React.createElement(LabelInput, { label: "Zoom In By" }, React.createElement(Select, { value: zoomInFactor, onChange: e => setZoomInFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "0.5" }, "2x"), React.createElement("option", { value: "0.2" }, "5x"), React.createElement("option", { value: "0.1" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomInFactor), disabled: state.isComputing }, "Zoom In"),
+                             React.createElement(LabelInput, { label: "Zoom Out By" }, React.createElement(Select, { value: zoomOutFactor, onChange: e => setZoomOutFactor(Number(e.target.value)), disabled: state.isComputing }, React.createElement("option", { value: "2" }, "2x"), React.createElement("option", { value: "5" }, "5x"), React.createElement("option", { value: "10" }, "10x"))), React.createElement(Button, { onClick: () => canvasRef.current?.zoom(zoomOutFactor), disabled: state.isComputing }, "Zoom Out")
+                           ),
+                           React.createElement(JuliaSetControls, null),
+                           React.createElement(ControlGroup, { title: "Render" },
+                              React.createElement(LabelInput, { label: "Max Iterations" }, React.createElement(Input, { type: "number", value: state.settings.maxIterations, onChange: e => { setUndoPoint(state.settings); dispatchWithUndo({ type: 'SET_MAX_ITERATIONS', payload: parseInt(e.target.value, 10) }) }, disabled: state.isComputing, min: "50", step: "50" })),
+                               React.createElement(LabelInput, { label: "Workers" }, React.createElement(Select, { value: state.workerCount, onChange: e => dispatchWithUndo({ type: 'SET_WORKER_COUNT', payload: parseInt(e.target.value, 10) }), disabled: state.isComputing }, [1, 2, 4, 6, 8, 12, 16].filter(c => c <= (navigator.hardwareConcurrency || 16)).map(c => React.createElement("option", { key: c, value: c }, c)))),
+                               React.createElement("label", { className: "flex items-center space-x-2 text-sm" }, React.createElement("input", { type: "checkbox", className: "form-checkbox bg-gray-700 border-gray-600 text-cyan-400 focus:ring-cyan-500", checked: state.settings.interlaced, onChange: e => dispatchWithUndo({ type: 'SET_RENDER_OPTION', payload: { key: 'interlaced', value: e.target.checked } }) }), React.createElement("span", null, "Interlaced Draw"))
+                           ),
+                           React.createElement(ControlGroup, { title: "Palette" },
+                              React.createElement(LabelInput, { label: "Palette Length" }, React.createElement(Input, { type: "number", value: state.settings.paletteLength, onChange: e => {setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_PALETTE_LENGTH', payload: parseInt(e.target.value)})}, disabled: state.isComputing, min: "2", step: "10" })),
+                               React.createElement(LabelInput, { label: "Palette Offset (%)" }, React.createElement(Input, { type: "range", min: "0", max: "100", value: state.settings.paletteOffset * 100, onChange: e => dispatchWithUndo({ type: 'SET_PALETTE_OFFSET', payload: parseInt(e.target.value) / 100 }) })),
+                              React.createElement(LabelInput, { label: "Standard Palette" }, React.createElement(Select, { value: currentPaletteName, onChange: e => {setUndoPoint(state.settings); dispatchWithUndo({type: 'SET_PALETTE', payload: standardPalettes[e.target.value]})}}, Object.keys(standardPalettes).map(name => React.createElement("option", { key: name, value: name }, name)), currentPaletteName === 'Custom' && React.createElement("option", { key: "Custom", value: "Custom", disabled: true }, "Custom"))),
+                              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                                React.createElement(Button, { onClick: handleRandomPalette, disabled: state.isComputing }, React.createElement(RandomIcon, null), " Randomize"),
+                                React.createElement(Button, { onClick: () => dispatchWithUndo({ type: 'TOGGLE_EDITOR' }) }, React.createElement(SettingsIcon, null), " Edit Palette")
+                              )
+                           )
                        )
                     ),
                     React.createElement("div", { className: "flex-1 flex flex-col bg-gray-900" },

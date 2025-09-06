@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Celestia for Web - Local</title>
+    <meta name="description" content="Celestia for Web - Local Version"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/png"/>
+    
+    <style>
+      html, body {
+        min-width: 0px;
+        max-width: 100%;
+        overflow-x: hidden;
+        -webkit-touch-callout: none;
+        margin: 0;
+        padding: 0;
+      }
+      :focus{
+        outline:0;
+        outline-offset:0;
+      }
+      .main {
+        width: 100%;
+        height: 100vh;
+      }
+      .fullscreen-content { 
+        border: 0px none; 
+        width: 100vw; 
+        height: 100vh; 
+      }
+      #status { 
+        color: white;
+      }
+      /* Dark theme support */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #000;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main" class="main">
+      <div class="fullscreen-content" style="background-color:black;">
+        <canvas id="canvas" style="width:100%; height:100%; visibility:hidden; position:absolute; top:0; left:0;" oncontextmenu="event.preventDefault()"></canvas>
+        <div id="splash" style="width:100%; height:100%; position:absolute; top:0;left:0; display:flex; align-items:center; justify-content:center; flex-direction: column;">
+          <!-- Using a placeholder icon since the original is remote -->
+          <div style="width:128px; height:128px; border-radius:20%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">C</div>
+          <div id="status" style="text-align:center;margin-top:1em;">Loading</div>
+        </div>  
+      </div>
+
+      <script type='text/javascript'>
+        // Remove or comment out these lines if you want to use local files instead
+        // window.wasmBinaryFileOverride = './celestia-sdl.wasm';
+        // window.dataBinaryFileOverride = './celestia-sdl.data';
+        
+        const statusElement = document.getElementById('status');
+
+        function loadSuccessCallback() {
+          document.getElementById("canvas").style.visibility = "visible";
+          document.getElementById("splash").style.display = "none";
+        }
+
+        function loadFileCallback(file) {
+          // This is not working yet...
+          // statusElement.innerText = file;
+        }
+        
+        var Module = {
+          preRun: [],
+          postRun: [],
+          print: (function() {
+            return function(text) {
+              console.log(text);
+            };
+          })(),
+          canvas: (function() {
+            var canvas = document.getElementById('canvas');
+            
+            // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+            // application robust, you may want to override this behavior before shipping!
+            // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+            canvas.addEventListener("webglcontextlost", function(e) { 
+              alert('WebGL context lost. You will need to reload the page.'); 
+              e.preventDefault(); 
+            }, false);
+            
+            return canvas;
+          })(),
+          setStatus: function(text) {
+            statusElement.innerText = text;
+          },
+          totalDependencies: 0,
+          monitorRunDependencies: function(left) {
+            this.totalDependencies = Math.max(this.totalDependencies, left);
+            Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+          }
+        };
+        
+        Module.setStatus('Downloading Celestia data');
+        
+        window.onerror = function(event) {
+          // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+          Module.setStatus('Exception thrown, see JavaScript console');
+          Module.setStatus = function(text) {
+            if (text) console.error('[post-exception status] ' + text);
+          };
+        };
+      </script>
+      
+      <!-- Update this src to point to your local celestia-sdl.js file -->
+      <script async type="text/javascript" src="./celestia-sdl.js"></script>
+    </main>
+  </body>
+</html>
