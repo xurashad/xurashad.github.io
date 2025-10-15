@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicode Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+      }
+    }
+    </script>
+    <style>
+        @keyframes fade-in {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out forwards;
+        }
+        /* Simple scrollbar styling for better aesthetics */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #4b5563; /* bg-gray-600 */
+          border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #6b7280; /* bg-gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+    <div id="root"></div>
+    <script type="module">
+// --- Start of combined script ---
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// --- From utils/unicodeCategories.ts ---
+
+const UNICODE_CATEGORY_GROUPS = {
+  L: 'Letter',
+  M: 'Mark',
+  N: 'Number',
+  P: 'Punctuation',
+  S: 'Symbol',
+  Z: 'Separator',
+  C: 'Other',
+};
+
+const UNICODE_CATEGORY_NAMES = {
+  Lu: 'Letter, Uppercase',
+  Ll: 'Letter, Lowercase',
+  Lt: 'Letter, Titlecase',
+  Lm: 'Letter, Modifier',
+  Lo: 'Letter, Other',
+  Mn: 'Mark, Non-Spacing',
+  Mc: 'Mark, Spacing Combining',
+  Me: 'Mark, Enclosing',
+  Nd: 'Number, Decimal Digit',
+  Nl: 'Number, Letter',
+  No: 'Number, Other',
+  Pc: 'Punctuation, Connector',
+  Pd: 'Punctuation, Dash',
+  Ps: 'Punctuation, Open',
+  Pe: 'Punctuation, Close',
+  Pi: 'Punctuation, Initial quote',
+  Pf: 'Punctuation, Final quote',
+  Po: 'Punctuation, Other',
+  Sm: 'Symbol, Math',
+  Sc: 'Symbol, Currency',
+  Sk: 'Symbol, Modifier',
+  So: 'Symbol, Other',
+  Zs: 'Separator, Space',
+  Zl: 'Separator, Line',
+  Zp: 'Separator, Paragraph',
+  Cc: 'Other, Control',
+  Cf: 'Other, Format',
+  Cs: 'Other, Surrogate',
+  Co: 'Other, Private Use',
+  Cn: 'Other, Not Assigned',
+};
+
+const UNICODE_CATEGORIES_HIERARCHY = Object.entries(
+  UNICODE_CATEGORY_NAMES
+).reduce((acc, [code, name]) => {
+  const mainCategoryCode = code.charAt(0);
+  const mainCategoryName = UNICODE_CATEGORY_GROUPS[mainCategoryCode];
+
+  if (!acc[mainCategoryCode]) {
+    acc[mainCategoryCode] = {
+      name: mainCategoryName,
+      subgroups: [],
+    };
+  }
+
+  acc[mainCategoryCode].subgroups.push({ code, name });
+  return acc;
+}, {});
+
+const getCategoryName = (code) => {
+  return UNICODE_CATEGORY_NAMES[code] || code;
+};
+
+// --- From services/unicodeService.ts ---
+
+const UNICODE_DATA_URL = 'https://corsproxy.io/?https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt';
+const UNICODE_BLOCKS_URL = 'https://corsproxy.io/?https://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt';
+
+async function fetchAndParseUnicodeData() {
+  try {
+    const response = await fetch(UNICODE_DATA_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const text = await response.text();
+    const lines = text.split('\n');
+    
+    const characters = lines
+      .map(line => {
+        const fields = line.split(';');
+        if (fields.length < 15) return null;
+
+        const [
+          codePoint,
+          name,
+          category,
+          combiningClass,
+          bidiClass,
+          decomposition,
+          , , 
+          numericValue,
+          bidiMirrored,
+          , ,
+          uppercase,
+          lowercase,
+          titlecase,
+        ] = fields;
+
+        if (!codePoint || !name) return null;
+        if (name.startsWith('<') && (name.endsWith(', First>') || name.endsWith(', Last>'))) {
+          return null;
+        }
+
+        const character = String.fromCodePoint(parseInt(codePoint, 16));
+
+        return {
+          codePoint,
+          name: name === '<control>' ? `Control Character (U+${codePoint})` : name,
+          character,
+          category,
+          combiningClass,
+          bidiClass,
+          decomposition,
+          numericValue,
+          bidiMirrored,
+          uppercase,
+          lowercase,
+          titlecase,
+        };
+      })
+      .filter(char => char !== null);
+
+    return characters;
+  } catch (error) {
+    console.error("Failed to fetch or parse Unicode data:", error);
+    return [];
+  }
+}
+
+async function fetchAndParseUnicodeBlocks() {
+  try {
+    const response = await fetch(UNICODE_BLOCKS_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const text = await response.text();
+    const lines = text.split('\n');
+
+    return lines
+      .filter(line => line.trim() !== '' && !line.startsWith('#'))
+      .map(line => {
+        const [range, name] = line.split('; ');
+        const [start, end] = range.split('..').map(code => parseInt(code, 16));
+        return { startCode: start, endCode: end, name: name.trim() };
+      });
+  } catch (error) {
+    console.error("Failed to fetch or parse Unicode blocks:", error);
+    return [];
+  }
+}
+
+// --- From components/CharacterDetailModal.tsx ---
+
+const CloseIcon = ({ className }) => (
+  React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 18L18 6M6 6l12 12" })
+  )
+);
+
+const CopyIcon = ({ className }) => (
+  React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" })
+  )
+);
+
+const CheckIcon = ({ className }) => (
+  React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4.5 12.75l6 6 9-13.5" })
+  )
+);
+
+const DetailRow = ({ label, value }) => {
+    if (!value || value.trim() === '') return null;
+    return (
+        React.createElement('div', { className: "py-2 border-b border-gray-600" },
+            React.createElement('p', { className: "text-sm text-gray-400" }, label),
+            React.createElement('p', { className: "text-lg" }, value)
+        )
+    );
+};
+
+const CharacterDetailModal = ({ character, blockName, onClose }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  
+  if (!character) return null;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(character.character).then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
+  return (
+    React.createElement('div', { className: "fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative animate-fade-in", onClick: (e) => e.stopPropagation() },
+        React.createElement('button', { onClick: onClose, className: "absolute top-4 right-4 text-gray-400 hover:text-white transition-colors", 'aria-label': "Close" },
+          React.createElement(CloseIcon, { className: "w-6 h-6" })
+        ),
+        React.createElement('div', { className: "flex flex-col md:flex-row items-center md:items-start gap-6" },
+          React.createElement('div', { className: "flex-shrink-0 text-9xl w-32 h-32 bg-gray-900 rounded-lg flex items-center justify-center select-none" },
+            character.character
+          ),
+          React.createElement('div', { className: "flex-grow text-center md:text-left" },
+            React.createElement('h2', { className: "text-3xl font-bold text-cyan-400 mb-2" }, character.name),
+            React.createElement('div', { className: "flex items-center justify-center md:justify-start gap-4" },
+              React.createElement('p', { className: "text-xl font-mono text-gray-300" }, `U+${character.codePoint}`),
+              React.createElement('button', { onClick: handleCopy, className: "flex items-center gap-2 px-3 py-1 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors text-sm disabled:opacity-50", disabled: isCopied },
+                isCopied ? React.createElement(CheckIcon, { className: "w-4 h-4 text-green-400" }) : React.createElement(CopyIcon, { className: "w-4 h-4" }),
+                isCopied ? 'Copied!' : 'Copy'
+              )
+            )
+          )
+        ),
+        React.createElement('div', { className: "mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6" },
+          React.createElement(DetailRow, { label: "Script / Block", value: blockName }),
+          React.createElement(DetailRow, { label: "General Category", value: `${getCategoryName(character.category)} (${character.category})` }),
+          React.createElement(DetailRow, { label: "Bidi Class", value: character.bidiClass }),
+          React.createElement(DetailRow, { label: "Canonical Combining Class", value: character.combiningClass }),
+          React.createElement(DetailRow, { label: "Bidi Mirrored", value: character.bidiMirrored }),
+          React.createElement(DetailRow, { label: "Decomposition", value: character.decomposition }),
+          React.createElement(DetailRow, { label: "Numeric Value", value: character.numericValue }),
+          React.createElement(DetailRow, { label: "Simple Uppercase Mapping", value: character.uppercase ? `U+${character.uppercase}` : '' }),
+          React.createElement(DetailRow, { label: "Simple Lowercase Mapping", value: character.lowercase ? `U+${character.lowercase}` : '' }),
+          React.createElement(DetailRow, { label: "Simple Titlecase Mapping", value: character.titlecase ? `U+${character.titlecase}` : '' })
+        )
+      )
+    )
+  );
+};
+
+// --- From App.tsx ---
+
+const CHARS_PER_PAGE = 120;
+
+const SearchIcon = ({ className }) => (
+  React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" })
+  )
+);
+
+const Loader = ({ message }) => (
+  React.createElement('div', { className: "flex flex-col items-center justify-center text-center p-8 text-gray-400" },
+    React.createElement('svg', { className: "animate-spin h-10 w-10 text-cyan-400 mb-4", xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24" },
+      React.createElement('circle', { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+      React.createElement('path', { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+    ),
+    React.createElement('p', { className: "text-lg" }, message)
+  )
+);
+
+const CharacterCard = React.memo(({ character, onSelect }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(character.character).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 1500);
+    });
+  };
+
+  return (
+    React.createElement('div', { onClick: () => onSelect(character), className: "group relative bg-gray-800 rounded-lg p-3 flex flex-col items-center justify-center text-center cursor-pointer aspect-square transition-all duration-200 hover:bg-gray-700 hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-105" },
+      React.createElement('button', { onClick: handleCopy, className: "absolute top-2 right-2 p-1.5 bg-gray-900/50 rounded-full text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-900/80 hover:text-white disabled:opacity-100", 'aria-label': "Copy character", disabled: isCopied },
+        isCopied ? React.createElement(CheckIcon, { className: "w-4 h-4 text-green-400" }) : React.createElement(CopyIcon, { className: "w-4 h-4" })
+      ),
+      React.createElement('div', { className: "text-5xl mb-2 flex-grow flex items-center select-none" }, character.character),
+      React.createElement('div', { className: "w-full" },
+        React.createElement('p', { className: "text-xs text-cyan-400 font-mono truncate" }, `U+${character.codePoint}`),
+        React.createElement('p', { className: "text-xs text-gray-300 h-6 leading-tight truncate overflow-hidden", title: character.name }, character.name)
+      )
+    )
+  );
+});
+
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const [pageInput, setPageInput] = useState(String(currentPage));
+
+  useEffect(() => {
+    setPageInput(String(currentPage));
+  }, [currentPage]);
+
+  const handleInputChange = (e) => {
+    setPageInput(e.target.value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    let newPage = parseInt(pageInput, 10);
+
+    if (isNaN(newPage)) {
+      setPageInput(String(currentPage));
+      return;
+    }
+
+    if (newPage < 1) newPage = 1;
+    if (newPage > totalPages) newPage = totalPages;
+
+    onPageChange(newPage);
+  };
+  
+  if (totalPages <= 1) return null;
+
+  return (
+    React.createElement('div', { className: "flex items-center justify-center space-x-4 my-8" },
+      React.createElement('button', { onClick: () => onPageChange(currentPage - 1), disabled: currentPage === 1, className: "px-4 py-2 bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors" }, 'Previous'),
+      React.createElement('form', { onSubmit: handleSubmit, className: "flex items-center space-x-2" },
+        React.createElement('label', { htmlFor: "page-input", className: "sr-only" }, 'Current Page'),
+        React.createElement('input', { id: "page-input", type: "text", inputMode: "numeric", pattern: "[0-9]*", value: pageInput, onChange: handleInputChange, className: "w-16 text-center bg-gray-800 border border-gray-700 rounded-md py-2 focus:ring-2 focus:ring-cyan-500 focus:outline-none", 'aria-label': `Page ${currentPage} of ${totalPages}. Enter a page number to jump.` }),
+        React.createElement('span', { className: "text-gray-400" }, `of ${totalPages}`)
+      ),
+      React.createElement('button', { onClick: () => onPageChange(currentPage + 1), disabled: currentPage === totalPages, className: "px-4 py-2 bg-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors" }, 'Next')
+    )
+  );
+};
+
+function App() {
+  const [allCharacters, setAllCharacters] = useState([]);
+  const [unicodeBlocks, setUnicodeBlocks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedBlock, setSelectedBlock] = useState('All');
+  const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [selectedCharacterBlock, setSelectedCharacterBlock] = useState(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingMessage, setLoadingMessage] = useState('Fetching Unicode data...');
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      setLoadingMessage('Fetching Unicode database...');
+      const [characterData, blockData] = await Promise.all([
+        fetchAndParseUnicodeData(),
+        fetchAndParseUnicodeBlocks()
+      ]);
+      
+      setAllCharacters(characterData);
+      setUnicodeBlocks(blockData);
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+    setCurrentPage(1);
+  };
+  
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleBlockChange = (event) => {
+    setSelectedBlock(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const filteredCharacters = useMemo(() => {
+    let characters = allCharacters;
+
+    if (selectedBlock !== 'All') {
+        const block = unicodeBlocks.find(b => b.name === selectedBlock);
+        if (block) {
+            characters = characters.filter(char => {
+                const code = parseInt(char.codePoint, 16);
+                return code >= block.startCode && code <= block.endCode;
+            });
+        }
+    }
+
+    if (selectedCategory !== 'All') {
+        if (selectedCategory.length === 1) {
+            characters = characters.filter((char) => char.category.startsWith(selectedCategory));
+        } else {
+            characters = characters.filter((char) => char.category === selectedCategory);
+        }
+    }
+
+    if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      const normalizedQuery = lowercasedQuery.startsWith('u+') ? lowercasedQuery.substring(2) : lowercasedQuery;
+
+      return characters.filter(char => 
+        char.name.toLowerCase().includes(lowercasedQuery) ||
+        char.codePoint.toLowerCase().includes(normalizedQuery)
+      );
+    }
+    
+    return characters;
+  }, [searchQuery, allCharacters, selectedCategory, selectedBlock, unicodeBlocks]);
+
+  const totalPages = Math.ceil(filteredCharacters.length / CHARS_PER_PAGE);
+  const paginatedCharacters = useMemo(() => {
+    const startIndex = (currentPage - 1) * CHARS_PER_PAGE;
+    return filteredCharacters.slice(startIndex, startIndex + CHARS_PER_PAGE);
+  }, [filteredCharacters, currentPage]);
+
+  const handleSelectCharacter = useCallback((character) => {
+    const code = parseInt(character.codePoint, 16);
+    const block = unicodeBlocks.find(b => code >= b.startCode && code <= b.endCode);
+    setSelectedCharacterBlock(block?.name);
+    setSelectedCharacter(character);
+  }, [unicodeBlocks]);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedCharacter(null);
+    setSelectedCharacterBlock(undefined);
+  }, []);
+
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= totalPages) {
+        setCurrentPage(page);
+        window.scrollTo(0, 0);
+    }
+  };
+
+  return (
+    React.createElement('div', { className: "min-h-screen p-4 sm:p-6 lg:p-8" },
+      React.createElement('header', { className: "text-center my-8" },
+        React.createElement('h1', { className: "text-4xl sm:text-5xl font-bold tracking-tight" },
+          'Unicode ',
+          React.createElement('span', { className: "text-cyan-400" }, 'Explorer')
+        ),
+        React.createElement('p', { className: "text-gray-400 mt-2" }, 'The complete Unicode database at your fingertips.')
+      ),
+      React.createElement('main', null,
+        React.createElement('div', { className: "max-w-4xl mx-auto mb-8 space-y-4" },
+          React.createElement('div', { className: "relative" },
+            React.createElement('input', { type: "text", placeholder: "Search by name or code point (e.g., 'heart' or '2764')...", value: searchQuery, onChange: handleSearchChange, className: "w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-full focus:ring-2 focus:ring-cyan-500 focus:outline-none transition-all" }),
+            React.createElement('div', { className: "absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" },
+              React.createElement(SearchIcon, { className: "w-6 h-6" })
+            )
+          ),
+          React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+            React.createElement('select', { value: selectedCategory, onChange: handleCategoryChange, className: "w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-full focus:ring-2 focus:ring-cyan-500 focus:outline-none transition-all appearance-none text-center" },
+              React.createElement('option', { value: "All" }, 'Filter by Category'),
+              Object.entries(UNICODE_CATEGORIES_HIERARCHY).map(([mainCode, { name, subgroups }]) => (
+                React.createElement('optgroup', { key: mainCode, label: name },
+                  React.createElement('option', { value: mainCode }, `All ${name}s`),
+                  subgroups.map(subgroup => (
+                    React.createElement('option', { key: subgroup.code, value: subgroup.code }, `  ${subgroup.name}`)
+                  ))
+                )
+              ))
+            ),
+            React.createElement('select', { value: selectedBlock, onChange: handleBlockChange, className: "w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-full focus:ring-2 focus:ring-cyan-500 focus:outline-none transition-all appearance-none text-center" },
+              React.createElement('option', { value: "All" }, 'Filter by Script / Block'),
+              unicodeBlocks.map(block => (
+                React.createElement('option', { key: block.name, value: block.name }, block.name)
+              ))
+            )
+          )
+        ),
+        isLoading ? (
+          React.createElement(Loader, { message: loadingMessage })
+        ) : (
+          React.createElement(React.Fragment, null,
+            filteredCharacters.length > 0 ? (
+                React.createElement(React.Fragment, null,
+                    React.createElement('div', { className: "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 sm:gap-3" },
+                        paginatedCharacters.map(char => (
+                          React.createElement(CharacterCard, { key: char.codePoint, character: char, onSelect: handleSelectCharacter })
+                        ))
+                    ),
+                    React.createElement(Pagination, { currentPage: currentPage, totalPages: totalPages, onPageChange: handlePageChange })
+                )
+            ) : (
+                React.createElement('div', { className: "text-center text-gray-400 py-16" },
+                    React.createElement('p', { className: "text-xl" }, 'No characters found.'),
+                    React.createElement('p', null, 'Try refining your search or changing the filters.')
+                )
+            )
+          )
+        )
+      ),
+      React.createElement(CharacterDetailModal, { character: selectedCharacter, blockName: selectedCharacterBlock, onClose: handleCloseModal })
+    )
+  );
+}
+
+// --- From index.tsx ---
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  React.createElement(React.StrictMode, null,
+    React.createElement(App, null)
+  )
+);
+
+// --- End of combined script ---
+    </script>
+</body>
+</html>
