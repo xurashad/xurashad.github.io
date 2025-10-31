@@ -25,7 +25,7 @@
 // --- IMPORTS ---
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ZoomIn, ZoomOut, Home, Download, Grid } from 'lucide-react';
+import { ZoomIn, ZoomOut, Home, Download, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // --- CONSTANTS ---
 const COLORS = [
@@ -328,9 +328,9 @@ const EquationSidebar = ({
   };
 
   return (
-    <aside className="w-full md:w-80 lg:w-96 bg-gray-900 p-4 border-r border-gray-700/50 flex flex-col h-full overflow-y-auto">
+    <aside className="w-full md:w-80 lg:w-96 bg-gray-900 p-4 border-r border-gray-700/50 flex flex-col h-full">
       <h1 className="text-2xl font-bold text-white mb-4">Graphing Calculator</h1>
-      <div className="flex-1 space-y-3">
+      <div className="flex-1 space-y-3 overflow-y-auto">
         {equations.map(eq => (
           <div key={eq.id} className="p-3 bg-gray-800 rounded-lg border border-gray-700">
             <div className="flex items-center gap-3">
@@ -469,6 +469,7 @@ const initialEquationTexts = ['sin(x)', 'x^2 + y^2 = 9'];
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isGridVisible, setIsGridVisible] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const svgRef = useRef(null);
   const exportMenuRef = useRef(null);
   const isPanningRef = useRef(false);
@@ -688,14 +689,23 @@ const initialEquationTexts = ['sin(x)', 'x^2 + y^2 = 9'];
 
   return (
     <div className="flex flex-col md:flex-row h-screen font-sans">
-      <EquationSidebar
-        equations={equations}
-        addEquation={addEquation}
-        removeEquation={removeEquation}
-        updateEquationText={updateEquationText}
-        updateEquationColor={updateEquationColor}
-      />
+      <div className={`flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-full md:w-80 lg:w-96' : 'w-0'} overflow-hidden`}>
+          <EquationSidebar
+            equations={equations}
+            addEquation={addEquation}
+            removeEquation={removeEquation}
+            updateEquationText={updateEquationText}
+            updateEquationColor={updateEquationColor}
+          />
+      </div>
       <main className="flex-1 flex flex-col bg-gray-800 relative">
+        <button
+            onClick={() => setIsSidebarOpen(prev => !prev)}
+            className="absolute top-4 left-4 z-10 p-2 bg-gray-900/50 backdrop-blur-sm rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            aria-label={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+        >
+            {isSidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+        </button>
          <Graph 
             equations={equations} 
             viewBox={viewBox} 
