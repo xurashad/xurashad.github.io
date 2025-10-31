@@ -1,0 +1,758 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Graphing Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.552.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-gray-100">
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+// --- IMPORTS ---
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import ReactDOM from 'react-dom/client';
+import { ZoomIn, ZoomOut, Home, Download, Grid } from 'lucide-react';
+
+// --- CONSTANTS ---
+const COLORS = [
+  '#3b82f6', // blue-500
+  '#ef4444', // red-500
+  '#22c55e', // green-500
+  '#f97316', // orange-500
+  '#8b5cf6', // violet-500
+  '#ec4899', // pink-500
+  '#eab308', // yellow-500
+  '#14b8a6', // teal-500
+  '#06b6d4', // cyan-500
+  '#84cc16', // lime-500
+  '#d946ef', // fuchsia-500
+  '#6366f1', // indigo-500
+  '#10b981', // emerald-500
+  '#f43f5e', // rose-500
+];
+const INITIAL_VIEWBOX = {
+  xMin: -10,
+  xMax: 10,
+  yMin: -10,
+  yMax: 10,
+};
+
+// --- GRAPH COMPONENT ---
+const Graph = ({ 
+  equations, 
+  viewBox, 
+  svgRef,
+  isGridVisible,
+  onResize,
+  ...eventHandlers
+}) => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+        if (svgRef.current) {
+            const { width, height } = svgRef.current.getBoundingClientRect();
+            if (width !== dimensions.width || height !== dimensions.height) {
+              setDimensions({ width, height });
+              onResize({ width, height });
+            }
+        }
+    };
+
+    updateDimensions();
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (svgRef.current) {
+        resizeObserver.observe(svgRef.current.parentElement);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [svgRef, onResize, dimensions.width, dimensions.height]);
+
+  const { width, height } = dimensions;
+
+  const transformX = useCallback((x) => ((x - viewBox.xMin) / (viewBox.xMax - viewBox.xMin)) * width, [viewBox, width]);
+  const transformY = useCallback((y) => height - ((y - viewBox.yMin) / (viewBox.yMax - viewBox.yMin)) * height, [viewBox, height]);
+
+  const getNiceStep = (range) => {
+    const exponent = Math.floor(Math.log10(range));
+    const mantissa = range / Math.pow(10, exponent);
+    let step;
+    if (mantissa < 2) step = 0.2;
+    else if (mantissa < 5) step = 0.5;
+    else step = 1;
+    return step * Math.pow(10, exponent);
+  };
+  
+  const grid = useMemo(() => {
+    if (width === 0 || height === 0) return { lines: [], labels: [] };
+    const lines = [];
+    const labels = [];
+    const rangeX = viewBox.xMax - viewBox.xMin;
+    const rangeY = viewBox.yMax - viewBox.yMin;
+    const stepX = getNiceStep(rangeX);
+    const stepY = getNiceStep(rangeY);
+
+    for (let x = Math.ceil(viewBox.xMin / stepX) * stepX; x <= viewBox.xMax; x += stepX) {
+      lines.push({ x1: transformX(x), y1: 0, x2: transformX(x), y2: height, type: x === 0 ? 'axis' : 'grid' });
+      if (Math.abs(x) > 1e-9) labels.push({ x: transformX(x) + 2, y: transformY(0) - 2, text: x.toPrecision(3) });
+    }
+    for (let y = Math.ceil(viewBox.yMin / stepY) * stepY; y <= viewBox.yMax; y += stepY) {
+      lines.push({ x1: 0, y1: transformY(y), x2: width, y2: transformY(y), type: y === 0 ? 'axis' : 'grid' });
+      if (Math.abs(y) > 1e-9) labels.push({ x: transformX(0) + 2, y: transformY(y) - 2, text: y.toPrecision(3) });
+    }
+    return { lines, labels };
+  }, [viewBox, width, height, transformX, transformY]);
+  
+  const paths = useMemo(() => {
+    if (width === 0 || height === 0) return [];
+
+    const explicitPaths = equations
+      .filter(eq => eq.type === 'explicit' && eq.fn)
+      .map(eq => {
+        const points = [];
+        const rangeX = viewBox.xMax - viewBox.xMin;
+        let isContinuous = false;
+
+        for (let i = 0; i <= width; i++) {
+          const x = viewBox.xMin + (i / width) * rangeX;
+          try {
+            const y = eq.fn(x);
+            if (Number.isFinite(y)) {
+              const sx = i;
+              const sy = transformY(y);
+              if (sy >= -height * 2 && sy <= height * 3) {
+                  if(isContinuous) {
+                      points.push(`L ${sx} ${sy}`);
+                  } else {
+                      points.push(`M ${sx} ${sy}`);
+                      isContinuous = true;
+                  }
+              } else {
+                  isContinuous = false;
+              }
+            } else {
+              isContinuous = false;
+            }
+          } catch(e) {
+            isContinuous = false;
+          }
+        }
+        return { id: eq.id, d: points.join(' '), color: eq.color };
+      });
+
+    const implicitPaths = equations
+      .filter(eq => eq.type === 'implicit' && eq.fn)
+      .map(eq => {
+        const fn = eq.fn;
+        const segments = [];
+        
+        const resolution = Math.min(width, 300);
+        const rangeX = viewBox.xMax - viewBox.xMin;
+        const rangeY = viewBox.yMax - viewBox.yMin;
+        const stepX = rangeX / resolution;
+        const stepY = rangeY / resolution;
+
+        const values = Array(resolution + 1).fill(0).map(() => Array(resolution + 1));
+        
+        for (let i = 0; i <= resolution; i++) {
+          for (let j = 0; j <= resolution; j++) {
+            const x = viewBox.xMin + i * stepX;
+            const y = viewBox.yMin + j * stepY;
+            try {
+              values[i][j] = fn(x, y);
+            } catch {
+              values[i][j] = NaN;
+            }
+          }
+        }
+
+        for (let i = 0; i < resolution; i++) {
+          for (let j = 0; j < resolution; j++) {
+            const x0 = viewBox.xMin + i * stepX;
+            const y0 = viewBox.yMin + j * stepY;
+            
+            const v = [
+              values[i][j],     // bottom-left
+              values[i+1][j],   // bottom-right
+              values[i+1][j+1], // top-right
+              values[i][j+1],   // top-left
+            ];
+            
+            if (v.some(val => isNaN(val))) continue;
+
+            let caseIndex = 0;
+            if (v[0] > 0) caseIndex |= 1;
+            if (v[1] > 0) caseIndex |= 2;
+            if (v[2] > 0) caseIndex |= 4;
+            if (v[3] > 0) caseIndex |= 8;
+            
+            if (caseIndex === 0 || caseIndex === 15) continue;
+            
+            const interp = (v1, v2) => v1 / (v1-v2);
+            
+            const p = [
+              { x: x0 + stepX * interp(v[0], v[1]), y: y0 },               // bottom
+              { x: x0 + stepX, y: y0 + stepY * interp(v[1], v[2]) },       // right
+              { x: x0 + stepX * (1-interp(v[2], v[3])), y: y0 + stepY }, // top
+              { x: x0, y: y0 + stepY * interp(v[0], v[3]) }                // left
+            ];
+            
+            const addSegment = (p1, p2) => {
+                segments.push(`M ${transformX(p1.x)} ${transformY(p1.y)} L ${transformX(p2.x)} ${transformY(p2.y)}`);
+            }
+
+            switch (caseIndex) {
+                case 1: case 14: addSegment(p[3], p[0]); break;
+                case 2: case 13: addSegment(p[0], p[1]); break;
+                case 3: case 12: addSegment(p[3], p[1]); break;
+                case 4: case 11: addSegment(p[1], p[2]); break;
+                case 5: addSegment(p[3], p[0]); addSegment(p[1], p[2]); break;
+                case 6: case 9: addSegment(p[0], p[2]); break;
+                case 7: case 8: addSegment(p[3], p[2]); break;
+                case 10: addSegment(p[0], p[1]); addSegment(p[3], p[2]); break;
+            }
+          }
+        }
+        
+        return { id: eq.id, d: segments.join(' '), color: eq.color };
+      });
+
+    return [...explicitPaths, ...implicitPaths];
+  }, [equations, viewBox, width, height, transformX, transformY]);
+
+  return (
+    <svg
+      ref={svgRef}
+      className="w-full h-full touch-none cursor-grab"
+      {...eventHandlers}
+    >
+      {isGridVisible && (
+        <g>
+          {grid.lines.map((line, i) => (
+            <line
+              key={i}
+              {...line}
+              stroke={line.type === 'axis' ? 'rgba(156, 163, 175, 0.6)' : 'rgba(107, 114, 128, 0.2)'}
+              strokeWidth={line.type === 'axis' ? 1 : 0.5}
+            />
+          ))}
+        </g>
+      )}
+      <g>
+        {paths.map(path => (
+          <path
+            key={path.id}
+            d={path.d}
+            fill="none"
+            stroke={path.color}
+            strokeWidth="2"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
+      </g>
+      {isGridVisible && (
+        <g>
+          {grid.labels.map((label, i) => (
+              <text
+                  key={i}
+                  x={label.x}
+                  y={label.y}
+                  fill="rgba(156, 163, 175, 0.8)"
+                  fontSize="10"
+                  className="select-none"
+              >
+                  {label.text}
+              </text>
+          ))}
+        </g>
+      )}
+      <g transform="translate(15, 15)">
+        {equations
+          .filter(eq => eq.fn && !eq.error)
+          .map((eq, index) => (
+            <g key={eq.id} transform={`translate(0, ${index * 22})`}>
+              <line
+                x1="0" y1="8"
+                x2="20" y2="8"
+                stroke={eq.color}
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+              <text
+                x="30"
+                y="12"
+                fill="rgba(229, 231, 235, 0.95)"
+                fontSize="14"
+                className="select-none"
+              >
+                {eq.text}
+              </text>
+            </g>
+          ))}
+      </g>
+    </svg>
+  );
+};
+
+// --- EQUATION SIDEBAR COMPONENT ---
+const EquationSidebar = ({
+  equations,
+  addEquation,
+  removeEquation,
+  updateEquationText,
+  updateEquationColor,
+}) => {
+  const [newEquationText, setNewEquationText] = useState('');
+
+  const handleAddEquation = (e) => {
+    e.preventDefault();
+    if (newEquationText.trim()) {
+      addEquation(newEquationText);
+      setNewEquationText('');
+    }
+  };
+
+  return (
+    <aside className="w-full md:w-80 lg:w-96 bg-gray-900 p-4 border-r border-gray-700/50 flex flex-col h-full overflow-y-auto">
+      <h1 className="text-2xl font-bold text-white mb-4">Graphing Calculator</h1>
+      <div className="flex-1 space-y-3">
+        {equations.map(eq => (
+          <div key={eq.id} className="p-3 bg-gray-800 rounded-lg border border-gray-700">
+            <div className="flex items-center gap-3">
+              <label
+                className="relative flex-shrink-0 w-1.5 h-10 rounded-full cursor-pointer transition-transform hover:scale-110"
+                style={{ backgroundColor: eq.color }}
+                title="Change color"
+              >
+                <input
+                  type="color"
+                  value={eq.color}
+                  onChange={(e) => updateEquationColor(eq.id, e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  aria-label={`Change color for equation ${eq.id}`}
+                />
+              </label>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={eq.text}
+                  onChange={e => updateEquationText(eq.id, e.target.value)}
+                  className={`w-full bg-transparent p-1 focus:outline-none focus:ring-1 rounded-md ${eq.error ? 'text-red-400 ring-red-500/50' : 'text-gray-100 focus:ring-blue-500/50'}`}
+                  aria-label={`Equation ${eq.id}`}
+                />
+              </div>
+              <button
+                onClick={() => removeEquation(eq.id)}
+                className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                aria-label={`Remove equation ${eq.id}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            {eq.error && <p className="text-xs text-red-400 mt-1 pl-8">{eq.error}</p>}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleAddEquation} className="mt-4">
+        <input
+          type="text"
+          value={newEquationText}
+          onChange={e => setNewEquationText(e.target.value)}
+          placeholder="e.g., cos(x) * x"
+          className="w-full p-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+          aria-label="New equation input"
+        />
+      </form>
+    </aside>
+  );
+};
+
+// --- APP COMPONENT ---
+const App = () => {
+    const parseAndCompile = (text) => {
+    if (!text.trim()) {
+      return { fn: null, error: null, type: 'explicit' };
+    }
+    try {
+      const sanitizedText = text
+        .replace(/\^/g, '**')
+        .replace(/sin/g, 'Math.sin')
+        .replace(/cos/g, 'Math.cos')
+        .replace(/tan/g, 'Math.tan')
+        .replace(/sqrt/g, 'Math.sqrt')
+        .replace(/log/g, 'Math.log')
+        .replace(/abs/g, 'Math.abs')
+        .replace(/pi/g, 'Math.PI')
+        .replace(/e/g, 'Math.E');
+      
+      let isImplicit = false;
+      let expression = '';
+
+      const parts = sanitizedText.split('=');
+      if (parts.length === 1) { // No '='
+          if (sanitizedText.includes('y')) {
+              isImplicit = true;
+              expression = sanitizedText; // e.g. x^2+y^2-1, we assume it's ... = 0
+          } else {
+              isImplicit = false;
+              expression = sanitizedText; // e.g. sin(x), we assume y = ...
+          }
+      } else if (parts.length === 2) { // One '='
+          const lhs = parts[0].trim();
+          const rhs = parts[1].trim();
+          if (lhs === 'y' && !rhs.includes('y')) {
+              isImplicit = false;
+              expression = rhs;
+          } else {
+              isImplicit = true;
+              expression = `(${lhs}) - (${rhs})`;
+          }
+      } else { // More than one '='
+          return { fn: null, error: 'Multiple equals signs are not supported', type: 'explicit' };
+      }
+
+      if (isImplicit) {
+        const fn = new Function('x', 'y', `return ${expression}`);
+        const testResult = fn(1, 1);
+        if (typeof testResult !== 'number' || !isFinite(testResult)) {
+            throw new Error('Invalid implicit expression');
+        }
+        return { fn: fn, error: null, type: 'implicit' };
+      } else { // explicit
+          const fn = new Function('x', `return ${expression}`);
+          const testResult = fn(1);
+          if (typeof testResult !== 'number' || !isFinite(testResult)) {
+              const anotherTest = fn(0);
+              if (typeof anotherTest !== 'number' || !isFinite(anotherTest)) {
+                  throw new Error('Invalid function');
+              }
+          }
+          return { fn: fn, error: null, type: 'explicit' };
+      }
+    } catch (e) {
+      return { fn: null, error: 'Invalid expression', type: 'explicit' };
+    }
+};
+
+const initialEquationTexts = ['sin(x)', 'x^2 + y^2 = 9'];
+
+  const [equations, setEquations] = useState(() => {
+    return initialEquationTexts.map((text, index) => {
+        const id = index + 1;
+        const { fn, error, type } = parseAndCompile(text);
+        return {
+          id,
+          text,
+          color: COLORS[(id - 1) % COLORS.length],
+          fn,
+          error,
+          type,
+        };
+    });
+  });
+  const [viewBox, setViewBox] = useState(INITIAL_VIEWBOX);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isGridVisible, setIsGridVisible] = useState(true);
+  const svgRef = useRef(null);
+  const exportMenuRef = useRef(null);
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const [nextId, setNextId] = useState(initialEquationTexts.length + 1);
+
+  useEffect(() => {
+    if (dimensions.width === 0 || dimensions.height === 0) return;
+
+    const { width, height } = dimensions;
+    const currentXRange = viewBox.xMax - viewBox.xMin;
+    const currentYRange = viewBox.yMax - viewBox.yMin;
+    const currentRatio = currentXRange / currentYRange;
+    const targetRatio = width / height;
+
+    if (Math.abs(currentRatio - targetRatio) > 1e-6) {
+        const centerX = (viewBox.xMin + viewBox.xMax) / 2;
+        const newXRange = currentYRange * targetRatio;
+        setViewBox(prev => ({
+            ...prev,
+            xMin: centerX - newXRange / 2,
+            xMax: centerX + newXRange / 2,
+        }));
+    }
+  }, [dimensions, viewBox]);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+            setIsExportMenuOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const addEquation = useCallback((text) => {
+    const { fn, error, type } = parseAndCompile(text);
+    const newEquation = {
+      id: nextId,
+      text,
+      color: COLORS[(nextId - 1) % COLORS.length],
+      fn,
+      error,
+      type,
+    };
+    setEquations(prev => [...prev, newEquation]);
+    setNextId(prev => prev + 1);
+  }, [nextId]);
+
+  const removeEquation = useCallback((id) => {
+    setEquations(prev => prev.filter(eq => eq.id !== id));
+  }, []);
+
+  const updateEquationText = useCallback((id, newText) => {
+    const { fn, error, type } = parseAndCompile(newText);
+    setEquations(prev =>
+      prev.map(eq =>
+        eq.id === id ? { ...eq, text: newText, fn, error, type } : eq
+      )
+    );
+  }, []);
+  
+  const updateEquationColor = useCallback((id, newColor) => {
+    setEquations(prev =>
+      prev.map(eq =>
+        eq.id === id ? { ...eq, color: newColor } : eq
+      )
+    );
+  }, []);
+
+  const getSvgCoords = (e) => {
+    if (!svgRef.current) return null;
+    const rect = svgRef.current.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+  
+  const handleWheel = useCallback((e) => {
+    e.preventDefault();
+    if (!svgRef.current) return;
+    
+    const svgCoords = getSvgCoords(e);
+    if (!svgCoords) return;
+
+    const { width, height } = svgRef.current.getBoundingClientRect();
+    const rangeX = viewBox.xMax - viewBox.xMin;
+    const rangeY = viewBox.yMax - viewBox.yMin;
+
+    const mouseX = viewBox.xMin + (svgCoords.x / width) * rangeX;
+    const mouseY = viewBox.yMin + ((height - svgCoords.y) / height) * rangeY;
+
+    const zoomFactor = e.deltaY < 0 ? 0.85 : 1.15;
+
+    setViewBox(prev => ({
+        xMin: mouseX - (mouseX - prev.xMin) * zoomFactor,
+        xMax: mouseX + (prev.xMax - mouseX) * zoomFactor,
+        yMin: mouseY - (mouseY - prev.yMin) * zoomFactor,
+        yMax: mouseY + (prev.yMax - mouseY) * zoomFactor,
+    }));
+
+  }, [viewBox]);
+
+  const handleMouseDown = useCallback((e) => {
+    isPanningRef.current = true;
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+    e.target.style.cursor = 'grabbing';
+  }, []);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isPanningRef.current || !svgRef.current) return;
+    
+    const { width, height } = svgRef.current.getBoundingClientRect();
+    const rangeX = viewBox.xMax - viewBox.xMin;
+    const rangeY = viewBox.yMax - viewBox.yMin;
+    
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+
+    const deltaX = (dx / width) * rangeX;
+    const deltaY = (dy / height) * rangeY;
+
+    setViewBox(prev => ({
+        xMin: prev.xMin - deltaX,
+        xMax: prev.xMax - deltaX,
+        yMin: prev.yMin + deltaY,
+        yMax: prev.yMax + deltaY,
+    }));
+    
+    panStartRef.current = { x: e.clientX, y: e.clientY };
+
+  }, [viewBox]);
+
+  const handleMouseUpOrLeave = useCallback((e) => {
+    isPanningRef.current = false;
+    e.target.style.cursor = 'grab';
+  }, []);
+
+  const zoom = useCallback((factor) => {
+    const centerX = (viewBox.xMin + viewBox.xMax) / 2;
+    const centerY = (viewBox.yMin + viewBox.yMax) / 2;
+    setViewBox(prev => ({
+        xMin: centerX - (centerX - prev.xMin) * factor,
+        xMax: centerX + (prev.xMax - centerX) * factor,
+        yMin: centerY - (centerY - prev.yMin) * factor,
+        yMax: centerY + (prev.yMax - centerY) * factor,
+    }));
+  }, [viewBox]);
+
+  const handleResize = useCallback((newDimensions) => {
+    setDimensions(newDimensions);
+  }, []);
+
+  const getCleanSvgString = () => {
+    if (!svgRef.current) return null;
+
+    const svgNode = svgRef.current.cloneNode(true);
+    svgNode.classList.remove('cursor-grab');
+    svgNode.removeAttribute('style');
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        .select-none {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    `;
+    svgNode.insertBefore(style, svgNode.firstChild);
+
+    return new XMLSerializer().serializeToString(svgNode);
+  };
+
+  const handleExportSVG = useCallback(() => {
+    const svgString = getCleanSvgString();
+    if (!svgString) return;
+
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'graph.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setIsExportMenuOpen(false);
+  }, []);
+
+  const handleExportPNG = useCallback(() => {
+    const svgString = getCleanSvgString();
+    if (!svgString || !svgRef.current) return;
+    
+    const { width, height } = svgRef.current.getBoundingClientRect();
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const img = new Image();
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        const pngUrl = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = pngUrl;
+        a.download = 'graph.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setIsExportMenuOpen(false);
+    };
+    img.src = svgUrl;
+  }, []);
+
+  return (
+    <div className="flex flex-col md:flex-row h-screen font-sans">
+      <EquationSidebar
+        equations={equations}
+        addEquation={addEquation}
+        removeEquation={removeEquation}
+        updateEquationText={updateEquationText}
+        updateEquationColor={updateEquationColor}
+      />
+      <main className="flex-1 flex flex-col bg-gray-800 relative">
+         <Graph 
+            equations={equations} 
+            viewBox={viewBox} 
+            svgRef={svgRef}
+            isGridVisible={isGridVisible}
+            onResize={handleResize}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+          />
+          <div className="absolute bottom-4 right-4 flex flex-col items-end gap-2" ref={exportMenuRef}>
+            {isExportMenuOpen && (
+                 <div className="bg-gray-900/80 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2 w-40">
+                    <button onClick={handleExportPNG} className="w-full text-left p-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">Export as PNG</button>
+                    <button onClick={handleExportSVG} className="w-full text-left p-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">Export as SVG</button>
+                 </div>
+            )}
+            <div className="bg-gray-900/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
+                <button onClick={() => zoom(0.8)} className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors" aria-label="Zoom In">
+                    <ZoomIn size={20} />
+                </button>
+                <button onClick={() => zoom(1.2)} className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors" aria-label="Zoom Out">
+                    <ZoomOut size={20} />
+                </button>
+                <button onClick={() => setViewBox(INITIAL_VIEWBOX)} className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors" aria-label="Reset View">
+                    <Home size={20} />
+                </button>
+                 <button 
+                    onClick={() => setIsGridVisible(prev => !prev)} 
+                    className={`p-2 rounded-md transition-colors ${isGridVisible ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`} 
+                    aria-label="Toggle Grid">
+                    <Grid size={20} />
+                </button>
+                 <button onClick={() => setIsExportMenuOpen(prev => !prev)} className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors" aria-label="Export Graph">
+                    <Download size={20} />
+                </button>
+            </div>
+          </div>
+      </main>
+    </div>
+  );
+};
+
+// --- RENDER APP ---
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+    </script>
+  </body>
+</html>
