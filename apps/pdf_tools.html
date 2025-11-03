@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF & Image Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- pdf-lib for creating/modifying PDFs -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+    <!-- pdf.js for rendering PDF previews -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- jszip for creating zip files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Babel Standalone for in-browser JSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+      // Configure the worker for pdf.js
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+      }
+    }
+    </script>
+</head>
+<body class="bg-slate-900 text-slate-200">
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+        import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+
+        // Type declarations for CDNs (for reference, not used by JS)
+        // declare const PDFLib: any;
+        // declare const pdfjsLib: any;
+        // declare const JSZip: any;
+
+        // --- COMPONENTS START ---
+
+        const Spinner = ({ size = 'md' }) => {
+          const sizeClasses = {
+            sm: 'w-5 h-5',
+            md: 'w-8 h-8',
+            lg: 'w-12 h-12',
+          };
+
+          return (
+            <svg
+              className={`animate-spin text-teal-400 ${sizeClasses[size]}`}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          );
+        };
+
+        const Button = ({ children, variant = 'primary', ...props }) => {
+          const baseClasses = 'inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed gap-2';
+          
+          const variantClasses = {
+            primary: 'text-white bg-teal-600 hover:bg-teal-700 focus:ring-teal-500',
+            secondary: 'text-slate-200 bg-slate-700 hover:bg-slate-600 focus:ring-slate-500',
+            danger: 'text-white bg-red-600 hover:bg-red-700 focus:ring-red-500',
+          };
+
+          return (
+            <button className={`${baseClasses} ${variantClasses[variant]}`} {...props}>
+              {children}
+            </button>
+          );
+        };
+
+        const Select = ({ label, children, ...props }) => {
+          return (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-400">{label}</label>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-700 text-slate-200 rounded-md pl-3 pr-8 py-2 text-sm focus:ring-teal-500 focus:border-teal-500 border border-slate-600 appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  {...props}
+                >
+                  {children}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const Header = () => {
+          return (
+            <header className="w-full bg-slate-800 p-4 text-center border-b-2 border-slate-700 shadow-md">
+                <h1 className="text-3xl font-bold text-teal-400 tracking-wider">
+                    PDF & Image Toolkit
+                </h1>
+                <p className="text-slate-400">Your all-in-one tool for PDF and image conversion.</p>
+            </header>
+          );
+        };
+
+        const FileUpload = ({ onFileChange, accept, multiple, title }) => {
+          const [isDragging, setIsDragging] = useState(false);
+
+          const handleDragEnter = useCallback((e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(true);
+          }, []);
+
+          const handleDragLeave = useCallback((e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+          }, []);
+
+          const handleDragOver = useCallback((e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }, []);
+
+          const handleDrop = useCallback((e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              onFileChange(Array.from(e.dataTransfer.files));
+            }
+          }, [onFileChange]);
+          
+          const handleFileSelect = (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              onFileChange(Array.from(e.target.files));
+            }
+          };
+
+          return (
+            <div className="w-full max-w-2xl mx-auto">
+              <h2 className="text-2xl font-semibold text-center mb-6">{title}</h2>
+              <div
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={`relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 ease-in-out
+                  ${isDragging ? 'border-teal-400 bg-slate-800' : 'border-slate-600 bg-slate-800/50 hover:border-slate-500 hover:bg-slate-800'}`}
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg className="w-10 h-10 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                  <p className="mb-2 text-sm text-slate-400"><span className="font-semibold text-teal-400">Click to upload</span> or drag and drop</p>
+                  <p className="text-xs text-slate-500">{multiple ? 'Select multiple files' : 'Select a single file'}</p>
+                </div>
+                <input id="dropzone-file" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept={accept} multiple={multiple} onChange={handleFileSelect} />
+              </div>
+            </div>
+          );
+        };
+        
+        const AppMode = {
+          SELECT: 0,
+          PDF_EXTRACT: 1,
+          IMAGES_TO_PDF: 2,
+          PDF_TO_IMAGES: 3,
+          MERGE_PDF: 4,
+        };
+
+        const ModeCard = ({ title, description, icon, onClick }) => {
+          return (
+            <div
+              onClick={onClick}
+              className="bg-slate-800/50 rounded-lg p-6 flex flex-col items-center text-center cursor-pointer border-2 border-slate-700 hover:border-teal-500 hover:bg-slate-800 transition-all duration-200 ease-in-out transform hover:-translate-y-1"
+            >
+              <div className="text-teal-400 mb-4">{icon}</div>
+              <h3 className="text-xl font-bold mb-2 text-slate-100">{title}</h3>
+              <p className="text-slate-400 text-sm">{description}</p>
+            </div>
+          );
+        };
+        
+        const ModeSelector = ({ onSelectMode }) => {
+          const modes = [
+            {
+              title: 'PDF Page Extractor',
+              description: 'Select and extract specific pages from a PDF document into a new PDF file.',
+              icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+              mode: AppMode.PDF_EXTRACT,
+            },
+            {
+              title: 'Images to PDF',
+              description: 'Combine multiple images (JPG, PNG) into a single, easy-to-share PDF document.',
+              icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+              mode: AppMode.IMAGES_TO_PDF,
+            },
+            {
+              title: 'PDF to Images',
+              description: 'Convert each page of a PDF document into a high-quality JPG image.',
+              icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2-2z" /></svg>,
+              mode: AppMode.PDF_TO_IMAGES,
+            },
+            {
+              title: 'Merge PDF',
+              description: 'Combine multiple PDF files into one single PDF document. You can reorder files as you wish.',
+              icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm4 2v10m4-10v10m4-10v10" /><path d="M4 8h16" stroke-linecap="round" stroke-linejoin="round" /></svg>,
+              mode: AppMode.MERGE_PDF,
+            },
+          ];
+
+          return (
+            <div className="w-full max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-2">Choose a Tool</h2>
+              <p className="text-slate-400 text-center mb-8">What would you like to do today?</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {modes.map(m => (
+                  <ModeCard
+                    key={m.title}
+                    title={m.title}
+                    description={m.description}
+                    icon={m.icon}
+                    onClick={() => onSelectMode(m.mode)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        };
+
+        // --- COMPONENTS END ---
+
+        const Status = {
+          IDLE: 0,
+          LOADING: 1,
+          LOADED: 2,
+          PROCESSING: 3,
+          ERROR: 4,
+        };
+
+        const PageThumbnail = ({ page, isSelected, onSelect }) => {
+          return (
+            <div
+              onClick={() => onSelect(page.id)}
+              className={`relative rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg ${isSelected ? 'ring-4 ring-teal-400' : 'ring-2 ring-slate-700 hover:ring-teal-500'}`}
+            >
+              <img src={page.imageUrl} alt={`Page ${page.id + 1}`} className="w-full h-auto block" />
+              <div className="absolute top-2 right-2 bg-slate-800 bg-opacity-70 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                {page.id + 1}
+              </div>
+              {isSelected && (
+                <div className="absolute inset-0 bg-teal-500 bg-opacity-30 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        function App() {
+          const [appMode, setAppMode] = useState(AppMode.SELECT);
+          const [pdfFile, setPdfFile] = useState(null);
+          const [imageFiles, setImageFiles] = useState([]);
+          const [mergePdfFiles, setMergePdfFiles] = useState([]);
+          const [pages, setPages] = useState([]);
+          const [selectedPages, setSelectedPages] = useState(new Set());
+          const [status, setStatus] = useState(Status.IDLE);
+          const [error, setError] = useState(null);
+          const [fileName, setFileName] = useState('');
+          const [rangeInput, setRangeInput] = useState('');
+          
+          const [imageFormat, setImageFormat] = useState('jpeg');
+
+          const [pageSize, setPageSize] = useState('a4');
+          const [orientation, setOrientation] = useState('portrait');
+          const [margin, setMargin] = useState('small');
+
+          const draggedItem = useRef(null);
+          const draggedOverItem = useRef(null);
+
+          const resetState = useCallback((mode = AppMode.SELECT) => {
+            setPdfFile(null);
+            setPages([]);
+            setSelectedPages(new Set());
+            setImageFiles([]);
+            setMergePdfFiles([]);
+            setStatus(Status.IDLE);
+            setError(null);
+            setFileName('');
+            setRangeInput('');
+            setAppMode(mode);
+          }, []);
+
+          const handleFileChange = (files) => {
+            if (files.length === 0) return;
+
+            resetState(appMode);
+
+            if (appMode === AppMode.IMAGES_TO_PDF) {
+               const newImageFiles = files.filter(file => file.type.startsWith('image/'));
+                if (newImageFiles.length === 0) {
+                    setError('Please select valid image files.');
+                    setStatus(Status.ERROR);
+                    return;
+                }
+                const imageFileObjects = newImageFiles.map(file => ({
+                    id: self.crypto.randomUUID(),
+                    file,
+                    previewUrl: URL.createObjectURL(file),
+                }));
+                setImageFiles(imageFileObjects);
+                setFileName(newImageFiles.length > 1 ? `${newImageFiles.length} images selected` : newImageFiles[0].name);
+                setStatus(Status.LOADED);
+            } else if (appMode === AppMode.MERGE_PDF) {
+              const newPdfFiles = files.filter(file => file.type === 'application/pdf');
+               if (newPdfFiles.length === 0) {
+                    setError('Please select valid PDF files.');
+                    setStatus(Status.ERROR);
+                    return;
+                }
+               setMergePdfFiles(newPdfFiles.map(file => ({ id: self.crypto.randomUUID(), file })));
+               setFileName(`${newPdfFiles.length} PDFs selected`);
+               setStatus(Status.LOADED);
+            } else { // PDF_EXTRACT, PDF_TO_IMAGES
+                const file = files[0];
+                if (file.type !== 'application/pdf') {
+                    setError('Please select a valid PDF file.');
+                    setStatus(Status.ERROR);
+                    return;
+                }
+                setPdfFile(file);
+                setFileName(file.name);
+                setStatus(Status.LOADING);
+            }
+          };
+
+          const processPdf = useCallback(async () => {
+            if (!pdfFile) return;
+
+            try {
+              const arrayBuffer = await pdfFile.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+              const numPages = pdf.numPages;
+              const newPages = [];
+
+              for (let i = 0; i < numPages; i++) {
+                const page = await pdf.getPage(i + 1);
+                const viewport = page.getViewport({ scale: 0.5 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                if (context) {
+                  await page.render({ canvasContext: context, viewport: viewport }).promise;
+                  newPages.push({ id: i, imageUrl: canvas.toDataURL('image/jpeg', 0.8) });
+                }
+              }
+              setPages(newPages);
+              setStatus(Status.LOADED);
+            } catch (e) {
+              console.error(e);
+              setError('Failed to load or render the PDF. The file might be corrupted.');
+              setStatus(Status.ERROR);
+            }
+          }, [pdfFile]);
+
+          useEffect(() => {
+            if (status === Status.LOADING && (appMode === AppMode.PDF_EXTRACT || appMode === AppMode.PDF_TO_IMAGES)) {
+              processPdf();
+            }
+          }, [status, appMode, processPdf]);
+
+          const togglePageSelection = (pageId) => {
+            setSelectedPages(prevSelected => {
+              const newSelected = new Set(prevSelected);
+              if (newSelected.has(pageId)) {
+                newSelected.delete(pageId);
+              } else {
+                newSelected.add(pageId);
+              }
+              return newSelected;
+            });
+          };
+          
+          const handleSelectAll = () => setSelectedPages(new Set(pages.map(p => p.id)));
+          const handleClearSelection = () => setSelectedPages(new Set());
+          
+          const handleApplyRange = useCallback(() => {
+            const newSelected = new Set();
+            const maxPage = pages.length;
+            if (!rangeInput.trim()) { setSelectedPages(new Set()); return; }
+            const parts = rangeInput.split(',');
+            for (const part of parts) {
+              const trimmedPart = part.trim();
+              if (!trimmedPart) continue;
+              if (trimmedPart.includes('-')) {
+                const [startStr, endStr] = trimmedPart.split('-');
+                const start = parseInt(startStr, 10);
+                const end = parseInt(endStr, 10);
+                if (!isNaN(start) && !isNaN(end) && start <= end) {
+                  for (let i = start; i <= end; i++) {
+                    if (i >= 1 && i <= maxPage) newSelected.add(i - 1);
+                  }
+                }
+              } else {
+                const pageNum = parseInt(trimmedPart, 10);
+                if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= maxPage) newSelected.add(pageNum - 1);
+              }
+            }
+            setSelectedPages(newSelected);
+          }, [rangeInput, pages.length]);
+
+          const handleExtract = async () => {
+            if (selectedPages.size === 0 || !pdfFile) { alert("Please select pages."); return; }
+            setStatus(Status.PROCESSING);
+            try {
+              const { PDFDocument } = PDFLib;
+              const pdfDoc = await PDFDocument.load(await pdfFile.arrayBuffer());
+              const newPdfDoc = await PDFDocument.create();
+              const sortedPageIndices = Array.from(selectedPages).sort((a, b) => a - b);
+              const copiedPages = await newPdfDoc.copyPages(pdfDoc, sortedPageIndices);
+              copiedPages.forEach(page => newPdfDoc.addPage(page));
+              const pdfBytes = await newPdfDoc.save();
+              const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `${fileName.replace(/\.pdf$/i, '')}_extracted.pdf`;
+              link.click();
+              URL.revokeObjectURL(link.href);
+              setStatus(Status.LOADED);
+            } catch (e) {
+              console.error(e);
+              setError('An error occurred during extraction.');
+              setStatus(Status.ERROR);
+            }
+          };
+          
+          const handleMergePdfs = async () => {
+            if (mergePdfFiles.length < 2) { alert("Please upload at least two PDFs to merge."); return; }
+            setStatus(Status.PROCESSING);
+            try {
+                const { PDFDocument } = PDFLib;
+                const mergedPdf = await PDFDocument.create();
+                for (const draggableFile of mergePdfFiles) {
+                    const pdfBytes = await draggableFile.file.arrayBuffer();
+                    const pdfDoc = await PDFDocument.load(pdfBytes);
+                    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                    copiedPages.forEach(page => mergedPdf.addPage(page));
+                }
+                const pdfBytes = await mergedPdf.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'merged_document.pdf';
+                link.click();
+                URL.revokeObjectURL(link.href);
+                setStatus(Status.LOADED);
+            } catch (e) {
+                console.error(e);
+                setError('Failed to merge PDFs.');
+                setStatus(Status.ERROR);
+            }
+          };
+          
+          const handleCreatePdfFromImages = async () => {
+            if(imageFiles.length === 0) { alert("Please add images."); return; }
+            setStatus(Status.PROCESSING);
+            try {
+                const { PDFDocument, PageSizes } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+                
+                const marginValues = { none: 0, small: 36, big: 72 }; // in points (72 points = 1 inch)
+                const selectedMargin = pageSize === 'fit' ? 0 : marginValues[margin];
+
+                let paperSize;
+                if (pageSize === 'a4') paperSize = PageSizes.A4;
+                if (pageSize === 'letter') paperSize = PageSizes.USLetter;
+
+                for (const imageFile of imageFiles) {
+                    const imageBytes = await imageFile.file.arrayBuffer();
+                    const image = await (imageFile.file.type === 'image/jpeg' 
+                        ? pdfDoc.embedJpg(imageBytes) 
+                        : pdfDoc.embedPng(imageBytes));
+
+                    if (pageSize === 'fit') {
+                        const page = pdfDoc.addPage([image.width, image.height]);
+                        page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+                    } else if (paperSize) {
+                        const pageDimensions = orientation === 'portrait' ? paperSize : [paperSize[1], paperSize[0]];
+                        const page = pdfDoc.addPage(pageDimensions);
+                        const { width: pageWidth, height: pageHeight } = page.getSize();
+                        
+                        const drawableWidth = pageWidth - 2 * selectedMargin;
+                        const drawableHeight = pageHeight - 2 * selectedMargin;
+
+                        const imageDims = image.scaleToFit(drawableWidth, drawableHeight);
+
+                        page.drawImage(image, {
+                            x: selectedMargin + (drawableWidth - imageDims.width) / 2,
+                            y: selectedMargin + (drawableHeight - imageDims.height) / 2,
+                            width: imageDims.width,
+                            height: imageDims.height,
+                        });
+                    }
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `converted_images.pdf`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                setStatus(Status.LOADED);
+            } catch (e) {
+                console.error(e);
+                setError('Failed to create PDF from images.');
+                setStatus(Status.ERROR);
+            }
+          };
+
+          const handleDownloadImagesAsZip = async () => {
+            if (!pdfFile) return;
+            
+            const pagesToZipIndices = selectedPages.size > 0
+                ? Array.from(selectedPages).sort((a,b) => a - b)
+                : pages.map(p => p.id);
+
+            if (pagesToZipIndices.length === 0) {
+              alert("No pages to download.");
+              return;
+            }
+            
+            setStatus(Status.PROCESSING);
+            try {
+                const zip = new JSZip();
+                const arrayBuffer = await pdfFile.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                const scale = 2.0; // Higher scale for better quality
+                const mimeType = `image/${imageFormat}`;
+                const fileExtension = imageFormat === 'jpeg' ? 'jpg' : imageFormat;
+
+                for (const pageIndex of pagesToZipIndices) {
+                    const page = await pdf.getPage(pageIndex + 1);
+                    const viewport = page.getViewport({ scale });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    if (context) {
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        // For JPEG and WEBP, a quality argument can be passed (0 to 1)
+                        const imageUrl = canvas.toDataURL(mimeType, 0.95);
+                        const blob = await (await fetch(imageUrl)).blob();
+                        zip.file(`page_${pageIndex + 1}.${fileExtension}`, blob);
+                    }
+                }
+
+                const content = await zip.generateAsync({type : "blob"});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                const suffix = selectedPages.size > 0 ? '_selected_images.zip' : '_all_images.zip';
+                link.download = `${fileName.replace(/\.pdf$/i, '')}${suffix}`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                setStatus(Status.LOADED);
+            } catch (e) {
+                console.error(e);
+                setError('Failed to create ZIP file from PDF pages.');
+                setStatus(Status.ERROR);
+            }
+          };
+
+          const handleSort = (collection) => {
+            if (draggedItem.current === null || draggedOverItem.current === null) return;
+            
+            if (collection === 'images') {
+              const items = [...imageFiles];
+              const draggedItemContent = items.splice(draggedItem.current, 1)[0];
+              items.splice(draggedOverItem.current, 0, draggedItemContent);
+              setImageFiles(items);
+            } else if (collection === 'pdfs') {
+              const items = [...mergePdfFiles];
+              const draggedItemContent = items.splice(draggedItem.current, 1)[0];
+              items.splice(draggedOverItem.current, 0, draggedItemContent);
+              setMergePdfFiles(items);
+            }
+
+            draggedItem.current = null;
+            draggedOverItem.current = null;
+          };
+          
+          const sortedSelectedPages = useMemo(() => Array.from(selectedPages).sort((a, b) => a - b), [selectedPages]);
+
+          const renderPdfExtractor = () => (
+            <div className="flex flex-col h-full w-full">
+                <div className="sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10 p-4 border-b border-slate-700">
+                     <div className="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+                      <div className='flex-shrink-0 text-center xl:text-left'>
+                          <p className="text-sm text-slate-400 truncate" title={fileName}>File: {fileName}</p>
+                          <p className="text-lg font-bold text-teal-400">{selectedPages.size} / {pages.length} pages selected</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap justify-center">
+                          <Button onClick={handleSelectAll} variant='secondary'>Select All</Button>
+                          <Button onClick={handleClearSelection} variant='secondary'>Clear</Button>
+                           <form onSubmit={(e) => { e.preventDefault(); handleApplyRange(); }} className="flex items-center gap-2">
+                              <input type="text" placeholder="e.g., 1-5, 8, 11-13" value={rangeInput} onChange={(e) => setRangeInput(e.target.value)} className="bg-slate-700 text-slate-200 placeholder-slate-400 rounded-md px-3 py-2 text-sm focus:ring-teal-500 focus:border-teal-500 border border-slate-600 w-40 md:w-48" aria-label="Page range input" />
+                              <Button type="submit" variant='secondary'>Apply Range</Button>
+                          </form>
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-center">
+                          <Button onClick={() => resetState()} variant='danger'>Back to Tools</Button>
+                          <Button onClick={handleExtract} disabled={status === Status.PROCESSING || selectedPages.size === 0}>
+                            {status === Status.PROCESSING ? <><Spinner size='sm' /> Extracting...</> : 'Extract Pages'}
+                          </Button>
+                      </div>
+                    </div>
+                </div>
+                <div className="flex-grow p-4 sm:p-6 lg:p-8 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+                      {pages.map(page => (
+                        <PageThumbnail key={page.id} page={page} isSelected={selectedPages.has(page.id)} onSelect={togglePageSelection} />
+                      ))}
+                    </div>
+                </div>
+            </div>
+          );
+
+          const renderImagesToPdf = () => (
+            <div className="flex flex-col h-full w-full">
+                <div className="sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10 p-4 border-b border-slate-700">
+                     <div className="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4 w-full">
+                      <div className='flex-shrink-0 text-center xl:text-left'>
+                          <p className="text-lg font-bold text-teal-400">{imageFiles.length} images ready</p>
+                          <p className="text-sm text-slate-400">Drag and drop to reorder</p>
+                      </div>
+
+                      <div className="flex-grow flex items-center justify-center gap-4 flex-wrap">
+                        <div className="p-2 rounded-lg bg-slate-800/50">
+                           <h4 className="text-sm font-bold text-center mb-2 text-slate-300">PDF Export Options</h4>
+                           <div className="flex gap-4 flex-wrap justify-center">
+                            <Select label="Page Size" value={pageSize} onChange={e => setPageSize(e.target.value)}>
+                                <option value="fit">Fit (Same as image)</option>
+                                <option value="a4">A4</option>
+                                <option value="letter">US Letter</option>
+                            </Select>
+                            <Select label="Orientation" value={orientation} onChange={e => setOrientation(e.target.value)} disabled={pageSize === 'fit'}>
+                                <option value="portrait">Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </Select>
+                            <Select label="Margins" value={margin} onChange={e => setMargin(e.target.value)} disabled={pageSize === 'fit'}>
+                                <option value="none">No Margins</option>
+                                <option value="small">Small</option>
+                                <option value="big">Big</option>
+                            </Select>
+                           </div>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                          <Button onClick={() => resetState()} variant='danger'>Back to Tools</Button>
+                          <Button onClick={handleCreatePdfFromImages} disabled={status === Status.PROCESSING || imageFiles.length === 0}>
+                            {status === Status.PROCESSING ? <><Spinner size='sm' /> Creating PDF...</> : 'Create PDF'}
+                          </Button>
+                      </div>
+                    </div>
+                </div>
+                <div className="flex-grow p-4 sm:p-6 lg:p-8 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+                      {imageFiles.map((img, index) => (
+                        <div key={img.id} draggable onDragStart={() => (draggedItem.current = index)} onDragEnter={() => (draggedOverItem.current = index)} onDragEnd={() => handleSort('images')} onDragOver={(e) => e.preventDefault()}
+                            className="relative rounded-lg overflow-hidden cursor-move transition-all duration-200 ease-in-out shadow-lg ring-2 ring-slate-700 hover:ring-teal-500">
+                            <img src={img.previewUrl} alt={`Image ${index + 1}`} className="w-full h-auto block aspect-[3/4] object-cover" />
+                            <div className="absolute top-2 right-2 bg-slate-800 bg-opacity-70 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{index + 1}</div>
+                        </div>
+                      ))}
+                    </div>
+                </div>
+            </div>
+          );
+
+          const renderPdfToImages = () => (
+             <div className="flex flex-col h-full w-full">
+                <div className="sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10 p-4 border-b border-slate-700">
+                     <div className="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+                      <div className='flex-shrink-0 text-center xl:text-left'>
+                          <p className="text-sm text-slate-400 truncate" title={fileName}>File: {fileName}</p>
+                          <p className="text-lg font-bold text-teal-400">{selectedPages.size} / {pages.length} pages selected</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap justify-center">
+                          <Button onClick={handleSelectAll} variant='secondary'>Select All</Button>
+                          <Button onClick={handleClearSelection} variant='secondary'>Clear</Button>
+                           <form onSubmit={(e) => { e.preventDefault(); handleApplyRange(); }} className="flex items-center gap-2">
+                              <input type="text" placeholder="e.g., 1-5, 8, 11-13" value={rangeInput} onChange={(e) => setRangeInput(e.target.value)} className="bg-slate-700 text-slate-200 placeholder-slate-400 rounded-md px-3 py-2 text-sm focus:ring-teal-500 focus:border-teal-500 border border-slate-600 w-40 md:w-48" aria-label="Page range input" />
+                              <Button type="submit" variant='secondary'>Apply Range</Button>
+                          </form>
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-center">
+                          <Button onClick={() => resetState()} variant='danger'>Back to Tools</Button>
+                          <Select label="Format" value={imageFormat} onChange={e => setImageFormat(e.target.value)}>
+                              <option value="jpeg">JPG</option>
+                              <option value="png">PNG</option>
+                              <option value="webp">WEBP</option>
+                          </Select>
+                          <Button onClick={handleDownloadImagesAsZip} disabled={status === Status.PROCESSING || pages.length === 0}>
+                            {status === Status.PROCESSING 
+                              ? <><Spinner size='sm' /> Zipping...</> 
+                              : (selectedPages.size > 0 ? 'Download Selected as ZIP' : 'Download All as ZIP')}
+                          </Button>
+                      </div>
+                    </div>
+                </div>
+                <div className="flex-grow p-4 sm:p-6 lg:p-8 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+                      {pages.map(page => (
+                        <PageThumbnail key={page.id} page={page} isSelected={selectedPages.has(page.id)} onSelect={togglePageSelection} />
+                      ))}
+                    </div>
+                </div>
+            </div>
+          );
+
+          const renderMergePdf = () => (
+            <div className="flex flex-col h-full w-full">
+                <div className="sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10 p-4 border-b border-slate-700">
+                     <div className="max-w-7xl mx-auto flex flex-col xl:flex-row items-center justify-between gap-4 w-full">
+                      <div className='flex-shrink-0 text-center xl:text-left'>
+                          <p className="text-lg font-bold text-teal-400">{mergePdfFiles.length} PDFs ready to merge</p>
+                          <p className="text-sm text-slate-400">Drag and drop to reorder</p>
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                          <Button onClick={() => resetState()} variant='danger'>Back to Tools</Button>
+                          <Button onClick={handleMergePdfs} disabled={status === Status.PROCESSING || mergePdfFiles.length < 2}>
+                            {status === Status.PROCESSING ? <><Spinner size='sm' /> Merging...</> : 'Merge PDFs'}
+                          </Button>
+                      </div>
+                    </div>
+                </div>
+                <div className="flex-grow p-4 sm:p-6 lg:p-8 w-full">
+                    <div className="flex flex-col gap-3 max-w-lg mx-auto">
+                      {mergePdfFiles.map((pdf, index) => (
+                        <div key={pdf.id} draggable onDragStart={() => (draggedItem.current = index)} onDragEnter={() => (draggedOverItem.current = index)} onDragEnd={() => handleSort('pdfs')} onDragOver={(e) => e.preventDefault()}
+                            className="flex items-center gap-4 bg-slate-800 p-3 rounded-lg cursor-move ring-2 ring-slate-700 hover:ring-teal-500">
+                            <div className="text-teal-400 font-bold">{index + 1}</div>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <p className="text-sm text-slate-300 truncate flex-grow" title={pdf.file.name}>{pdf.file.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                </div>
+            </div>
+          );
+          
+          const renderContent = () => {
+            if (appMode === AppMode.SELECT) {
+              return <ModeSelector onSelectMode={(mode) => setAppMode(mode)} />;
+            }
+
+            switch (status) {
+              case Status.IDLE:
+                const fileUploadProps = {
+                  [AppMode.PDF_EXTRACT]: { accept: "application/pdf", title: "Upload a PDF to Extract Pages", multiple: false },
+                  [AppMode.PDF_TO_IMAGES]: { accept: "application/pdf", title: "Upload a PDF to Convert to Images", multiple: false },
+                  [AppMode.IMAGES_TO_PDF]: { accept: "image/*", title: "Upload Images to Create a PDF", multiple: true },
+                  [AppMode.MERGE_PDF]: { accept: "application/pdf", title: "Upload PDFs to Merge", multiple: true },
+                }[appMode];
+                return (
+                  <div className="w-full flex flex-col items-center gap-6">
+                    <FileUpload onFileChange={handleFileChange} {...fileUploadProps} />
+                    <Button onClick={() => resetState()} variant='secondary'>
+                      Back to Tools
+                    </Button>
+                  </div>
+                );
+              
+              case Status.LOADING:
+                return <div className="text-center p-10"><Spinner /> <p className="mt-4 text-lg">Analyzing your file...</p></div>;
+              
+              case Status.LOADED:
+              case Status.PROCESSING:
+                if (appMode === AppMode.PDF_EXTRACT) return renderPdfExtractor();
+                if (appMode === AppMode.IMAGES_TO_PDF) return renderImagesToPdf();
+                if (appMode === AppMode.PDF_TO_IMAGES) return renderPdfToImages();
+                if (appMode === AppMode.MERGE_PDF) return renderMergePdf();
+                return null;
+
+              case Status.ERROR:
+                return (
+                  <div className="text-center p-10 bg-red-900/20 rounded-lg max-w-md mx-auto">
+                    <h2 className="text-2xl font-bold text-red-400 mb-4">An Error Occurred</h2>
+                    <p className="text-red-300 mb-6">{error}</p>
+                    <Button onClick={() => resetState()}>Try Again</Button>
+                  </div>
+                );
+            }
+          };
+
+          return (
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <main className="flex-grow flex flex-col items-center justify-center p-4 w-full">
+                {renderContent()}
+              </main>
+            </div>
+          );
+        }
+
+        // --- APP INITIALIZATION ---
+        const rootElement = document.getElementById('root');
+        if (!rootElement) {
+          throw new Error("Could not find root element to mount to");
+        }
+
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>
+        );
+    </script>
+</body>
+</html>
