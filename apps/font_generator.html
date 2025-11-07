@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unicode Font Generator</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&family=Noto+Sans&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      /* Custom scrollbar for a better dark mode experience */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f2937; /* bg-gray-800 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4b5563; /* bg-gray-600 */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; /* bg-gray-500 */
+      }
+    </style>
+    
+    <!-- React & Babel for in-browser JSX transpilation -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-gray-200">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+      const { useState, useMemo, useCallback, StrictMode } = React;
+
+      // --- Start of Constants ---
+      const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+      const digits = '0123456789';
+
+      const createMapping = (font) => {
+        const mapping = {};
+
+        if (font.uppercase) {
+          const chars = [...font.uppercase];
+          for (let i = 0; i < uppercase.length; i++) {
+            mapping[uppercase[i]] = chars[i];
+          }
+        }
+
+        if (font.lowercase) {
+          const chars = [...font.lowercase];
+          for (let i = 0; i < lowercase.length; i++) {
+            mapping[lowercase[i]] = chars[i];
+          }
+        }
+
+        if (font.digits) {
+          const chars = [...font.digits];
+          for (let i = 0; i < digits.length; i++) {
+            mapping[digits[i]] = chars[i];
+          }
+        }
+
+        return mapping;
+      };
+
+      const fontData = [
+        {
+          name: 'Bold',
+          uppercase: '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭',
+          lowercase: '𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇',
+          digits: '𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵',
+        },
+        {
+          name: 'Italic Sans',
+          uppercase: '𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡',
+          lowercase: '𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻',
+        },
+        {
+          name: 'Italic Serif',
+          uppercase: '𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍',
+          lowercase: '𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧',
+        },
+        {
+          name: 'Bold Italic Sans',
+          uppercase: '𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕',
+          lowercase: '𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯',
+        },
+          {
+          name: 'Bold Italic Serif',
+          uppercase: '𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁',
+          lowercase: '𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛',
+        },
+        {
+          name: 'Cursive',
+          uppercase: '𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵',
+          lowercase: '𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏',
+        },
+        {
+          name: 'Bold Cursive',
+          uppercase: '𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩',
+          lowercase: '𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝓌𝓍𝓎𝓏',
+        },
+        {
+          name: 'Fraktur',
+          uppercase: '𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ',
+          lowercase: '𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷',
+        },
+        {
+          name: 'Bold Fraktur',
+          uppercase: '𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅',
+          lowercase: '𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟',
+        },
+        {
+          name: 'Monospace',
+          uppercase: '𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉',
+          lowercase: '𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣',
+          digits: '𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿',
+        },
+        {
+          name: 'Double-Struck',
+          uppercase: '𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ',
+          lowercase: '𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫',
+          digits: '𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡',
+        },
+        {
+          name: 'Circled',
+          uppercase: 'ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ',
+          lowercase: 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ',
+          digits: '⓪①②③④⑤⑥⑦⑧⑨',
+        },
+        {
+          name: 'Negative Circled',
+          uppercase: '🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩',
+          lowercase: '🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩',
+        },
+        {
+          name: 'Squared',
+          uppercase: '🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉',
+          lowercase: '🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉',
+        },
+        {
+          name: 'Negative Squared',
+          uppercase: '🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉',
+          lowercase: '🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉',
+        },
+        {
+          name: 'Small Caps',
+          uppercase: 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘꞯʀꜱᴛᴜᴠᴡxʏᴢ',
+          lowercase: 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘꞯʀꜱᴛᴜᴠᴡxʏᴢ',
+        },
+        {
+          name: 'Wide',
+          uppercase: 'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ',
+          lowercase: 'ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ',
+          digits: '０１２３４５６７８９',
+        },
+      ];
+
+      const FONT_STYLES = fontData.map(font => ({
+        name: font.name,
+        mapping: createMapping({
+          uppercase: font.uppercase,
+          lowercase: font.lowercase,
+          digits: font.digits,
+        }),
+      }));
+      // --- End of Constants ---
+
+
+      // --- Start of FontCard Component ---
+      const FontCard = ({ title, text }) => {
+        const [isCopied, setIsCopied] = useState(false);
+
+        const handleCopy = useCallback(() => {
+          navigator.clipboard.writeText(text).then(() => {
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+          });
+        }, [text]);
+
+        const buttonClasses = isCopied
+          ? 'bg-green-600'
+          : 'bg-cyan-600 hover:bg-cyan-700';
+
+        return (
+          <div className="bg-gray-800 rounded-xl shadow-lg p-4 flex flex-col transition-transform transform hover:-translate-y-1">
+            <h3 className="font-semibold text-lg text-cyan-400 mb-2 truncate">{title}</h3>
+            <div
+              className="flex-grow p-3 bg-gray-900/70 rounded-lg text-white min-h-[100px] text-xl whitespace-pre-wrap break-words mb-3"
+              style={{ fontFamily: "'Noto Sans', sans-serif" }}
+            >
+              {text}
+            </div>
+            <button
+              onClick={handleCopy}
+              className={`w-full py-2 px-4 rounded-lg font-semibold text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${buttonClasses}`}
+            >
+              {isCopied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        );
+      };
+      // --- End of FontCard Component ---
+
+
+      // --- Start of App Component ---
+      const convertText = (text, mapping) => {
+        return [...text]
+          .map(char => mapping[char] || char)
+          .join('');
+      };
+
+      const App = () => {
+        const [inputText, setInputText] = useState("Hello World!");
+
+        const generatedFonts = useMemo(() => {
+          if (!inputText) return [];
+          return FONT_STYLES.map(style => ({
+            name: style.name,
+            text: convertText(inputText, style.mapping),
+          }));
+        }, [inputText]);
+
+        return (
+          <div className="min-h-screen bg-gray-900 text-gray-200 p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto">
+              <header className="text-center mb-8 md:mb-12">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight">
+                  Unicode <span className="text-cyan-400">Font</span> Generator
+                </h1>
+                <p className="mt-3 max-w-2xl mx-auto text-base sm:text-lg text-gray-400">
+                  Type your text below and watch it transform. Copy and paste your new stylish text anywhere!
+                </p>
+              </header>
+
+              <main>
+                <div className="mb-8 md:mb-12">
+                  <textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Type or paste your text here..."
+                    rows={4}
+                    className="w-full p-4 text-lg bg-gray-800 border-2 border-gray-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition duration-200 ease-in-out text-white resize-none shadow-lg"
+                  />
+                </div>
+
+                {inputText ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                    {generatedFonts.map((font) => (
+                      <FontCard key={font.name} title={font.name} text={font.text} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 px-4 bg-gray-800 rounded-xl">
+                    <p className="text-xl text-gray-500">
+                      Start typing in the box above to see the magic happen.
+                    </p>
+                  </div>
+                )}
+              </main>
+              
+              <footer className="text-center mt-12 text-gray-500 text-sm">
+                <p>Crafted for creativity and style.</p>
+              </footer>
+            </div>
+          </div>
+        );
+      };
+      // --- End of App Component ---
+
+
+      // --- Start of Root Render ---
+      const rootElement = document.getElementById('root');
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <StrictMode>
+          <App />
+        </StrictMode>
+      );
+      // --- End of Root Render ---
+
+    </script>
+  </body>
+</html>
