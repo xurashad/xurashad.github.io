@@ -89,6 +89,63 @@ const rashaImage = "../img/rasha_profile.png";
 const rashadImage = "../img/rashad_profile.png";
 const bothImage = "../img/both_profile.png";
 
+// Component: ApiKeySetup
+const ApiKeySetup = ({ onApiKeySubmit }) => {
+  const [apiKey, setApiKey] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (apiKey.trim()) {
+      onApiKeySubmit(apiKey.trim());
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen text-white p-4">
+      <div className="w-full max-w-md bg-gray-800/50 p-8 rounded-2xl border border-gray-700 shadow-lg backdrop-blur-md animate-fade-in-up">
+        <div className="text-center mb-6">
+            <h1 className="text-3xl font-extrabold mb-2 tracking-tight">Welcome!</h1>
+            <p className="text-md text-purple-300">Please enter your Gemini API Key to begin.</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-300 mb-2">
+                    Gemini API Key
+                </label>
+                <input
+                    id="apiKey"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your API key here"
+                    className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                    required
+                />
+            </div>
+            <p className="text-xs text-gray-400">
+                You can get your API key from{" "}
+                <a 
+                    href="https://aistudio.google.com/api-keys" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-purple-400 hover:text-purple-300 underline"
+                >
+                    Google AI Studio
+                </a>.
+            </p>
+            <button
+                type="submit"
+                className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg py-2.5 font-bold disabled:bg-gray-500 disabled:cursor-not-allowed hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 shadow-md"
+                disabled={!apiKey.trim()}
+            >
+                Continue
+            </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Component: CharacterSelection
 const CharacterCard = ({ mode, name, description, imageSrc, onSelect, animationDelay, isBoth }) => (
   <button
