@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chatbot</title>
+    <title>Rasha AI Chatbot</title>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,13 +84,12 @@ import ReactDOM from 'react-dom/client';
 import { GoogleGenAI } from '@google/genai';
 
 // Assets from assets.ts
-
 const rashaImage = "../img/rasha_profile.png";
 const rashadImage = "../img/rashad_profile.png";
 const bothImage = "../img/both_profile.png";
 
 // Component: ApiKeySetup
-const ApiKeySetup = ({ onApiKeySubmit }) => {
+const ApiKeySetup = ({ onApiKeySubmit, onCancel }) => {
   const [apiKey, setApiKey] = useState('');
 
   const handleSubmit = (e) => {
@@ -133,13 +132,24 @@ const ApiKeySetup = ({ onApiKeySubmit }) => {
                     Google AI Studio
                 </a>.
             </p>
-            <button
-                type="submit"
-                className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg py-2.5 font-bold disabled:bg-gray-500 disabled:cursor-not-allowed hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 shadow-md"
-                disabled={!apiKey.trim()}
-            >
-                Continue
-            </button>
+            <div className="flex items-center gap-4 pt-2">
+                {onCancel && (
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="w-full bg-gray-600 text-white rounded-lg py-2.5 font-bold hover:bg-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-gray-400"
+                    >
+                        Back
+                    </button>
+                )}
+                <button
+                    type="submit"
+                    className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg py-2.5 font-bold disabled:bg-gray-500 disabled:cursor-not-allowed hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 shadow-md"
+                    disabled={!apiKey.trim()}
+                >
+                    Continue
+                </button>
+            </div>
         </form>
       </div>
     </div>
@@ -161,7 +171,7 @@ const CharacterCard = ({ mode, name, description, imageSrc, onSelect, animationD
   </button>
 );
 
-const CharacterSelection = ({ onSelect }) => {
+const CharacterSelection = ({ onSelect, onChangeApiKey }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-white p-4">
       <div className="text-center mb-12 animate-fade-in-up">
@@ -194,6 +204,14 @@ const CharacterSelection = ({ onSelect }) => {
           onSelect={onSelect}
           animationDelay="300ms"
         />
+      </div>
+       <div className="mt-12 text-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+        <button
+          onClick={onChangeApiKey}
+          className="text-sm text-gray-400 hover:text-purple-300 underline transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 rounded-md p-1"
+        >
+          Change API Key
+        </button>
       </div>
     </div>
   );
@@ -538,6 +556,7 @@ const ReplyPreview = ({ message, onCancel }) => {
 // Main App Component
 const App = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('GEMINI_API_KEY'));
+  const [isChangingKey, setIsChangingKey] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -648,6 +667,15 @@ const App = () => {
   const handleApiKeySubmit = (key) => {
     localStorage.setItem('GEMINI_API_KEY', key);
     setApiKey(key);
+    setIsChangingKey(false);
+  };
+
+  const requestApiKeyChange = () => {
+    setIsChangingKey(true);
+  };
+
+  const cancelApiKeyChange = () => {
+    setIsChangingKey(false);
   };
 
   const handleStartChat = useCallback((mode) => {
@@ -769,12 +797,13 @@ const App = () => {
     }
   };
 
-  if (!apiKey) {
-    return <ApiKeySetup onApiKeySubmit={handleApiKeySubmit} />;
+  if (!apiKey || isChangingKey) {
+    const handleCancel = isChangingKey ? cancelApiKeyChange : null;
+    return <ApiKeySetup onApiKeySubmit={handleApiKeySubmit} onCancel={handleCancel} />;
   }
 
   if (!chatStarted || !chatMode) {
-    return <CharacterSelection onSelect={handleStartChat} />;
+    return <CharacterSelection onSelect={handleStartChat} onChangeApiKey={requestApiKeyChange} />;
   }
 
   return (
