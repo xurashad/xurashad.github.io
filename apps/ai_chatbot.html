@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chatbot</title>
+    <title>Rasha AI Chatbot</title>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,11 +91,24 @@ const bothImage = "../img/both_profile.png";
 // Component: ApiKeySetup
 const ApiKeySetup = ({ onApiKeySubmit, onCancel }) => {
   const [apiKey, setApiKey] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (apiKey.trim()) {
-      onApiKeySubmit(apiKey.trim());
+    if (!apiKey.trim() || isLoading) {
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await onApiKeySubmit(apiKey.trim());
+    } catch (err) {
+      setError(err.message || 'An unknown error occurred.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,6 +134,11 @@ const ApiKeySetup = ({ onApiKeySubmit, onCancel }) => {
                     required
                 />
             </div>
+            {error && (
+                <div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 rounded-lg text-sm text-center -mb-2">
+                    {error}
+                </div>
+            )}
             <p className="text-xs text-gray-400">
                 You can get your API key from{" "}
                 <a 
@@ -144,10 +162,10 @@ const ApiKeySetup = ({ onApiKeySubmit, onCancel }) => {
                 )}
                 <button
                     type="submit"
-                    className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg py-2.5 font-bold disabled:bg-gray-500 disabled:cursor-not-allowed hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 shadow-md"
-                    disabled={!apiKey.trim()}
+                    className="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg py-2.5 font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 shadow-md"
+                    disabled={!apiKey.trim() || isLoading}
                 >
-                    Continue
+                    {isLoading ? 'Verifying...' : 'Continue'}
                 </button>
             </div>
         </form>
@@ -664,10 +682,28 @@ const App = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleApiKeySubmit = (key) => {
-    localStorage.setItem('GEMINI_API_KEY', key);
-    setApiKey(key);
-    setIsChangingKey(false);
+  const handleApiKeySubmit = async (key) => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: key });
+        // Use a simple and fast model for validation.
+        await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: 'hello',
+        });
+        
+        // If the call succeeds, the key is valid.
+        localStorage.setItem('GEMINI_API_KEY', key);
+        setApiKey(key);
+        setIsChangingKey(false);
+    } catch (e) {
+        console.error('API Key validation failed:', e);
+        // Check for specific error messages related to invalid API keys
+        if (e.message && (e.message.includes('API key not valid') || e.message.includes('permission denied') || e.message.includes('API_KEY_INVALID'))) {
+            throw new Error('The API key provided is incorrect. Please check your key and try again.');
+        } else {
+            throw new Error('Could not verify API key. Please check your network connection and try again.');
+        }
+    }
   };
 
   const requestApiKeyChange = () => {
