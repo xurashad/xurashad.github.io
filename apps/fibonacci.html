@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Enter a number 'n' to generate a JSON file containing the first 'n' numbers of the Fibonacci sequence, ready for download.">
+    <title>Fibonacci Sequence Generator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+
+    <!-- React Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX Transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="dark bg-slate-900 transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useCallback } = React;
+
+      const DownloadIcon = () => (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+      );
+
+      const SpinnerIcon = () => (
+          <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+      );
+
+      function App() {
+          const [n, setN] = useState('');
+          const [isLoading, setIsLoading] = useState(false);
+          const [error, setError] = useState('');
+          const [outputFormat, setOutputFormat] = useState('full'); // 'full' or 'nth'
+          const [progress, setProgress] = useState(0);
+          const [isUnlocked, setIsUnlocked] = useState(false);
+
+          const baseMaxLimit = outputFormat === 'nth' ? 1000000 : 50000;
+          const maxLimit = isUnlocked ? Number.MAX_SAFE_INTEGER : baseMaxLimit;
+
+          const generateFibonacci = useCallback(async (count, onProgress) => {
+              if (count <= 0) { onProgress(100); return []; }
+              if (count === 1) { onProgress(100); return [0n]; }
+          
+              const sequence = [0n, 1n];
+              let lastProgress = -1;
+          
+              for (let i = 2; i < count; i++) {
+                  sequence.push(sequence[i - 1] + sequence[i - 2]);
+          
+                  const currentProgress = Math.floor((i / (count - 1)) * 100);
+                  if (currentProgress > lastProgress) {
+                      onProgress(currentProgress);
+                      lastProgress = currentProgress;
+                      await new Promise(resolve => setTimeout(resolve, 0)); 
+                  }
+              }
+              if (lastProgress < 100) {
+                  onProgress(100);
+              }
+              return sequence;
+          }, []);
+
+          const getNthFibonacci = useCallback(async (count, onProgress) => {
+              if (count <= 0) { onProgress(100); return 0n; }
+              if (count === 1) { onProgress(100); return 0n; }
+              if (count === 2) { onProgress(100); return 1n; }
+          
+              let a = 0n;
+              let b = 1n;
+              let lastProgress = -1;
+          
+              for (let i = 3; i <= count; i++) {
+                  const temp = a + b;
+                  a = b;
+                  b = temp;
+          
+                  const currentProgress = Math.floor(((i - 2) / (count - 2)) * 100);
+                  if (currentProgress > lastProgress) {
+                      onProgress(currentProgress);
+                      lastProgress = currentProgress;
+                      await new Promise(resolve => setTimeout(resolve, 0));
+                  }
+              }
+              if (lastProgress < 100) {
+                  onProgress(100);
+              }
+              return b;
+          }, []);
+
+          const handleDownload = useCallback(async () => {
+              setError('');
+              setIsLoading(true);
+              setProgress(0);
+
+              const num = parseInt(n, 10);
+              
+              if (isNaN(num) || num <= 0 || num > maxLimit) {
+                  setError(`Please enter a valid integer between 1 and ${baseMaxLimit.toLocaleString()}.`);
+                  setIsLoading(false);
+                  return;
+              }
+
+              try {
+                  let data;
+                  if (outputFormat === 'full') {
+                      const fibSequence = await generateFibonacci(num, setProgress);
+                      data = fibSequence.map((val, index) => ({
+                          n: index,
+                          Fibonacci: val.toString()
+                      }));
+                  } else { // outputFormat === 'nth'
+                      const nthFib = await getNthFibonacci(num, setProgress);
+                      data = {
+                          n: num - 1,
+                          Fibonacci: nthFib.toString()
+                      };
+                  }
+
+                  const jsonString = JSON.stringify(data, null, 2);
+                  const blob = new Blob([jsonString], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = 'fibonacci_data.json';
+                  
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  
+                  URL.revokeObjectURL(url);
+              } catch (e) {
+                  console.error(e);
+                  setError('An unexpected error occurred during generation.');
+              } finally {
+                  setIsLoading(false);
+                  setN('');
+              }
+
+          }, [n, generateFibonacci, getNthFibonacci, outputFormat, maxLimit, baseMaxLimit]);
+
+          const handleInputChange = (e) => {
+              if (error) {
+                  setError('');
+              }
+              setN(e.target.value);
+          };
+          
+          const handleOutputFormatChange = (format) => {
+              if (!isUnlocked) {
+                  const currentN = parseInt(n, 10);
+                  const newMax = format === 'nth' ? 1000000 : 50000;
+                  if (!isNaN(currentN) && currentN > newMax) {
+                      setN(newMax.toString());
+                  }
+              }
+              setOutputFormat(format);
+          }
+          
+          const handleUnlockToggle = () => setIsUnlocked(prev => !prev);
+
+          const isButtonDisabled = isLoading || !n || parseInt(n, 10) <= 0 || parseInt(n, 10) > maxLimit || isNaN(parseInt(n, 10));
+
+          return (
+              <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-900 via-slate-900 to-purple-900 p-4 font-sans">
+                  <div className="w-full max-w-md mx-auto bg-slate-800/50 backdrop-blur-md border border-purple-400/20 rounded-2xl shadow-2xl shadow-purple-500/10 p-8 transition-all duration-300">
+                      <div className="text-center">
+                          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-2 pb-2">Fibonacci Generator</h1>
+                          <p className="text-indigo-300 mb-8">Generate and download cosmic Fibonacci sequences as JSON.</p>
+                      </div>
+
+                      <div className="space-y-6">
+                          <div>
+                              <label htmlFor="n-input" className="block text-sm font-medium text-indigo-200 mb-2">
+                                  Enter a number 'n'
+                              </label>
+                              <input
+                                  type="number"
+                                  id="n-input"
+                                  value={n}
+                                  onChange={handleInputChange}
+                                  placeholder="e.g., 25"
+                                  min="1"
+                                  max={isUnlocked ? undefined : baseMaxLimit}
+                                  className="w-full px-4 py-3 bg-slate-900/50 border border-purple-400/30 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                              />
+                              {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+                          </div>
+
+                          <div>
+                              <label className="block text-sm font-medium text-indigo-200 mb-2">
+                                  Select Output Format
+                              </label>
+                              <div className="flex bg-slate-900/50 rounded-lg p-1">
+                                  <button
+                                      onClick={() => handleOutputFormatChange('full')}
+                                      className={`w-full text-center px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                                          outputFormat === 'full'
+                                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                                              : 'text-indigo-300 hover:bg-slate-700/50'
+                                      }`}
+                                      aria-pressed={outputFormat === 'full'}
+                                  >
+                                      Full Sequence
+                                  </button>
+                                  <button
+                                      onClick={() => handleOutputFormatChange('nth')}
+                                      className={`w-full text-center px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                                          outputFormat === 'nth'
+                                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                                              : 'text-indigo-300 hover:bg-slate-700/50'
+                                      }`}
+                                      aria-pressed={outputFormat === 'nth'}
+                                  >
+                                      Only the Nth Number
+                                  </button>
+                              </div>
+                          </div>
+
+                          <div className="text-right -mt-4">
+                              <button
+                                  onClick={handleUnlockToggle}
+                                  className="text-sm font-medium text-purple-400 hover:text-purple-300 hover:underline focus:outline-none transition"
+                              >
+                                  {isUnlocked ? 'Re-lock Limits' : 'Unlock Limits'}
+                              </button>
+                          </div>
+
+                          <div>
+                              <button
+                                  onClick={handleDownload}
+                                  disabled={isButtonDisabled}
+                                  className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-purple-500/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-slate-900 disabled:bg-slate-700 disabled:shadow-none disabled:cursor-not-allowed disabled:opacity-70 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-100"
+                              >
+                                  {isLoading ? (
+                                      <>
+                                          <SpinnerIcon />
+                                          <span>Generating... {progress}%</span>
+                                      </>
+                                  ) : (
+                                      <>
+                                          <DownloadIcon />
+                                          <span>Generate & Download JSON</span>
+                                      </>
+                                  )}
+                              </button>
+                              {isLoading && (
+                                  <div className="pt-4">
+                                      <div 
+                                          role="progressbar" 
+                                          aria-valuenow={progress} 
+                                          aria-valuemin="0" 
+                                          aria-valuemax="100" 
+                                          className="w-full bg-slate-700 rounded-full h-2.5 overflow-hidden"
+                                      >
+                                          <div 
+                                              className="bg-gradient-to-r from-fuchsia-500 to-cyan-500 h-2.5 rounded-full transition-all duration-150 ease-linear" 
+                                              style={{ width: `${progress}%` }}
+                                          ></div>
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+                      
+                      <div className="text-center mt-8 space-y-2">
+                          <p className="text-xs text-indigo-400/80">
+                              {isUnlocked ? "Limits are unlocked. Tread carefully in the cosmos." : `Maximum value for n is ${baseMaxLimit.toLocaleString()}.`}
+                          </p>
+                          <p className="text-xs text-indigo-400/60">For the best performance, it's recommended to stick with the limits.</p>
+                      </div>
+                  </div>
+              </div>
+          );
+      }
+      
+      const rootElement = document.getElementById('root');
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+    </script>
+  </body>
+</html>
