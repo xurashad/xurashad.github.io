@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OmniQR - Celestial Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+      
+      body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #020617; /* Deep Space */
+        color: #e2e8f0;
+        overflow-x: hidden;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(to bottom, #4f46e5, #8b5cf6);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(to bottom, #6366f1, #a78bfa);
+      }
+      
+      /* Custom CSS for sliders */
+      input[type=range] {
+        -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+        width: 100%; /* Specific width is required for Firefox. */
+        background: transparent; /* Otherwise white in Chrome */
+      }
+
+      input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #ffffff;
+        cursor: pointer;
+        margin-top: -6px; /* (thumbHeight - trackHeight) / -2 */
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        transition: transform 0.1s;
+      }
+      
+      input[type=range]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      input[type=range]::-moz-range-thumb {
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #ffffff;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        transition: transform 0.1s;
+      }
+
+      input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+      }
+      
+      input[type=range]::-moz-range-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+      }
+
+      input[type=range]:focus {
+        outline: none;
+      }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "qrcode.react": "https://aistudiocdn.com/qrcode.react@^4.2.0",
+    "qrcode": "https://aistudiocdn.com/qrcode@1.5.3",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Main Application Script -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript">
+        import React, { useState, useEffect, useMemo } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { 
+            QrCode, Download, Share2, History, Sparkles, ChevronDown, 
+            Loader2, Check, Wand2, Link, AlignLeft, Wifi, Mail, 
+            User, Upload, X, Image as ImageIcon, Sliders, Palette, 
+            BoxSelect, Grid, Circle, Square, Diamond 
+        } from 'lucide-react';
+        import QRCode from 'qrcode';
+
+        // ==========================================
+        // TYPES
+        // ==========================================
+        const QRType = {
+            URL: 'URL',
+            TEXT: 'TEXT',
+            WIFI: 'WIFI',
+            EMAIL: 'EMAIL',
+            VCARD: 'VCARD',
+        };
+
+        // ==========================================
+        // SERVICES
+        // ==========================================
+        const parseUserIntent = async (input) => {
+            const text = input.trim();
+            const lower = text.toLowerCase();
+
+            // 1. Check URL
+            const urlRegex = /^(https?:\/\/[^\s]+|www\.[^\s]+)/i;
+            if (urlRegex.test(text)) {
+                return {
+                type: QRType.URL,
+                summary: "Website URL",
+                urlData: { url: text.startsWith('www.') ? `https://${text}` : text }
+                };
+            }
+
+            // 2. Check Email
+            const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i;
+            if (emailRegex.test(text)) {
+                return {
+                type: QRType.EMAIL,
+                summary: "Email Address",
+                emailData: { address: text, subject: "", body: "" }
+                };
+            }
+
+            // 3. Check WiFi
+            if (lower.includes('wifi') || (lower.includes('ssid') && lower.includes('password'))) {
+                const ssidMatch = text.match(/ssid[:\s]+["']?([^"'\s]+)["']?/i); 
+                const passMatch = text.match(/password[:\s]+["']?([^"'\s]+)["']?/i); 
+                
+                let ssid = "MyNetwork";
+                let password = "";
+
+                if (ssidMatch) {
+                    ssid = ssidMatch[1];
+                } else {
+                    const parts = text.split(' ');
+                    const wifiIndex = parts.findIndex(p => p.toLowerCase().includes('wifi'));
+                    if (wifiIndex !== -1 && parts[wifiIndex + 1]) {
+                        ssid = parts[wifiIndex + 1];
+                    }
+                }
+
+                if (passMatch) {
+                    password = passMatch[1];
+                } else {
+                    const parts = text.split(' ');
+                    const passIndex = parts.findIndex(p => p.toLowerCase().includes('password') || p.toLowerCase().includes('pass'));
+                    if (passIndex !== -1 && parts[passIndex + 1]) {
+                        password = parts[passIndex + 1];
+                    }
+                }
+                
+                return {
+                    type: QRType.WIFI,
+                    summary: `WiFi: ${ssid}`,
+                    wifiData: {
+                    ssid: ssid,
+                    password: password,
+                    encryption: 'WPA',
+                    hidden: false
+                    }
+                };
+            }
+
+            // 4. vCard
+            if (lower.includes('contact') || lower.includes('vcard')) {
+                const phoneMatch = text.match(/(\+?[\d\-\(\)\s]{10,})/);
+                const emailMatch = text.match(/[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/);
+                
+                const words = text.split(' ').filter(w => !w.toLowerCase().match(/contact|vcard|phone|email|number/));
+                const firstName = words[0] || "New";
+                const lastName = words[1] || "Contact";
+
+                return {
+                    type: QRType.VCARD,
+                    summary: "Contact Card",
+                    vCardData: {
+                        firstName,
+                        lastName,
+                        phone: phoneMatch ? phoneMatch[0].trim() : "",
+                        email: emailMatch ? emailMatch[0].trim() : "",
+                        organization: "",
+                        url: ""
+                    }
+                }
+            }
+
+            // Default to Text
+            return {
+                type: QRType.TEXT,
+                summary: "Text content",
+                textData: { content: text },
+                data: { text }
+            };
+        };
+
+        // ==========================================
+        // COMPONENT: QRCodeRenderer
+        // ==========================================
+        const QRCodeRenderer = ({ config, size = 256 }) => {
+            const uniqueId = React.useId();
+            const gradientId = `qr-gradient-${uniqueId.replace(/:/g, '')}`;
+            
+            const value = useMemo(() => {
+                switch (config.type) {
+                    case QRType.URL: return config.url || '';
+                    case QRType.TEXT: return config.text || '';
+                    case QRType.WIFI:
+                    if (config.wifi) {
+                        const { ssid, password, encryption, hidden } = config.wifi;
+                        const p = password ? `P:${password};` : '';
+                        const e = encryption ? `T:${encryption};` : '';
+                        const h = hidden ? `H:true;` : '';
+                        return `WIFI:S:${ssid};${e}${p}${h};`;
+                    }
+                    return '';
+                    case QRType.EMAIL:
+                    if (config.email) {
+                        const { address, subject, body } = config.email;
+                        const s = subject ? `?subject=${encodeURIComponent(subject)}` : '';
+                        const b = body ? `&body=${encodeURIComponent(body)}` : '';
+                        const query = s ? `${s}${b}` : (b ? `?body=${encodeURIComponent(body.replace('&body=', ''))}` : '');
+                        return `mailto:${address}${query}`;
+                    }
+                    return '';
+                    case QRType.VCARD:
+                    if (config.vCard) {
+                        const { firstName, lastName, organization, phone, email, url } = config.vCard;
+                        return `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${firstName} ${lastName}\nORG:${organization || ''}\nTEL:${phone || ''}\nEMAIL:${email || ''}\nURL:${url || ''}\nEND:VCARD`;
+                    }
+                    return '';
+                    default: return '';
+                }
+            }, [config]);
+
+            const qrData = useMemo(() => {
+                if (!value) return null;
+                try {
+                    const ecLevel = config.ecLevel; 
+                    const qr = QRCode.create(value, { errorCorrectionLevel: ecLevel });
+                    return {
+                        modules: qr.modules,
+                        version: qr.version,
+                        size: qr.modules.size,
+                    };
+                } catch (e) {
+                    console.error("QR Gen Error", e);
+                    return null;
+                }
+            }, [value, config.ecLevel]);
+
+            if (!qrData) return <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">Invalid Data</div>;
+
+            const { modules, size: moduleCount } = qrData;
+
+            const isEyeZone = (r, c) => {
+                return (
+                    (r < 7 && c < 7) || 
+                    (r < 7 && c >= moduleCount - 7) || 
+                    (r >= moduleCount - 7 && c < 7) 
+                );
+            };
+
+            const getPixelPath = (r, c, type) => {
+                if (type === 'square') return `M${c},${r}h1v1h-1z`;
+                if (type === 'dot') {
+                    const cx = c + 0.5;
+                    const cy = r + 0.5;
+                    const r0 = 0.38;
+                    return `M ${cx}, ${cy} m -${r0}, 0 a ${r0},${r0} 0 1,0 ${r0 * 2},0 a ${r0},${r0} 0 1,0 -${r0 * 2},0`;
+                }
+                if (type === 'rounded') {
+                    return `M${c + 0.2},${r} h0.6 a0.2,0.2 0 0 1 0.2,0.2 v0.6 a0.2,0.2 0 0 1 -0.2,0.2 h-0.6 a0.2,0.2 0 0 1 -0.2,-0.2 v-0.6 a0.2,0.2 0 0 1 0.2,-0.2 z`;
+                }
+                if (type === 'diamond') {
+                    return `M${c+0.5},${r} L${c+1},${r+0.5} L${c+0.5},${r+1} L${c},${r+0.5} Z`;
+                }
+                if (type === 'star') {
+                    return `M${c+0.5},${r} L${c+0.65},${r+0.35} L${c+1},${r+0.5} L${c+0.65},${r+0.65} L${c+0.5},${r+1} L${c+0.35},${r+0.65} L${c},${r+0.5} L${c+0.35},${r+0.35} Z`;
+                }
+                if (type === 'classy') {
+                    return `M${c},${r} h0.8 a0.2,0.2 0 0 1 0.2,0.2 v0.8 h-0.8 a0.2,0.2 0 0 1 -0.2,-0.2 v-0.8 z`;
+                }
+                if (type === 'heart') {
+                    return `M${c+0.5},${r+0.95} C${c+0.5},${r+0.95} ${c+0.1},${r+0.6} ${c+0.1},${r+0.35} C${c+0.1},${r+0.15} ${c+0.35},${r+0.15} ${c+0.5},${r+0.3} C${c+0.65},${r+0.15} ${c+0.9},${r+0.15} ${c+0.9},${r+0.35} C${c+0.9},${r+0.6} ${c+0.5},${r+0.95} ${c+0.5},${r+0.95} Z`;
+                }
+                return `M${c},${r}h1v1h-1z`;
+            };
+
+            const bodyPath = [];
+            
+            const logoModules = new Set();
+            let logoX = 0;
+            let logoY = 0;
+            let logoW = 0;
+            let logoH = 0;
+            
+            if (config.logo) {
+                const logoScale = config.logoSize || 0.2;
+                logoW = moduleCount * logoScale;
+                logoH = moduleCount * logoScale;
+                
+                const cx = moduleCount / 2;
+                const cy = moduleCount / 2;
+                
+                logoX = cx - (logoW / 2);
+                logoY = cy - (logoH / 2);
+
+                const padding = config.logoPadding || 0;
+                
+                const clearX = logoX - padding;
+                const clearY = logoY - padding;
+                const clearW = logoW + (padding * 2);
+                const clearH = logoH + (padding * 2);
+                
+                const startC = Math.floor(clearX);
+                const endC = Math.ceil(clearX + clearW);
+                const startR = Math.floor(clearY);
+                const endR = Math.ceil(clearY + clearH);
+
+                for(let r = startR; r < endR; r++) {
+                    for(let c = startC; c < endC; c++) {
+                        const intersectX = Math.max(0, Math.min(c + 1, clearX + clearW) - Math.max(c, clearX));
+                        const intersectY = Math.max(0, Math.min(r + 1, clearY + clearH) - Math.max(r, clearY));
+                        
+                        if (intersectX > 0.05 && intersectY > 0.05) {
+                            logoModules.add(`${r},${c}`);
+                        }
+                    }
+                }
+            }
+            
+            for (let r = 0; r < moduleCount; r++) {
+                for (let c = 0; c < moduleCount; c++) {
+                    if (modules.get(r, c)) {
+                        if (isEyeZone(r, c)) continue;
+                        if (logoModules.has(`${r},${c}`)) continue;
+                        bodyPath.push(getPixelPath(r, c, config.pixelStyle));
+                    }
+                }
+            }
+
+            const renderEye = (x, y) => {
+                const outerStyle = config.markerStyle;
+                const innerStyle = config.markerInnerShape || config.markerStyle;
+                
+                let outer = '';
+                if (outerStyle === 'square') outer = `M${x},${y} h7 v7 h-7 z M${x+1},${y+1} v5 h5 v-5 h-5 z`;
+                else if (outerStyle === 'circle') outer = `M ${x+3.5}, ${y+3.5} m -3.5, 0 a 3.5,3.5 0 1,0 7,0 a 3.5,3.5 0 1,0 -7,0 M ${x+3.5}, ${y+3.5} m -2.5, 0 a 2.5,2.5 0 1,1 5,0 a 2.5,2.5 0 1,1 -5,0`;
+                else if (outerStyle === 'rounded') outer = `M${x+2},${y} h3 a2,2 0 0 1 2,2 v3 a2,2 0 0 1 -2,2 h-3 a2,2 0 0 1 -2,-2 v-3 a2,2 0 0 1 2,-2 z M${x+2},${y+1} h3 a1,1 0 0 1 1,1 v3 a1,1 0 0 1 -1,1 h-3 a1,1 0 0 1 -1,-1 v-3 a1,1 0 0 1 1,-1 z`;
+                else if (outerStyle === 'extra-rounded') outer = `M${x+3.5},${y} h0 a3.5,3.5 0 0 1 3.5,3.5 v0 a3.5,3.5 0 0 1 -3.5,3.5 h0 a3.5,3.5 0 0 1 -3.5,-3.5 v0 a3.5,3.5 0 0 1 3.5,-3.5 z M${x+3.5},${y+1} h0 a2.5,2.5 0 0 1 2.5,2.5 v0 a2.5,2.5 0 0 1 -2.5,2.5 h0 a2.5,2.5 0 0 1 -2.5,-2.5 v0 a2.5,2.5 0 0 1 2.5,-2.5 z`;
+
+                let inner = '';
+                const cx = x + 2; 
+                const cy = y + 2;
+                
+                if (innerStyle === 'square') inner = `M${cx},${cy} h3 v3 h-3 z`;
+                else if (innerStyle === 'circle') inner = `M ${x+3.5}, ${y+3.5} m -1.5, 0 a 1.5,1.5 0 1,0 3,0 a 1.5,1.5 0 1,0 -3,0`;
+                else if (innerStyle === 'rounded') inner = `M${cx+0.5},${cy} h2 a0.5,0.5 0 0 1 0.5,0.5 v2 a0.5,0.5 0 0 1 -0.5,0.5 h-2 a0.5,0.5 0 0 1 -0.5,-0.5 v-2 a0.5,0.5 0 0 1 0.5,-0.5 z`;
+                else if (innerStyle === 'diamond') inner = `M${x+3.5},${y+2} L${x+5},${y+3.5} L${x+3.5},${y+5} L${x+2},${y+3.5} Z`;
+                else if (innerStyle === 'star') {
+                    const midX = x + 3.5;
+                    const midY = y + 3.5;
+                    const rOut = 1.5;
+                    const rIn = 0.6;
+                    inner = `M${midX},${midY-rOut} L${midX+rIn},${midY-rIn} L${midX+rOut},${midY} L${midX+rIn},${midY+rIn} L${midX},${midY+rOut} L${midX-rIn},${midY+rIn} L${midX-rOut},${midY} L${midX-rIn},${midY-rIn} Z`;
+                }
+                else if (innerStyle === 'heart') {
+                    inner = `M${cx+1.5},${cy+2.85} C${cx+1.5},${cy+2.85} ${cx+0.3},${cy+1.8} ${cx+0.3},${cy+1.05} C${cx+0.3},${cy+0.45} ${cx+1.05},${cy+0.45} ${cx+1.5},${cy+0.9} C${cx+1.95},${cy+0.45} ${cx+2.7},${cy+0.45} ${cx+2.7},${cy+1.05} C${cx+2.7},${cy+1.8} ${cx+1.5},${cy+2.85} ${cx+1.5},${cy+2.85} Z`;
+                }
+
+                return { outer, inner };
+            };
+
+            const eyePaths = [
+                renderEye(0, 0),
+                renderEye(moduleCount - 7, 0),
+                renderEye(0, moduleCount - 7)
+            ];
+
+            const BASE_SIZE = moduleCount;
+            const margin = config.margin;
+            
+            let totalWidth = BASE_SIZE + (margin * 2);
+            let totalHeight = BASE_SIZE + (margin * 2);
+            let qrX = margin;
+            let qrY = margin;
+            
+            let textHeight = 0;
+
+            if (config.frameStyle === 'banner-top') {
+                textHeight = 5;
+                totalHeight += textHeight;
+                qrY += textHeight;
+            } else if (config.frameStyle === 'banner-bottom') {
+                textHeight = 5;
+                totalHeight += textHeight;
+            } else if (config.frameStyle === 'polaroid') {
+                textHeight = 6;
+                totalHeight += textHeight;
+            }
+
+            const gradientFill = `url(#${gradientId})`;
+            const solidFill = config.fgColor;
+            const bodyFill = config.useGradient ? gradientFill : solidFill;
+            
+            const getMarkerColor = (specific) => {
+                if (specific) return specific;
+                if (config.eyeColor && config.eyeColor !== config.fgColor) return config.eyeColor;
+                return config.useGradient ? gradientFill : solidFill;
+            };
+            
+            const outerFill = getMarkerColor(config.markerBorderColor);
+            const innerFill = getMarkerColor(config.markerCenterColor);
+
+            return (
+                <svg
+                    id="omniqr-svg"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+                    width={size}
+                    height={size * (totalHeight / totalWidth)}
+                    style={{ display: 'block' }}
+                >
+                    <defs>
+                        {config.useGradient && (
+                            <linearGradient 
+                                id={gradientId} 
+                                x1="0%" y1="0%" 
+                                x2={config.gradientDirection === 'vertical' ? '0%' : '100%'} 
+                                y2={config.gradientDirection === 'horizontal' ? '0%' : '100%'}
+                            >
+                                <stop offset="0%" stopColor={config.gradientStart} />
+                                <stop offset="100%" stopColor={config.gradientEnd} />
+                            </linearGradient>
+                        )}
+                    </defs>
+
+                    {!config.transparentBg && (
+                        <rect 
+                        x="0" y="0" 
+                        width="100%" height="100%" 
+                        fill={config.bgColor} 
+                        rx={config.frameStyle === 'rounded' ? 3 : 0}
+                        />
+                    )}
+
+                    {config.frameStyle === 'simple' && (
+                        <rect x={0.5} y={0.5} width={totalWidth - 1} height={totalHeight - 1} fill="none" stroke={config.frameColor} strokeWidth="1" rx="2" />
+                    )}
+
+                    {config.frameStyle === 'rounded' && (
+                        <rect x={0.5} y={0.5} width={totalWidth - 1} height={totalHeight - 1} fill="none" stroke={config.frameColor} strokeWidth="1" rx="3" />
+                    )}
+                    
+                    {config.frameStyle === 'bracket' && (
+                        <g stroke={config.frameColor} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                            <path d={`M${totalWidth * 0.2},1 L1,1 L1,${totalWidth * 0.2}`} />
+                            <path d={`M${totalWidth - (totalWidth * 0.2)},1 L${totalWidth-1},1 L${totalWidth-1},${totalWidth * 0.2}`} />
+                            <path d={`M1,${totalHeight - (totalWidth * 0.2)} L1,${totalHeight-1} L${totalWidth * 0.2},${totalHeight-1}`} />
+                            <path d={`M${totalWidth-1},${totalHeight - (totalWidth * 0.2)} L${totalWidth-1},${totalHeight-1} L${totalWidth - (totalWidth * 0.2)},${totalHeight-1}`} />
+                        </g>
+                    )}
+
+                    {config.frameStyle === 'polaroid' && (
+                        <g>
+                            <rect x={0} y={0} width={totalWidth} height={totalHeight} fill={config.frameColor} />
+                            <text x={totalWidth / 2} y={totalHeight - (textHeight/2) + 0.5} textAnchor="middle" dominantBaseline="middle" fill={config.frameTextColor} fontSize="3.5" fontFamily="sans-serif" fontWeight="bold">
+                                {config.frameText}
+                            </text>
+                        </g>
+                    )}
+
+                    {(config.frameStyle === 'banner-bottom') && (
+                        <g>
+                            <rect x={totalWidth * 0.1} y={totalHeight - textHeight} width={totalWidth * 0.8} height={textHeight - 1} fill={config.frameColor} rx="1" />
+                            <text x={totalWidth / 2} y={totalHeight - (textHeight/2) + 0.5} textAnchor="middle" dominantBaseline="middle" fill={config.frameTextColor} fontSize="3" fontFamily="sans-serif" fontWeight="bold">
+                                {config.frameText}
+                            </text>
+                        </g>
+                    )}
+
+                    {(config.frameStyle === 'banner-top') && (
+                        <g>
+                            <rect x={totalWidth * 0.1} y={1} width={totalWidth * 0.8} height={textHeight - 1} fill={config.frameColor} rx="1" />
+                            <text x={totalWidth / 2} y={1 + (textHeight/2) + 0.5} textAnchor="middle" dominantBaseline="middle" fill={config.frameTextColor} fontSize="3" fontFamily="sans-serif" fontWeight="bold">
+                                {config.frameText}
+                            </text>
+                        </g>
+                    )}
+
+                    <g transform={`translate(${qrX}, ${qrY})`}>
+                        <path d={bodyPath.join(' ')} fill={bodyFill} />
+                        {eyePaths.map((eye, i) => (
+                            <g key={i}>
+                                <path d={eye.outer} fill={outerFill} />
+                                <path d={eye.inner} fill={innerFill} />
+                            </g>
+                        ))}
+                        {config.logo && (
+                            <g>
+                                {config.logoBackgroundColor && (
+                                    <rect 
+                                        x={logoX - (config.logoPadding || 0)} 
+                                        y={logoY - (config.logoPadding || 0)}
+                                        width={logoW + ((config.logoPadding || 0) * 2)} 
+                                        height={logoH + ((config.logoPadding || 0) * 2)}
+                                        fill={config.logoBackgroundColor}
+                                        rx={logoW * 0.1}
+                                    />
+                                )}
+                                <image 
+                                    href={config.logo}
+                                    x={logoX}
+                                    y={logoY}
+                                    width={logoW}
+                                    height={logoH}
+                                />
+                            </g>
+                        )}
+                    </g>
+                </svg>
+            );
+        };
+
+        // ==========================================
+        // COMPONENT: MagicInput
+        // ==========================================
+        const MagicInput = ({ onConfigUpdate }) => {
+            const [input, setInput] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleMagic = async () => {
+                if (!input.trim()) return;
+                setLoading(true);
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                    const result = await parseUserIntent(input);
+                    
+                    const updates = {
+                        type: result.type,
+                    };
+
+                    if (result.type === QRType.URL) updates.url = result.urlData?.url;
+                    if (result.type === QRType.TEXT) updates.text = result.textData?.content;
+                    if (result.type === QRType.WIFI) updates.wifi = result.wifiData;
+                    if (result.type === QRType.EMAIL) updates.email = result.emailData;
+                    if (result.type === QRType.VCARD) updates.vCard = result.vCardData;
+
+                    onConfigUpdate(updates, result.summary);
+                    setInput('');
+                } catch (error) {
+                    console.error("Parsing Failed", error);
+                    onConfigUpdate({ type: QRType.TEXT, text: input }, "Manual Text");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="relative group mb-10">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div className="relative bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl">
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                    <Wand2 className="w-5 h-5 text-cyan-400 animate-pulse" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-violet-300 font-semibold text-lg tracking-wide">
+                        Celestial Intelligence
+                    </span>
+                    </div>
+
+                    <p className="text-slate-400 text-sm mb-5 font-light">
+                    Summon a QR code by describing it. Try <span className="text-cyan-200 italic">"WiFi: Starship with password cosmos"</span>
+                    </p>
+                    
+                    <div className="flex gap-3">
+                    <div className="relative flex-1 group/input">
+                        <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleMagic()}
+                        placeholder="Describe your QR destination..."
+                        className="w-full bg-slate-950/50 border border-white/10 text-cyan-100 px-5 py-4 rounded-xl focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder:text-slate-600 font-light tracking-wide"
+                        />
+                        <div className="absolute inset-0 rounded-xl pointer-events-none shadow-[inset_0_0_20px_rgba(34,211,238,0.05)]"></div>
+                    </div>
+
+                    <button
+                        onClick={handleMagic}
+                        disabled={loading || !input.trim()}
+                        className="bg-gradient-to-br from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white px-8 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] border border-white/10"
+                    >
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                        <span className="hidden sm:inline">Manifest</span>
+                    </button>
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // COMPONENT: ManualInputs
+        // ==========================================
+        const LOGO_SVGS = {
+            WhatsApp: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>',
+            Facebook: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+            Instagram: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E4405F"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.225-.149-4.771-1.664-4.919-4.919-.058-1.265-.069-1.644-.069-4.849 0-3.205.012-3.584.069-4.849.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.668-.073-4.948-.2-4.354-2.618-6.782-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>',
+            LinkedIn: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+            'X': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+            YouTube: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+            TikTok: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.65-1.62-1.12-1.09-.98-1.56-2.43-1.69-3.87h-4.08c.13 5.91-2.43 11.07-7.58 12.91-2.79.95-5.84.39-8.04-1.54-2.24-1.99-2.99-5.13-1.91-7.94 1.04-2.76 3.71-4.66 6.65-4.63.03 0 .07 0 .1 0v4.24c-1.45-.14-2.9.68-3.52 2.02-.64 1.34-.3 2.97.83 4.01 1.11 1.03 2.79 1.19 4.08.38 1.33-.86 2.06-2.4 1.88-3.96.04-4.8.01-9.59.01-14.39.67-.05 1.34-.09 2.01-.11.01 0 .02 0 .03 0z"/></svg>',
+            Snapchat: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFC00"><path d="M12.002 0C9.176 0 7.258 1.812 6.614 2.94c-.23.403-.172.997.202 1.297.076.06.16.095.248.095.245 0 .482-.126.62-.366.397-.696 1.85-1.888 4.318-1.888 2.438 0 3.92 1.182 4.317 1.878.138.242.38.372.628.372.085 0 .17-.032.245-.09.373-.3.43-.895.197-1.298C16.744 1.81 14.826 0 12.002 0zm7.208 9.708c-.792-.134-1.504.05-2.072.535-.568.485-1.005 1.238-1.265 2.18-.152.552-.272.984-.358 1.288-.13.462-.263.93-.448 1.22-.264.413-.64.663-1.058.703-.006.002-.012.002-.018.002-.415 0-.776-.242-1.015-.68-.197-.357-.33-1.015-.37-1.21-.052-.24-.263-.41-.508-.41-.246 0-.457.17-.51.413-.04.197-.172.852-.37 1.21-.238.436-.6.677-1.014.677-.006 0-.013 0-.02 0-.42-.04-.794-.29-1.057-.704-.185-.29-.32-.758-.45-1.22-.085-.303-.205-.735-.356-1.287-.26-0.94-.697-1.694-1.265-2.18-.568-.484-1.28-.67-2.072-.534-1.192.2-1.98 1.027-2.108 2.21-.056.522.12 1.203.482 1.867.302.553.734 1.014 1.216 1.297.29.17.445.508.385.84-.093.52-.22 1.233-.284 1.592-.084.47.205.93.66 1.05.293.076.592.063.88-.04.662-.233 1.296-.806 1.865-1.293.286-.245.735-.18.95.14.564.842 1.448 1.344 2.428 1.378.055.002.11.003.165.003.94 0 1.825-.485 2.43-1.38.213-.318.662-.384.948-.14.57.487 1.204 1.06 1.865 1.294.287.102.586.115.88.04.453-.12.742-.58.658-1.05-.062-.36-.19-1.073-.283-1.592-.06-.332.094-.67.385-.84.482-.283.914-.744 1.216-1.297.363-.664.538-1.345.483-1.867-.13-1.183-.918-2.01-2.11-2.21z"/></svg>',
+        };
+
+        const ManualInputs = ({ config, onChange }) => {
+            const tabs = [
+                { id: QRType.URL, icon: Link, label: 'URL' },
+                { id: QRType.TEXT, icon: AlignLeft, label: 'Text' },
+                { id: QRType.WIFI, icon: Wifi, label: 'WiFi' },
+                { id: QRType.EMAIL, icon: Mail, label: 'Email' },
+                { id: QRType.VCARD, icon: User, label: 'vCard' },
+            ];
+
+            const handleLogoUpload = (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    onChange({ logo: reader.result, ecLevel: 'H' }); 
+                };
+                reader.readAsDataURL(file);
+                }
+            };
+
+            const handlePresetSelect = (svgString) => {
+                const base64 = btoa(unescape(encodeURIComponent(svgString)));
+                const dataUri = `data:image/svg+xml;base64,${base64}`;
+                onChange({ logo: dataUri, ecLevel: 'H' });
+            };
+
+            const inputClass = "w-full bg-slate-950/50 border border-white/10 rounded-lg px-4 py-2.5 text-cyan-50 focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500/50 focus:outline-none transition-all placeholder:text-slate-600 backdrop-blur-sm";
+            const labelClass = "block text-xs font-medium text-cyan-200/70 mb-1.5 tracking-wide uppercase";
+
+            return (
+                <div className="space-y-8">
+                <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/80 backdrop-blur-xl border border-white/5 rounded-2xl shadow-lg">
+                    {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => onChange({ type: tab.id })}
+                        className={`relative flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium transition-all overflow-hidden group ${
+                        config.type === tab.id
+                            ? 'text-white shadow-[0_0_15px_rgba(34,211,238,0.2)]'
+                            : 'text-slate-400 hover:text-cyan-200'
+                        }`}
+                    >
+                        {config.type === tab.id && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-violet-600/20 rounded-xl border border-cyan-500/30"></div>
+                        )}
+                        <span className="relative z-10 flex items-center gap-2">
+                        <tab.icon className={`w-4 h-4 ${config.type === tab.id ? 'text-cyan-400' : 'group-hover:text-cyan-400'}`} />
+                        <span className="hidden sm:inline">{tab.label}</span>
+                        </span>
+                    </button>
+                    ))}
+                </div>
+
+                <div className="bg-slate-900/60 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
+                    <div className="w-32 h-32 bg-cyan-500 rounded-full blur-[60px]"></div>
+                    </div>
+
+                    {config.type === QRType.URL && (
+                    <div className="space-y-5 relative z-10">
+                        <div>
+                        <label className={labelClass}>Website URL</label>
+                        <input
+                            type="url"
+                            value={config.url || ''}
+                            onChange={(e) => onChange({ url: e.target.value })}
+                            placeholder="https://example.com"
+                            className={inputClass}
+                        />
+                        </div>
+                    </div>
+                    )}
+
+                    {config.type === QRType.TEXT && (
+                    <div className="space-y-5 relative z-10">
+                        <div>
+                        <label className={labelClass}>Content</label>
+                        <textarea
+                            rows={4}
+                            value={config.text || ''}
+                            onChange={(e) => onChange({ text: e.target.value })}
+                            placeholder="Enter your text here..."
+                            className={`${inputClass} resize-none`}
+                        />
+                        </div>
+                    </div>
+                    )}
+
+                    {config.type === QRType.WIFI && (
+                    <div className="space-y-5 relative z-10">
+                        <div>
+                        <label className={labelClass}>Network Name (SSID)</label>
+                        <input
+                            type="text"
+                            value={config.wifi?.ssid || ''}
+                            onChange={(e) => onChange({ wifi: { ...config.wifi, ssid: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div>
+                        <label className={labelClass}>Password</label>
+                        <input
+                            type="text"
+                            value={config.wifi?.password || ''}
+                            onChange={(e) => onChange({ wifi: { ...config.wifi, password: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div className="flex gap-4">
+                        <div className="flex-1">
+                            <label className={labelClass}>Encryption</label>
+                            <select
+                            value={config.wifi?.encryption || 'WPA'}
+                            onChange={(e) => onChange({ wifi: { ...config.wifi, encryption: e.target.value } })}
+                            className={inputClass}
+                            >
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">No Password</option>
+                            </select>
+                        </div>
+                        <div className="flex items-end pb-3">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative">
+                                <input
+                                type="checkbox"
+                                checked={config.wifi?.hidden || false}
+                                onChange={(e) => onChange({ wifi: { ...config.wifi, hidden: e.target.checked } })}
+                                className="peer sr-only"
+                                />
+                                <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-cyan-600/50 peer-checked:border-cyan-500 border border-slate-600 transition-all"></div>
+                                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                            </div>
+                            <span className="text-sm text-slate-300 group-hover:text-cyan-200 transition-colors">Hidden Network</span>
+                            </label>
+                        </div>
+                        </div>
+                    </div>
+                    )}
+
+                    {config.type === QRType.EMAIL && (
+                    <div className="space-y-5 relative z-10">
+                        <div>
+                        <label className={labelClass}>Email Address</label>
+                        <input
+                            type="email"
+                            value={config.email?.address || ''}
+                            onChange={(e) => onChange({ email: { ...config.email, address: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div>
+                        <label className={labelClass}>Subject</label>
+                        <input
+                            type="text"
+                            value={config.email?.subject || ''}
+                            onChange={(e) => onChange({ email: { ...config.email, subject: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div>
+                        <label className={labelClass}>Body</label>
+                        <textarea
+                            rows={3}
+                            value={config.email?.body || ''}
+                            onChange={(e) => onChange({ email: { ...config.email, body: e.target.value } })}
+                            className={`${inputClass} resize-none`}
+                        />
+                        </div>
+                    </div>
+                    )}
+
+                    {config.type === QRType.VCARD && (
+                    <div className="space-y-5 relative z-10">
+                        <div className="grid grid-cols-2 gap-5">
+                        <div>
+                            <label className={labelClass}>First Name</label>
+                            <input
+                            type="text"
+                            value={config.vCard?.firstName || ''}
+                            onChange={(e) => onChange({ vCard: { ...config.vCard, firstName: e.target.value } })}
+                            className={inputClass}
+                            />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Last Name</label>
+                            <input
+                            type="text"
+                            value={config.vCard?.lastName || ''}
+                            onChange={(e) => onChange({ vCard: { ...config.vCard, lastName: e.target.value } })}
+                            className={inputClass}
+                            />
+                        </div>
+                        </div>
+                        <div>
+                        <label className={labelClass}>Phone</label>
+                        <input
+                            type="tel"
+                            value={config.vCard?.phone || ''}
+                            onChange={(e) => onChange({ vCard: { ...config.vCard, phone: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div>
+                        <label className={labelClass}>Email</label>
+                        <input
+                            type="email"
+                            value={config.vCard?.email || ''}
+                            onChange={(e) => onChange({ vCard: { ...config.vCard, email: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                        <div>
+                        <label className={labelClass}>Organization</label>
+                        <input
+                            type="text"
+                            value={config.vCard?.organization || ''}
+                            onChange={(e) => onChange({ vCard: { ...config.vCard, organization: e.target.value } })}
+                            className={inputClass}
+                        />
+                        </div>
+                    </div>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div className="space-y-8">
+                    <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 relative overflow-hidden group">
+                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-colors"></div>
+                        
+                        <h3 className="text-violet-200 font-medium mb-6 flex items-center gap-2 relative z-10">
+                        <Palette className="w-4 h-4 text-violet-400" /> Colors & Gradients
+                        </h3>
+                        
+                        <div className="space-y-5 relative z-10">
+                            <label className="flex items-center justify-between p-3 rounded-xl bg-slate-950/30 border border-white/5 cursor-pointer group">
+                                <span className="text-sm text-slate-300 group-hover:text-violet-200 transition-colors">Enable Gradient</span>
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        checked={config.useGradient}
+                                        onChange={(e) => onChange({ useGradient: e.target.checked })}
+                                        className="peer sr-only"
+                                    />
+                                    <div className="w-10 h-6 bg-slate-800 rounded-full peer-checked:bg-violet-600/50 peer-checked:border-violet-500 border border-slate-600 transition-all"></div>
+                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                                </div>
+                            </label>
+
+                        {!config.useGradient ? (
+                            <div className="flex gap-6">
+                                <div className="flex-1">
+                                    <label className={labelClass}>Foreground</label>
+                                    <div className="h-12 w-full rounded-xl border border-white/10 overflow-hidden relative cursor-pointer group/color">
+                                        <input
+                                            type="color"
+                                            value={config.fgColor}
+                                            onChange={(e) => onChange({ fgColor: e.target.value })}
+                                            className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer p-0 m-0"
+                                        />
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 group-hover/color:bg-transparent text-xs font-mono shadow-inner">
+                                            {config.fgColor}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <label className={labelClass}>Background</label>
+                                    <div className={`h-12 w-full rounded-xl border border-white/10 overflow-hidden relative cursor-pointer group/color ${config.transparentBg ? 'opacity-50' : ''}`}>
+                                        <input
+                                            type="color"
+                                            value={config.bgColor}
+                                            disabled={config.transparentBg}
+                                            onChange={(e) => onChange({ bgColor: e.target.value })}
+                                            className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer p-0 m-0"
+                                        />
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 group-hover/color:bg-transparent text-xs font-mono shadow-inner">
+                                            {config.transparentBg ? 'None' : config.bgColor}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex gap-4">
+                                    <div className="flex-1">
+                                        <label className={labelClass}>Start</label>
+                                        <div className="h-10 w-full rounded-lg border border-white/10 overflow-hidden relative cursor-pointer">
+                                            <input
+                                                type="color"
+                                                value={config.gradientStart}
+                                                onChange={(e) => onChange({ gradientStart: e.target.value })}
+                                                className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className={labelClass}>End</label>
+                                        <div className="h-10 w-full rounded-lg border border-white/10 overflow-hidden relative cursor-pointer">
+                                            <input
+                                                type="color"
+                                                value={config.gradientEnd}
+                                                onChange={(e) => onChange({ gradientEnd: e.target.value })}
+                                                className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className={labelClass}>Bg</label>
+                                        <div className={`h-10 w-full rounded-lg border border-white/10 overflow-hidden relative cursor-pointer ${config.transparentBg ? 'opacity-30' : ''}`}>
+                                            <input
+                                                type="color"
+                                                value={config.bgColor}
+                                                disabled={config.transparentBg}
+                                                onChange={(e) => onChange({ bgColor: e.target.value })}
+                                                className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className={labelClass}>Gradient Direction</label>
+                                    <div className="flex bg-slate-950/50 p-1 rounded-lg border border-white/5">
+                                        {['diagonal', 'vertical', 'horizontal'].map(dir => (
+                                            <button
+                                                key={dir}
+                                                onClick={() => onChange({ gradientDirection: dir })}
+                                                className={`flex-1 py-1.5 text-xs rounded-md capitalize transition-all ${config.gradientDirection === dir ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/20' : 'text-slate-500 hover:text-slate-300'}`}
+                                            >
+                                                {dir}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                            <label className="flex items-center gap-3 cursor-pointer pt-2 border-t border-white/5">
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        checked={config.transparentBg}
+                                        onChange={(e) => onChange({ transparentBg: e.target.checked })}
+                                        className="peer sr-only"
+                                    />
+                                    <div className="w-9 h-5 bg-slate-800 rounded-full peer-checked:bg-cyan-600/50 peer-checked:border-cyan-500 border border-slate-600 transition-all"></div>
+                                    <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-all peer-checked:translate-x-4"></div>
+                                </div>
+                                <span className="text-sm text-slate-400">Transparent Background</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 relative overflow-hidden">
+                        <h3 className="text-cyan-200 font-medium mb-6 flex items-center gap-2 relative z-10">
+                        <BoxSelect className="w-4 h-4 text-cyan-400" /> Frame Style
+                        </h3>
+                        
+                        <div className="space-y-5 relative z-10">
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { id: 'none', label: 'None' },
+                                { id: 'simple', label: 'Border' },
+                                { id: 'rounded', label: 'Rounded' },
+                                { id: 'banner-bottom', label: 'Banner Btm' },
+                                { id: 'banner-top', label: 'Banner Top' },
+                                { id: 'bracket', label: 'Bracket' },
+                                { id: 'polaroid', label: 'Polaroid' },
+                            ].map(style => (
+                                <button
+                                    key={style.id}
+                                    onClick={() => onChange({ frameStyle: style.id })}
+                                    className={`py-2 px-2 text-xs rounded-lg border transition-all ${
+                                        config.frameStyle === style.id
+                                        ? 'bg-cyan-600/20 border-cyan-500/50 text-cyan-100 shadow-[0_0_10px_rgba(34,211,238,0.1)]'
+                                        : 'border-white/5 bg-slate-950/30 text-slate-500 hover:bg-slate-900 hover:border-white/10'
+                                    }`}
+                                >
+                                    {style.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {config.frameStyle !== 'none' && (
+                            <div className="space-y-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2 fade-in duration-300">
+                                {(config.frameStyle === 'banner-bottom' || config.frameStyle === 'banner-top' || config.frameStyle === 'polaroid') && (
+                                        <div>
+                                            <label className={labelClass}>
+                                                {config.frameStyle === 'polaroid' ? 'Caption Text' : 'Banner Text'}
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value={config.frameText}
+                                                onChange={(e) => onChange({ frameText: e.target.value })}
+                                                className={inputClass}
+                                                placeholder={config.frameStyle === 'polaroid' ? "My Photo" : "SCAN ME"}
+                                            />
+                                        </div>
+                                )}
+                                <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label className={labelClass}>Frame Color</label>
+                                            <div className="h-8 w-full rounded border border-white/10 overflow-hidden relative">
+                                                <input
+                                                    type="color"
+                                                    value={config.frameColor}
+                                                    onChange={(e) => onChange({ frameColor: e.target.value })}
+                                                    className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                        {(config.frameStyle === 'banner-bottom' || config.frameStyle === 'banner-top' || config.frameStyle === 'polaroid') && (
+                                            <div className="flex-1">
+                                                <label className={labelClass}>Text Color</label>
+                                                <div className="h-8 w-full rounded border border-white/10 overflow-hidden relative">
+                                                    <input
+                                                        type="color"
+                                                        value={config.frameTextColor}
+                                                        onChange={(e) => onChange({ frameTextColor: e.target.value })}
+                                                        className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                </div>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 relative overflow-hidden">
+                            <h3 className="text-slate-200 font-medium mb-6 flex items-center gap-2 relative z-10">
+                            <Sliders className="w-4 h-4 text-emerald-400" /> Fine Tuning
+                            </h3>
+                            
+                            <div className="space-y-5 relative z-10">
+                            <div>
+                                <div className="flex justify-between mb-2">
+                                <label className={labelClass}>Margin Size</label>
+                                <span className="text-xs text-slate-400">{config.margin} modules</span>
+                                </div>
+                                <input 
+                                type="range" 
+                                min="0" 
+                                max="10" 
+                                value={config.margin} 
+                                onChange={(e) => onChange({ margin: parseInt(e.target.value) })}
+                                className="w-full cursor-pointer"
+                                />
+                            </div>
+
+                            <div>
+                                <label className={labelClass}>Error Correction Level</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                {['L', 'M', 'Q', 'H'].map(level => (
+                                    <button
+                                    key={level}
+                                    onClick={() => onChange({ ecLevel: level })}
+                                    className={`py-1.5 text-xs rounded-lg font-medium border transition-all ${
+                                        config.ecLevel === level 
+                                        ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-100 shadow-[0_0_10px_rgba(16,185,129,0.2)]' 
+                                        : 'border-white/5 bg-slate-950/30 text-slate-500 hover:bg-slate-900 hover:border-white/10'
+                                    }`}
+                                    >
+                                    {level}
+                                    </button>
+                                ))}
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 relative overflow-hidden group">
+                            <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-colors"></div>
+                            <h3 className="text-indigo-200 font-medium mb-6 flex items-center gap-2 relative z-10">
+                                <Grid className="w-4 h-4 text-indigo-400" /> Dots & Eyes
+                            </h3>
+                            <div className="space-y-6 relative z-10">
+                                
+                                <div>
+                                    <label className={labelClass}>Dot Style</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['square', 'dot', 'rounded', 'diamond', 'star', 'classy', 'heart'].map(style => (
+                                            <button
+                                            key={style}
+                                            onClick={() => onChange({ pixelStyle: style })}
+                                            className={`py-2 text-xs rounded-lg capitalize transition-all border ${config.pixelStyle === style 
+                                                ? 'bg-indigo-600/30 border-indigo-500 text-indigo-100' 
+                                                : 'border-white/5 bg-slate-950/30 text-slate-500 hover:border-white/10'}`}
+                                            >
+                                            {style}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={labelClass}>Eye Frame</label>
+                                        <div className="space-y-2">
+                                            {['square', 'circle', 'rounded', 'extra-rounded'].map(style => (
+                                                <button
+                                                    key={style}
+                                                    onClick={() => onChange({ markerStyle: style })}
+                                                    className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-all flex items-center justify-between ${
+                                                        config.markerStyle === style 
+                                                        ? 'bg-white/10 text-white' 
+                                                        : 'text-slate-500 hover:bg-white/5'
+                                                    }`}
+                                                >
+                                                    <span className="capitalize">{style}</span>
+                                                    {config.markerStyle === style && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Eye Center</label>
+                                        <div className="space-y-2">
+                                            {['square', 'circle', 'rounded', 'diamond', 'star', 'heart'].map(style => (
+                                                <button
+                                                    key={style}
+                                                    onClick={() => onChange({ markerInnerShape: style })}
+                                                    className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-all flex items-center justify-between ${
+                                                        config.markerInnerShape === style 
+                                                        ? 'bg-white/10 text-white' 
+                                                        : 'text-slate-500 hover:bg-white/5'
+                                                    }`}
+                                                >
+                                                    <span className="capitalize">{style}</span>
+                                                    {config.markerInnerShape === style && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className={labelClass}>Eye Colors</label>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <span className="text-[10px] text-slate-500 mb-1 block">Frame</span>
+                                            <div className="h-8 w-full rounded border border-white/10 overflow-hidden relative">
+                                                <input
+                                                    type="color"
+                                                    value={config.markerBorderColor || config.fgColor}
+                                                    onChange={(e) => onChange({ markerBorderColor: e.target.value })}
+                                                    className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <span className="text-[10px] text-slate-500 mb-1 block">Center</span>
+                                            <div className="h-8 w-full rounded border border-white/10 overflow-hidden relative">
+                                                <input
+                                                    type="color"
+                                                    value={config.markerCenterColor || config.fgColor}
+                                                    onChange={(e) => onChange({ markerCenterColor: e.target.value })}
+                                                    className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button 
+                                                onClick={() => onChange({ markerBorderColor: undefined, markerCenterColor: undefined, eyeColor: undefined })}
+                                                className="h-8 px-3 text-xs border border-white/10 rounded bg-white/5 hover:bg-white/10 text-slate-400 transition-colors"
+                                                title="Reset to Body Color"
+                                            >
+                                                Reset
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 relative overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between mb-6 relative z-10">
+                            <h3 className="text-slate-200 font-medium flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4 text-fuchsia-400" /> Logo Overlay
+                            </h3>
+                            {config.logo && (
+                                <button 
+                                    onClick={() => onChange({ logo: undefined })}
+                                    className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-lg hover:bg-red-500/20 transition-colors"
+                                >
+                                    <X className="w-3 h-3" /> Remove
+                                </button>
+                            )}
+                        </div>
+                        
+                        {!config.logo ? (
+                            <div className="space-y-4 flex-1 relative z-10">
+                                <label className="flex flex-col items-center justify-center w-full h-24 border border-white/10 border-dashed rounded-xl cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all group bg-slate-950/30">
+                                    <div className="flex flex-col items-center justify-center pt-4 pb-4">
+                                        <Upload className="w-6 h-6 text-slate-500 group-hover:text-fuchsia-400 mb-2 transition-colors" />
+                                        <p className="text-xs text-slate-500 group-hover:text-slate-300">Upload custom logo</p>
+                                    </div>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                                </label>
+                                
+                                <div>
+                                    <p className={labelClass}>QUICK PRESETS</p>
+                                    <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+                                        {Object.entries(LOGO_SVGS).map(([name, svgString]) => (
+                                            <button
+                                                key={name}
+                                                onClick={() => handlePresetSelect(svgString)}
+                                                className="aspect-square rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex items-center justify-center relative overflow-hidden group"
+                                                title={name}
+                                            >
+                                                <div 
+                                                    className="w-5 h-5 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity"
+                                                    dangerouslySetInnerHTML={{ __html: svgString }} 
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-5 flex-1 relative z-10">
+                                <div className="flex items-center justify-center p-6 bg-slate-950/50 rounded-2xl border border-white/5 h-32 relative group overflow-hidden">
+                                    <div className="absolute inset-0 bg-[url(https://placehold.co/10x10/ffffff/000000.png)] opacity-5 mix-blend-overlay"></div>
+                                    <img 
+                                        src={config.logo} 
+                                        alt="QR Logo" 
+                                        className="h-16 w-16 object-contain relative z-10 drop-shadow-lg" 
+                                        style={{
+                                            backgroundColor: config.logoBackgroundColor || 'transparent',
+                                            padding: (config.logoPadding || 0) * 2,
+                                            borderRadius: '10%'
+                                        }}
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <div className="flex justify-between mb-2">
+                                        <label className={labelClass}>Logo Size</label>
+                                        <span className="text-xs text-slate-400">{Math.round((config.logoSize || 0.2) * 100)}%</span>
+                                    </div>
+                                    <input 
+                                    type="range" 
+                                    min="0.1" 
+                                    max="0.4" 
+                                    step="0.01"
+                                    value={config.logoSize || 0.2} 
+                                    onChange={(e) => onChange({ logoSize: parseFloat(e.target.value) })}
+                                    className="w-full cursor-pointer"
+                                    />
+                                </div>
+
+                                <div>
+                                    <div className="flex justify-between mb-2">
+                                        <label className={labelClass}>Logo Padding</label>
+                                        <span className="text-xs text-slate-400">{config.logoPadding || 0} modules</span>
+                                    </div>
+                                    <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="4" 
+                                    step="1"
+                                    value={config.logoPadding || 0} 
+                                    onChange={(e) => onChange({ logoPadding: parseInt(e.target.value) })}
+                                    className="w-full cursor-pointer"
+                                    />
+                                </div>
+
+                                <label className="flex items-center justify-between p-2 rounded-lg bg-slate-950/30 border border-white/5 cursor-pointer group">
+                                    <span className="text-xs text-slate-300">Background Box</span>
+                                    <div className="flex items-center gap-2">
+                                        {config.logoBackgroundColor && (
+                                            <div className="h-5 w-5 rounded border border-white/10 overflow-hidden relative">
+                                                <input
+                                                    type="color"
+                                                    value={config.logoBackgroundColor}
+                                                    onChange={(e) => onChange({ logoBackgroundColor: e.target.value })}
+                                                    className="absolute -top-2 -left-2 w-[200%] h-[200%] cursor-pointer"
+                                                />
+                                            </div>
+                                        )}
+                                        <input
+                                            type="checkbox"
+                                            checked={!!config.logoBackgroundColor}
+                                            onChange={(e) => onChange({ logoBackgroundColor: e.target.checked ? '#ffffff' : undefined })}
+                                            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-fuchsia-500 focus:ring-fuchsia-500/30"
+                                        />
+                                    </div>
+                                </label>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // APP COMPONENT
+        // ==========================================
+        const App = () => {
+            const [config, setConfig] = useState({
+                type: QRType.URL,
+                url: '',
+                fgColor: '#ffffff',
+                bgColor: '#0f172a',
+                logoSize: 0.2,
+                logoPadding: 0,
+                margin: 2,
+                ecLevel: 'M',
+                transparentBg: false,
+                pixelStyle: 'rounded',
+                markerStyle: 'circle',
+                markerInnerShape: 'circle',
+                eyeColor: '', 
+                useGradient: true,
+                gradientStart: '#22d3ee',
+                gradientEnd: '#8b5cf6',
+                gradientDirection: 'diagonal',
+                frameStyle: 'none',
+                frameColor: '#22d3ee',
+                frameText: 'SCAN ME',
+                frameTextColor: '#ffffff',
+                wifi: { ssid: '', encryption: 'WPA', hidden: false },
+                email: { address: '' },
+                vCard: { firstName: '', lastName: '' },
+            });
+
+            const [lastSummary, setLastSummary] = useState("");
+            const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+            const [isSharing, setIsSharing] = useState(false);
+            const [shareMessage, setShareMessage] = useState(null);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                const target = event.target;
+                if (!target.closest('.download-group')) {
+                    setShowDownloadOptions(false);
+                }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            const handleConfigUpdate = (updates, summary) => {
+                setConfig(prev => ({ ...prev, ...updates }));
+                if (summary) setLastSummary(summary);
+            };
+
+            const handleDownload = (format) => {
+                const svg = document.querySelector('#omniqr-svg');
+                if (svg) {
+                    const serializer = new XMLSerializer();
+                    const svgData = serializer.serializeToString(svg);
+                    const filename = `omniqr-${config.type.toLowerCase()}-${Date.now()}.${format}`;
+
+                    if (format === 'svg') {
+                        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = url;
+                        downloadLink.download = filename;
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                        setShowDownloadOptions(false);
+                        return;
+                    }
+                    
+                    const img = new Image();
+                    const svgBase64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const scale = 4; 
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.imageSmoothingEnabled = true;
+                            if (format === 'jpeg' && config.transparentBg) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            }
+                            ctx.scale(scale, scale);
+                            ctx.drawImage(img, 0, 0);
+                            
+                            const dataUrl = canvas.toDataURL(`image/${format}`);
+                            const downloadLink = document.createElement('a');
+                            downloadLink.download = filename;
+                            downloadLink.href = dataUrl;
+                            downloadLink.click();
+                        }
+                    };
+                    img.src = svgBase64;
+                    setShowDownloadOptions(false);
+                }
+            };
+
+            const handleShare = async () => {
+                const svg = document.querySelector('#omniqr-svg');
+                if (!svg) return;
+
+                setIsSharing(true);
+                setShareMessage(null);
+
+                try {
+                    const serializer = new XMLSerializer();
+                    const svgData = serializer.serializeToString(svg);
+                    const svgBase64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+
+                    const img = new Image();
+                    img.src = svgBase64;
+
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    const scale = 4;
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) throw new Error("Canvas context failed");
+
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(img, 0, 0);
+
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) {
+                            setIsSharing(false);
+                            return;
+                        }
+
+                        const file = new File([blob], 'omniqr-share.png', { type: 'image/png' });
+
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    title: 'OmniQR Code',
+                                    text: `Check out this QR code for ${config.type} generated by OmniQR.`,
+                                    files: [file]
+                                });
+                                setShareMessage("Shared!");
+                            } catch (err) {
+                                if (err.name !== 'AbortError') {
+                                    await copyToClipboard(blob);
+                                }
+                            }
+                        } else {
+                            await copyToClipboard(blob);
+                        }
+                        
+                        setIsSharing(false);
+                        setTimeout(() => setShareMessage(null), 3000);
+
+                    }, 'image/png');
+
+                } catch (error) {
+                    console.error("Share failed", error);
+                    setIsSharing(false);
+                    setShareMessage("Failed");
+                    setTimeout(() => setShareMessage(null), 3000);
+                }
+            };
+
+            const copyToClipboard = async (blob) => {
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ [blob.type]: blob })
+                    ]);
+                    setShareMessage("Copied Image!");
+                } catch (err) {
+                    console.error("Clipboard failed", err);
+                    setShareMessage("Download instead");
+                }
+            };
+
+            return (
+                <div className="min-h-screen text-slate-100 selection:bg-cyan-500/30 relative overflow-hidden">
+                <div className="fixed inset-0 z-[-1]">
+                    <div className="absolute inset-0 bg-[#020617]"></div>
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-900/30 rounded-full blur-[120px] animate-pulse"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-900/30 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+                    <div className="absolute top-[20%] right-[20%] w-[20%] h-[20%] bg-fuchsia-900/20 rounded-full blur-[100px] animate-pulse delay-700"></div>
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                </div>
+
+                <header className="border-b border-white/5 bg-slate-950/30 backdrop-blur-md sticky top-0 z-50 shadow-lg shadow-black/20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3 group cursor-default">
+                        <div className="relative w-12 h-12 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500 to-violet-500 rounded-xl blur opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative bg-slate-900 rounded-xl p-2.5 border border-white/10">
+                            <QrCode className="w-6 h-6 text-cyan-300" />
+                        </div>
+                        </div>
+                        <div className="flex flex-col">
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 group-hover:to-white transition-all">Omni</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">QR</span>
+                        </h1>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">Astro Edition</span>
+                        </div>
+                    </div>
+                    <div className="hidden md:flex items-center gap-6">
+                        <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            System Operational
+                        </div>
+                    </div>
+                    </div>
+                </header>
+
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="grid lg:grid-cols-12 gap-12">
+                    
+                    <div className="lg:col-span-7 space-y-10">
+                        
+                        <section className="animate-in slide-in-from-left-4 fade-in duration-700">
+                        <MagicInput onConfigUpdate={handleConfigUpdate} />
+                        </section>
+
+                        <section className="animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-200">
+                        <div className="flex items-center gap-3 mb-6">
+                            <h2 className="text-xl font-semibold text-white tracking-wide">Configuration Matrix</h2>
+                            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
+                        </div>
+                        <ManualInputs config={config} onChange={handleConfigUpdate} />
+                        </section>
+
+                    </div>
+
+                    <div className="lg:col-span-5">
+                        <div className="sticky top-28 space-y-8 animate-in slide-in-from-right-4 fade-in duration-1000 delay-300">
+                        
+                        <div className="relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500 via-violet-500 to-fuchsia-500 rounded-[2.5rem] blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+                            
+                            <div className="relative bg-slate-900/80 rounded-[2rem] p-8 border border-white/10 backdrop-blur-xl shadow-2xl flex flex-col items-center">
+                                
+                                <div className={`relative rounded-2xl p-4 transition-all duration-500 ${config.transparentBg ? 'bg-[url(https://placehold.co/20x20/1e293b/0f172a.png)]' : 'bg-white/5'}`}>
+                                    <div className="relative z-10">
+                                        <QRCodeRenderer config={config} size={260} />
+                                    </div>
+                                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500/50 rounded-tl-lg"></div>
+                                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500/50 rounded-tr-lg"></div>
+                                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-violet-500/50 rounded-bl-lg"></div>
+                                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-violet-500/50 rounded-br-lg"></div>
+                                </div>
+
+                                <div className="text-center space-y-3 mt-8 w-full">
+                                    <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">
+                                    {lastSummary || (config.type === QRType.URL ? 'Website Link' : `${config.type} Data`)}
+                                    </h3>
+                                    <div className="h-px w-12 bg-white/20 mx-auto"></div>
+                                    <p className="text-sm text-slate-400 mx-auto truncate max-w-[280px] font-light tracking-wide">
+                                    {config.type === QRType.URL && config.url}
+                                    {config.type === QRType.TEXT && config.text}
+                                    {config.type === QRType.WIFI && `SSID: ${config.wifi?.ssid}`}
+                                    {config.type === QRType.EMAIL && `To: ${config.email?.address}`}
+                                    {config.type === QRType.VCARD && config.vCard?.firstName + ' ' + config.vCard?.lastName}
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 w-full mt-8 relative">
+                                    <div className="relative flex-1 group/download download-group">
+                                        <button 
+                                            onClick={() => setShowDownloadOptions(!showDownloadOptions)}
+                                            className="w-full bg-white text-slate-950 py-4 px-4 rounded-xl font-bold hover:bg-cyan-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:scale-[1.02]"
+                                        >
+                                            <Download className="w-5 h-5" />
+                                            Save Asset
+                                            <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showDownloadOptions ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        
+                                        {showDownloadOptions && (
+                                            <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-200 z-20">
+                                                <button onClick={() => handleDownload('png')} className="w-full text-left px-4 py-3 text-slate-800 hover:bg-slate-100 font-medium text-sm flex items-center justify-between">
+                                                    High-Res PNG <span className="text-xs text-slate-400 uppercase">Raster</span>
+                                                </button>
+                                                <button onClick={() => handleDownload('svg')} className="w-full text-left px-4 py-3 text-slate-800 hover:bg-slate-100 font-medium text-sm flex items-center justify-between border-t border-slate-100">
+                                                    Vector SVG <span className="text-xs text-slate-400 uppercase">Vector</span>
+                                                </button>
+                                                <button onClick={() => handleDownload('jpeg')} className="w-full text-left px-4 py-3 text-slate-800 hover:bg-slate-100 font-medium text-sm flex items-center justify-between border-t border-slate-100">
+                                                    Standard JPG <span className="text-xs text-slate-400 uppercase">Web</span>
+                                                </button>
+                                                <button onClick={() => handleDownload('webp')} className="w-full text-left px-4 py-3 text-slate-800 hover:bg-slate-100 font-medium text-sm flex items-center justify-between border-t border-slate-100">
+                                                    Modern WebP <span className="text-xs text-slate-400 uppercase">Fast</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <button 
+                                    onClick={handleShare}
+                                    disabled={isSharing}
+                                    className="flex-1 bg-white/5 text-white border border-white/10 py-4 px-4 rounded-xl font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2 backdrop-blur-md hover:scale-[1.02] disabled:opacity-50 disabled:cursor-wait"
+                                    >
+                                    {isSharing ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : shareMessage ? (
+                                        <Check className="w-5 h-5 text-green-400" />
+                                    ) : (
+                                        <Share2 className="w-5 h-5" />
+                                    )}
+                                    {isSharing ? 'Preparing...' : (shareMessage || 'Share')}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900/40 backdrop-blur-md rounded-2xl p-6 border border-white/5 flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                            <History className="w-5 h-5 text-slate-400" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-slate-200">Session History</h4>
+                                <p className="text-xs text-slate-500 mt-0.5">Tracking generation sequence locally.</p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    </div>
+                </main>
+                </div>
+            );
+        };
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        );
+    </script>
+  </body>
+</html>
