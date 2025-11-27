@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+
+<html lang="en" class="dark">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Palestine</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+            extend: {
+                keyframes: {
+                'fade-in': {
+                    '0%': { opacity: '0', transform: 'translateY(10px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                },
+                animation: {
+                'fade-in': 'fade-in 0.5s ease-out forwards',
+                },
+            },
+            },
+        }
+        </script>
+        <style>
+        /* Simple class to hide elements */
+        .hidden {
+            display: none;
+        }
+        </style>
+    </head>
+
+    <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+        <div class="flex min-h-screen">
+            <!-- Navbar -->
+            <special-nav></special-nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto">
+                <div class="max-w-4xl mx-auto">
+
+                    <div class="relative w-full h-96 rounded-lg overflow-hidden shadow-lg">
+    
+                        <img 
+                            src="img/palestine.png" 
+                            alt="Placeholder image" 
+                            class="absolute inset-0 w-full h-full object-cover z-0"
+                            onerror="this.src='https://placehold.co/1200x600/4A5568/E2E8F0?text=Image+Not+Found'"
+                        >
+                        
+                        <div class="absolute inset-0 bg-black/40 z-10"></div>
+                        
+                        <div class="relative z-20 h-full flex flex-col items-center justify-center text-center p-4">
+                            <h1 class="text-white text-4xl md:text-6xl font-bold drop-shadow-lg">
+                                Palestine
+                            </h1>
+                            <p class="text-white/90 text-lg md:text-2xl mt-4 max-w-xl drop-shadow-md">
+                                Explore Palestine-focused resources.
+                            </p>
+                        </div>
+                        
+                    </div>
+
+                    <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
+
+                    <!-- Apps Section -->
+                    <section id="page-Apps" class="page-content animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Education</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="img/scholarships.png" alt="Scholarships for Palestinians" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Scholarships for Palestinians</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">Scholarships and opportunities available for Palestinian students.</p>
+                                    <div class="flex space-x-4">
+                                        <a href="palestine/scholarships.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+        
+        <!-- Footer -->
+        <special-footer></special-footer>
+
+        <script src="nav.js"></script>
+
+    </body>
+</html>

@@ -16,7 +16,7 @@ class SpecialNav extends HTMLElement {
             </div>
             <ul class="flex flex-col space-y-2">
                 <li>
-                    <a href="index.html" data-page="Home" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../index.html" data-page="Home" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -26,7 +26,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                 <li>
-                    <a href="apps.html" data-page="Apps" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../apps.html" data-page="Apps" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
@@ -36,7 +36,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                     <li>
-                        <a href="datasets.html" data-page="Datasets" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                        <a href="../datasets.html" data-page="Datasets" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                             <div class="flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" 
                                     width="24" 
@@ -56,7 +56,7 @@ class SpecialNav extends HTMLElement {
                         </a>
                     </li>
                 <li>
-                    <a href="posts.html" data-page="Posts" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../posts.html" data-page="Posts" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
@@ -66,7 +66,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                 <li>
-                    <a href="documents.html" data-page="Documents" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../documents.html" data-page="Documents" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -76,7 +76,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                 <li>
-                    <a href="cv.html" data-page="CV" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../cv.html" data-page="CV" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path>
@@ -86,7 +86,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
 <!--                <li>
-                    <a href="personal.html" data-page="Personal Info" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../personal.html" data-page="Personal Info" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9ZM12 20.5C13.784 20.5 15.4397 19.9504 16.8069 19.0112C17.4108 18.5964 17.6688 17.8062 17.3178 17.1632C16.59 15.8303 15.0902 15 11.9999 15C8.90969 15 7.40997 15.8302 6.68214 17.1632C6.33105 17.8062 6.5891 18.5963 7.19296 19.0111C8.56018 19.9503 10.2159 20.5 12 20.5Z"></path>
@@ -96,7 +96,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                 <li>
-                    <a href="science.html" data-page="Science" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../science.html" data-page="Science" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="1"/>
@@ -109,7 +109,7 @@ class SpecialNav extends HTMLElement {
                     </a>
                 </li>
                 <li>
-                    <a href="philosophy.html" data-page="Philosophy" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../philosophy.html" data-page="Philosophy" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M4 21h16"/>
@@ -125,9 +125,9 @@ class SpecialNav extends HTMLElement {
                         </div>
                         <span class="hidden sm:inline-block font-medium">Philosophy</span>
                     </a>
-                </li>
+                </li> -->
                 <li>
-                    <a href="palestine.html" data-page="Palestine" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../palestine.html" data-page="Palestine" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="24" height="24">
                                 <defs>
@@ -145,9 +145,9 @@ class SpecialNav extends HTMLElement {
                         </div>
                         <span class="hidden sm:inline-block font-medium">Palestine</span>
                     </a>
-                </li> -->
+                </li>
                 <li>
-                    <a href="contact.html" data-page="Contact" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
+                    <a href="../contact.html" data-page="Contact" class="nav-button flex items-center space-x-3 p-3 rounded-lg w-full text-left transition-all duration-200 ease-in-out group">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
