@@ -1,69 +1,28 @@
-
 <!DOCTYPE html>
-
 <html lang="en" class="dark">
-
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Personal Portfolio - Apps</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-            extend: {
-                keyframes: {
-                'fade-in': {
-                    '0%': { opacity: '0', transform: 'translateY(10px)' },
-                    '100%': { opacity: '1', transform: 'translateY(0)' },
-                },
-                },
-                animation: {
-                'fade-in': 'fade-in 0.5s ease-out forwards',
-                },
-            },
-            },
-        }
-        </script>
-        <style>
-        /* Simple class to hide elements */
-        .hidden {
-            display: none;
-        }
-        </style>
+        <script src="js/tailwind-config.js"></script>
+        <link rel="stylesheet" href="css/style.css">
+        <script defer src="js/components/Navbar.js"></script>
+        <script defer src="js/components/Footer.js"></script>
+        <script defer src="js/main.js"></script>
     </head>
-
     <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300">
-
-        <div class="flex min-h-screen">
-            <!-- Navbar -->
+        <div class="flex flex-col min-h-screen">
             <special-nav></special-nav>
-
-            <!-- Main Content -->
-            <main class="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto">
+            <main class="flex-1 p-4 sm:p-8 lg:p-12">
                 <div class="max-w-4xl mx-auto">
-
                     <div class="relative w-full h-96 rounded-lg overflow-hidden shadow-lg">
-    
-                        <img 
-                            src="img/banner_apps.jpeg" 
-                            alt="Placeholder image" 
-                            class="absolute inset-0 w-full h-full object-cover z-0"
-                            onerror="this.src='https://placehold.co/1200x600/4A5568/E2E8F0?text=Image+Not+Found'"
-                        >
-                        
+                        <img src="img/banner_apps.jpeg" alt="Placeholder image" class="absolute inset-0 w-full h-full object-cover z-0" onerror="this.src='https://placehold.co/1200x600/4A5568/E2E8F0?text=Image+Not+Found'">
                         <div class="absolute inset-0 bg-black/40 z-10"></div>
-                        
                         <div class="relative z-20 h-full flex flex-col items-center justify-center text-center p-4">
-                            <h1 class="text-white text-4xl md:text-6xl font-bold drop-shadow-lg">
-                                Applications
-                            </h1>
-                            <p class="text-white/90 text-lg md:text-2xl mt-4 max-w-xl drop-shadow-md">
-                                Explore my collection of web applications spanning physics, mathematics, chemistry, AI, utilities, games, and more.
-                            </p>
+                            <h1 class="text-white text-4xl md:text-6xl font-bold drop-shadow-lg">Applications</h1>
+                            <p class="text-white/90 text-lg md:text-2xl mt-4 max-w-xl drop-shadow-md">Explore my collection of web applications spanning physics, mathematics, chemistry, AI, utilities, games, and more.</p>
                         </div>
-                        
                     </div>
 
                     <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
@@ -77,9 +36,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Particle Physics Visualizer</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Explore the fundamental and composite building blocks of the universe.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/particle_physics_visualizer.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/particle_physics_visualizer.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -87,9 +44,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Interactive Periodic Table</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A web app that provides an interactive periodic table with detailed information about each element.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/periodic_table.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/periodic_table.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -97,9 +52,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Fractal Explorer</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Explore the fascinating world of the Mandelbrot and Julia sets with this interactive web app.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/mandelbrot_julia.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/mandelbrot_julia.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -107,9 +60,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Feynman Diagram Generator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A tool for creating Feynman diagrams easily and intuitively, and exporting the diagrams as TikZ LaTeX code.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/feynman_generator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/feynman_generator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -117,9 +68,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Graphing Calculator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A tool for creating and visualizing mathematical graphs easily and intuitively.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/graphing_calculator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/graphing_calculator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -127,9 +76,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Fibonacci Sequence Generator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A tool for generating and downloading the Fibonacci sequence in JSON format.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/fibonacci.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/fibonacci.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -137,9 +84,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Prime Sequence Generator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A tool for generating and downloading the prime sequence in JSON format.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/prime.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/prime.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +93,7 @@
                     <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
 
                     <!-- Other Applications Section -->
-                    <section id="page-Apps" class="page-content animate-fade-in">
+                    <section id="page-Apps-other" class="page-content animate-fade-in">
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Other Applications (not mine)</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -178,8 +123,25 @@
 
                     <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
 
+                    <!-- Professional Section -->
+                    <section id="page-Apps-professional" class="page-content animate-fade-in">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">My Professional Applications</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
+                                <img src="img/web_build.png" alt="Website Builder Pro" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Website Builder Pro</h3>
+                                    <p class="text-slate-600 dark:text-slate-400 mb-4">Create professional websites.</p>
+                                    <div class="flex space-x-4"><a href="apps/web_build/index.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Build</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
+
                     <!-- AI Section -->
-                    <section id="page-Apps" class="page-content animate-fade-in">
+                    <section id="page-Apps-ai" class="page-content animate-fade-in">
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">My AI Applications</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -187,18 +149,16 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">AI Chatbot <a class="text-red-500 dark:text-red-400">(Coming Soon)</a></h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Interact with an AI-powered chatbot for various tasks.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Chat</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="#" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Chat</a></div>
                                 </div>
                             </div>
                         </div>
                     </section>
-                    
+
                     <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
 
                     <!-- Utilities Section -->
-                    <section id="page-Apps" class="page-content animate-fade-in">
+                    <section id="page-Apps-util" class="page-content animate-fade-in">
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Utilities</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -217,9 +177,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">PDF Tools</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Your all-in-one tool for PDF and image conversion.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/pdf_tools.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/pdf_tools.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -227,9 +185,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Multimedia Base64 Converter</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Encode files to Base64 and decode Base64 strings back to files.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/base64.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/base64.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -237,9 +193,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Unicode Font Generator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Generate text in various Unicode font styles.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/font_generator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/font_generator.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -247,18 +201,15 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">QR Code Generator</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Generate QR codes easily and quickly.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/omniqr.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/omniqr.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">View</a></div>
                                 </div>
                             </div>
                         </div>
                     </section>
-
                     <div class="my-12 border-t border-slate-300 dark:border-slate-700"></div>
 
                     <!-- Games Section -->
-                    <section id="page-Apps" class="page-content animate-fade-in">
+                    <section id="page-Apps-games" class="page-content animate-fade-in">
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Games</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -266,9 +217,7 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">2048 Tile</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">Slide numbered tiles on the grid to combine them and create a tile with the number 2048.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/game_tile.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Play</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/game_tile.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Play</a></div>
                                 </div>
                             </div>
                             <div class="bg-white/50 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:scale-[1.02]">
@@ -276,22 +225,14 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Celestial Chess</h3>
                                     <p class="text-slate-600 dark:text-slate-400 mb-4">A strategic chess game set in a celestial theme.</p>
-                                    <div class="flex space-x-4">
-                                        <a href="apps/game_chess.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Play</a>
-                                    </div>
+                                    <div class="flex space-x-4"><a href="apps/game_chess.html" class="bg-teal-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-teal-600 transition-colors">Play</a></div>
                                 </div>
                             </div>
                         </div>
                     </section>
-
                 </div>
             </main>
         </div>
-        
-        <!-- Footer -->
         <special-footer></special-footer>
-
-        <script src="nav.js"></script>
-
     </body>
 </html>

@@ -1,0 +1,163 @@
+/* ─── Layout ─── */
+.sidebar { width: var(--sidebar-w); background: var(--ui-panel); border-right: 1px solid var(--ui-border); display: flex; flex-direction: column; overflow: hidden; z-index: 10; flex-shrink: 0; height: 100%; }
+.sidebar.right { border-right: none; border-left: 1px solid var(--ui-border); width: var(--props-w); }
+.sidebar-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.workspace { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; overflow: hidden; }
+
+/* ─── Panel Sections ─── */
+.panel-section { padding: 12px 14px; border-bottom: 1px solid var(--ui-border); }
+.panel-title { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ui-text-muted); font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+/* ─── Collapsible sections ─── */
+.collapsible { cursor: pointer; user-select: none; }
+.collapsible::after { content: '▾'; float: right; transition: 0.2s; }
+.collapsible.collapsed::after { content: '▸'; }
+.collapsible-body { overflow: hidden; }
+.collapsible-body.collapsed { display: none; }
+
+/* ─── Buttons ─── */
+button { background: var(--ui-panel2); color: var(--ui-text); border: 1px solid var(--ui-border-light); padding: 6px 10px; border-radius: var(--radius); cursor: pointer; font-size: 0.79rem; font-weight: 500; font-family: var(--font-ui); transition: var(--transition); display: inline-flex; align-items: center; gap: 5px; justify-content: center; }
+button:hover { border-color: var(--ui-accent); color: var(--ui-text); background: var(--ui-accent-soft); }
+button:active { transform: scale(0.97); }
+button.active-btn { background: var(--ui-accent); color: white; border-color: var(--ui-accent); }
+.btn-primary { background: var(--ui-accent); color: white; border: none; font-weight: 600; }
+.btn-primary:hover { background: var(--ui-accent-hover); color: white; }
+.btn-danger { color: #fca5a5; border-color: rgba(240,91,91,0.3); background: rgba(240,91,91,0.08); }
+.btn-danger:hover { background: rgba(240,91,91,0.18); color: white; border-color: var(--ui-danger); }
+.btn-success { background: var(--ui-success); color: white; border: none; }
+.btn-sm { padding: 5px 8px; font-size: 0.74rem; }
+.btn-icon { padding: 6px; width: 30px; height: 30px; }
+
+/* ─── Grid layouts ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+
+/* ─── Labels & Inputs ─── */
+label { font-size: 0.66rem; color: var(--ui-text-muted); display: flex; justify-content: space-between; margin-bottom: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 9px; }
+label:first-child { margin-top: 0; }
+label span { text-transform: none; font-weight: 400; color: var(--ui-accent); font-family: var(--font-mono); letter-spacing: 0; font-size: 0.72rem; }
+input[type="range"] { width: 100%; accent-color: var(--ui-accent); cursor: pointer; height: 4px; }
+input[type="text"], input[type="number"], input[type="url"], input[type="email"], select, textarea { width: 100%; padding: 6px 9px; background: var(--ui-bg); border: 1px solid var(--ui-border-light); color: var(--ui-text); border-radius: var(--radius); font-size: 0.8rem; font-family: var(--font-ui); outline: none; transition: var(--transition); }
+input:focus, select:focus, textarea:focus { border-color: var(--ui-accent); box-shadow: 0 0 0 2px var(--ui-accent-soft); }
+select option { background: var(--ui-panel2); }
+textarea { resize: vertical; font-family: var(--font-mono); font-size: 0.74rem; }
+.color-row { display: flex; align-items: center; gap: 8px; background: var(--ui-bg); padding: 5px 9px; border-radius: var(--radius); border: 1px solid var(--ui-border-light); flex: 1; transition: var(--transition); }
+.color-row:hover { border-color: var(--ui-accent); }
+.color-row span { font-size: 0.74rem; color: var(--ui-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+input[type="color"] { width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0; border-radius: 4px; flex-shrink: 0; }
+.input-group-label { font-size: 0.6rem; text-align: center; color: var(--ui-text-muted); margin-top: 2px; display: block; }
+hr { border: none; border-top: 1px solid var(--ui-border); margin: 10px 0; }
+
+/* ─── Topbar ─── */
+.topbar { height: 52px; background: var(--ui-panel); border-bottom: 1px solid var(--ui-border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; z-index: 10; flex-shrink: 0; gap: 10px; }
+.topbar-brand { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; letter-spacing: -0.3px; min-width: 0; }
+.topbar-brand .logo-icon { width: 26px; height: 26px; background: var(--ui-accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.topbar-center { display: flex; gap: 5px; align-items: center; }
+.topbar-right { display: flex; gap: 5px; align-items: center; }
+.divider-v { width: 1px; height: 20px; background: var(--ui-border); margin: 0 3px; }
+.breadcrumb { font-size: 0.74rem; color: var(--ui-text-muted); background: var(--ui-bg); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--ui-border); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ─── Floating Toolbars ─── */
+#rte-toolbar, #hover-toolbar, #row-toolbar { position: fixed; background: var(--ui-panel2); border: 1px solid var(--ui-border-light); padding: 4px 5px; border-radius: 50px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); display: none; gap: 2px; z-index: 1000; align-items: center; }
+#rte-toolbar button, #hover-toolbar button, #row-toolbar button { border-radius: 50px; padding: 5px 9px; background: transparent; border-color: transparent; font-size: 0.74rem; }
+#rte-toolbar button:hover, #hover-toolbar button:hover, #row-toolbar button:hover { background: var(--ui-accent-soft); }
+.tb-sep { width: 1px; height: 18px; background: var(--ui-border); margin: 0 2px; flex-shrink: 0; }
+.tb-label { font-size: 0.65rem; color: var(--ui-text-muted); padding: 0 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+#row-toolbar { border-radius: 8px; padding: 6px 8px; }
+
+/* ─── Tabs ─── */
+.tabs { display: flex; border-bottom: 1px solid var(--ui-border); background: var(--ui-panel); overflow-x: auto; flex-shrink: 0; }
+.tab { flex: 1; text-align: center; padding: 10px 4px; cursor: pointer; font-size: 0.68rem; font-weight: 600; color: var(--ui-text-muted); border-bottom: 2px solid transparent; transition: var(--transition); white-space: nowrap; min-width: 44px; }
+.tab:hover { color: var(--ui-text); }
+.tab.active { color: var(--ui-accent); border-bottom-color: var(--ui-accent); background: var(--ui-panel2); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+#props-tabs-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+
+/* ─── Element Buttons in sidebar ─── */
+.el-btn { width: 100%; padding: 7px 9px; background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: var(--radius); cursor: pointer; font-size: 0.76rem; font-weight: 500; font-family: var(--font-ui); transition: var(--transition); display: flex; align-items: center; gap: 7px; color: var(--ui-text); text-align: left; }
+.el-btn:hover { border-color: var(--ui-accent); background: var(--ui-accent-soft); color: var(--ui-text); }
+.el-btn i { width: 14px; text-align: center; color: var(--ui-accent); font-size: 0.76rem; }
+.el-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+
+/* ─── Component Items ─── */
+.component-item { padding: 9px 11px; background: var(--ui-bg); border-radius: var(--radius); margin-bottom: 5px; cursor: grab; border: 1px solid var(--ui-border); display: flex; align-items: center; gap: 9px; font-size: 0.78rem; transition: var(--transition); }
+.component-item:hover { border-color: var(--ui-accent); background: var(--ui-accent-soft); transform: translateX(2px); }
+.component-item i { color: var(--ui-accent); width: 14px; text-align: center; }
+.component-item:active { cursor: grabbing; }
+
+/* ─── Layer Items ─── */
+.layer-item { padding: 6px 10px; background: transparent; border-radius: 6px; margin-bottom: 2px; cursor: pointer; font-size: 0.76rem; display: flex; align-items: center; gap: 7px; border: 1px solid transparent; transition: var(--transition); }
+.layer-item:hover { background: var(--ui-bg); border-color: var(--ui-border); }
+.layer-item.active { background: var(--ui-accent-soft); border-color: var(--ui-accent); color: var(--ui-accent); }
+.layer-item i { color: var(--ui-text-muted); width: 13px; text-align: center; font-size: 0.7rem; }
+.layer-item.active i { color: var(--ui-accent); }
+
+/* ─── Asset Grid ─── */
+.asset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 10px; }
+.asset-item { background: var(--ui-bg); border-radius: 6px; padding: 4px; text-align: center; cursor: pointer; border: 1px solid var(--ui-border); transition: var(--transition); }
+.asset-item:hover { border-color: var(--ui-accent); transform: translateY(-2px); }
+.asset-item img { width: 100%; height: 52px; object-fit: cover; border-radius: 4px; }
+.asset-item i { font-size: 1.6rem; color: var(--ui-text-muted); margin: 8px 0; display: block; }
+.asset-item span { font-size: 9px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ui-text-muted); }
+
+/* ─── Page List ─── */
+.page-item { padding: 7px 10px; background: var(--ui-bg); border-radius: 6px; margin-bottom: 4px; cursor: pointer; font-size: 0.78rem; display: flex; align-items: center; gap: 8px; border: 1px solid var(--ui-border); transition: var(--transition); }
+.page-item:hover { border-color: var(--ui-accent); }
+.page-item.active { border-color: var(--ui-accent); background: var(--ui-accent-soft); color: var(--ui-accent); }
+.page-item i { color: var(--ui-text-muted); font-size: 0.72rem; }
+.page-item.active i { color: var(--ui-accent); }
+
+/* ─── Empty State ─── */
+#props-empty { padding: 36px 18px; text-align: center; color: var(--ui-text-muted); line-height: 1.7; }
+#props-empty .empty-icon { font-size: 2.2rem; margin-bottom: 12px; opacity: 0.25; display: block; }
+#props-empty p { font-size: 0.8rem; margin: 0; }
+#props-empty .shortcut { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 6px; padding: 10px 12px; margin-top: 14px; font-size: 0.72rem; text-align: left; }
+#props-empty .shortcut .key { background: var(--ui-panel2); padding: 2px 5px; border-radius: 4px; font-family: var(--font-mono); border: 1px solid var(--ui-border); font-size: 0.68rem; }
+
+/* ─── Selected element badge ─── */
+#selected-badge { background: var(--ui-panel3); border-bottom: 1px solid var(--ui-border); padding: 8px 14px; display: none; align-items: center; gap: 8px; }
+#selected-badge .badge-icon { width: 22px; height: 22px; background: var(--ui-accent-soft); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--ui-accent); flex-shrink: 0; }
+#selected-badge .badge-label { font-size: 0.78rem; font-weight: 600; color: var(--ui-accent); }
+#selected-badge .badge-tag { font-size: 0.65rem; color: var(--ui-text-muted); font-family: var(--font-mono); }
+
+/* ─── Dynamic Content Panel ─── */
+#dynamic-content-panel { background: rgba(91,106,240,0.06); border-left: 3px solid var(--ui-accent); display: none; }
+
+/* ─── Status Bar ─── */
+.status-bar { height: 24px; background: var(--ui-bg); border-top: 1px solid var(--ui-border); display: flex; align-items: center; padding: 0 12px; gap: 14px; font-size: 0.67rem; color: var(--ui-text-muted); flex-shrink: 0; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ui-success); display: inline-block; }
+
+/* ─── Kbd shortcuts ─── */
+.kbd { background: var(--ui-panel2); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.66rem; border: 1px solid var(--ui-border); color: var(--ui-text-muted); }
+
+/* ─── Section header ─── */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+.section-label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ui-text-muted); font-weight: 700; }
+.color-pair { display: flex; gap: 5px; }
+
+/* ─── Info box ─── */
+.info-box { background: rgba(91,106,240,0.08); border: 1px solid rgba(91,106,240,0.2); border-radius: 6px; padding: 8px 10px; font-size: 0.72rem; color: var(--ui-text-muted); margin-bottom: 8px; }
+.info-box strong { color: var(--ui-accent); }
+
+/* ─── Toggle switch ─── */
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.toggle-row label { margin: 0; text-transform: none; font-size: 0.78rem; font-weight: 500; color: var(--ui-text); letter-spacing: 0; }
+.toggle { position: relative; display: inline-block; width: 34px; height: 18px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--ui-border-light); border-radius: 18px; transition: .2s; }
+.toggle-slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .2s; }
+input:checked + .toggle-slider { background-color: var(--ui-accent); }
+input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+#file-upload, #asset-upload, #bg-upload { display: none; }
+
+/* Column width controls */
+.col-width-row { display: flex; gap: 4px; align-items: center; margin-top: 6px; }
+.col-width-input { flex: 1; text-align: center; padding: 4px 2px; font-size: 0.72rem; }
+
+/* Form builder */
+.form-field-list { display: flex; flex-direction: column; gap: 5px; margin: 8px 0; }
+.form-field-item { display: flex; gap: 5px; align-items: center; background: var(--ui-bg); padding: 5px 8px; border-radius: 6px; border: 1px solid var(--ui-border); font-size: 0.75rem; }
+.form-field-item span { flex: 1; }

@@ -1,7 +1,7 @@
 /* Define fonts */
 @font-face {
   font-family: 'Calligraphy Font';
-  src: url('fonts/DecoType Thuluth II Regular.ttf') format('truetype');
+  src: url('../fonts/DecoType Thuluth II Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap; /* Helps with page load performance */
@@ -11,4 +11,9 @@
 .calligraphy-ar-font {
   font-family: 'Calligraphy Font', sans-serif; 
   font-size: 3rem;
+}
+
+/* Global utility classes */
+.hidden {
+  display: none !important;
 }

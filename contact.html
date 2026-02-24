@@ -1,49 +1,21 @@
-
 <!DOCTYPE html>
-
 <html lang="en" class="dark">
-
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Contact</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-            extend: {
-                keyframes: {
-                'fade-in': {
-                    '0%': { opacity: '0', transform: 'translateY(10px)' },
-                    '100%': { opacity: '1', transform: 'translateY(0)' },
-                },
-                },
-                animation: {
-                'fade-in': 'fade-in 0.5s ease-out forwards',
-                },
-            },
-            },
-        }
-        </script>
-        <style>
-        /* Simple class to hide elements */
-        .hidden {
-            display: none;
-        }
-        </style>
+        <script src="js/tailwind-config.js"></script>
+        <link rel="stylesheet" href="css/style.css">
+        <script defer src="js/components/Navbar.js"></script>
+        <script defer src="js/components/Footer.js"></script>
+        <script defer src="js/main.js"></script>
     </head>
-
     <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300">
-
-        <div class="flex min-h-screen">
-            <!-- Navbar -->
+        <div class="flex flex-col min-h-screen">
             <special-nav></special-nav>
-
-            <!-- Main Content -->
-            <main class="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto">
+            <main class="flex-1 p-4 sm:p-8 lg:p-12">
                 <div class="max-w-4xl mx-auto">
-
                     <!-- Contact Section -->
                     <section id="page-Contact" class="page-content animate-fade-in">
                         <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Get In Touch</h2>
@@ -86,19 +58,8 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <a href="https://www.benhoare.info/" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
                                 <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                        width="24" 
-                                        height="24" 
-                                        viewBox="0 0 24 24" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        stroke-width="2" 
-                                        stroke-linecap="round" 
-                                        stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path>
-                                    <path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path><path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
                                     </svg>
                                 </div>
                                 <div class="ml-4">
@@ -108,19 +69,8 @@
                             </a>
                             <a href="https://www.nabiliqbal.com/" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
                                 <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                        width="24" 
-                                        height="24" 
-                                        viewBox="0 0 24 24" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        stroke-width="2" 
-                                        stroke-linecap="round" 
-                                        stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path>
-                                    <path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path><path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
                                     </svg>
                                 </div>
                                 <div class="ml-4">
@@ -130,19 +80,8 @@
                             </a>
                             <a href="https://muathhamidi.github.io/muath.hamidi/" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-slate-100 dark:hover:bg-slate-800">
                                 <div class="text-slate-500 dark:text-slate-400 transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                        width="24" 
-                                        height="24" 
-                                        viewBox="0 0 24 24" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        stroke-width="2" 
-                                        stroke-linecap="round" 
-                                        stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path>
-                                    <path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path><path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"></path>
                                     </svg>
                                 </div>
                                 <div class="ml-4">
@@ -152,15 +91,9 @@
                             </a>
                         </div>
                     </section>
-
                 </div>
             </main>
         </div>
-
-        <!-- Footer -->
         <special-footer></special-footer>
-
-        <script src="nav.js"></script>
-
     </body>
 </html>

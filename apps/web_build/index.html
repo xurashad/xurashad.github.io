@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Builder Pro — Visual Site Builder</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Split CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/canvas.css">
+</head>
+<body>
+    <input type="file" id="file-upload" multiple>
+    <input type="file" id="asset-upload" multiple accept="image/*,video/*,.pdf">
+    <input type="file" id="bg-upload" accept="image/*">
+    <div id="toast-container"></div>
+
+    <!-- RTE Toolbar -->
+    <div id="rte-toolbar">
+        <button onclick="app.formatText('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+        <button onclick="app.formatText('italic')" title="Italic"><i class="fas fa-italic"></i></button>
+        <button onclick="app.formatText('underline')" title="Underline"><i class="fas fa-underline"></i></button>
+        <button onclick="app.formatText('strikeThrough')" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+        <div class="tb-sep"></div>
+        <button onclick="app.formatText('justifyLeft')" title="Left"><i class="fas fa-align-left"></i></button>
+        <button onclick="app.formatText('justifyCenter')" title="Center"><i class="fas fa-align-center"></i></button>
+        <button onclick="app.formatText('justifyRight')" title="Right"><i class="fas fa-align-right"></i></button>
+        <div class="tb-sep"></div>
+        <button onclick="app.linkText()" title="Insert Link"><i class="fas fa-link"></i></button>
+        <button onclick="app.formatText('removeFormat')" title="Clear"><i class="fas fa-eraser"></i></button>
+    </div>
+
+    <!-- Hover Toolbar (for b-el) -->
+    <div id="hover-toolbar">
+        <button onclick="app.moveEl('up')" title="Move Up"><i class="fas fa-arrow-up"></i></button>
+        <button onclick="app.moveEl('down')" title="Move Down"><i class="fas fa-arrow-down"></i></button>
+        <button onclick="app.duplicateEl()" title="Duplicate"><i class="fas fa-copy"></i></button>
+        <div class="tb-sep"></div>
+        <button onclick="app.deleteEl()" title="Delete" class="btn-danger"><i class="fas fa-trash"></i></button>
+    </div>
+
+    <!-- Row Toolbar (for rows/cols) -->
+    <div id="row-toolbar">
+        <span class="tb-label">Row</span>
+        <div class="tb-sep"></div>
+        <button onclick="app.addColumnToRow()" title="Add Column"><i class="fas fa-plus"></i> Col</button>
+        <button onclick="app.removeColumnFromRow()" title="Remove Column"><i class="fas fa-minus"></i> Col</button>
+        <div class="tb-sep"></div>
+        <button onclick="app.toggleFullBleed()" title="Toggle Full Width" id="btn-fullbleed"><i class="fas fa-arrows-alt-h"></i> Full</button>
+        <div class="tb-sep"></div>
+        <button onclick="app.duplicateEl()" title="Duplicate Row"><i class="fas fa-copy"></i></button>
+        <button onclick="app.moveEl('up')" title="Move Up"><i class="fas fa-arrow-up"></i></button>
+        <button onclick="app.moveEl('down')" title="Move Down"><i class="fas fa-arrow-down"></i></button>
+        <div class="tb-sep"></div>
+        <button onclick="app.deleteEl()" class="btn-danger" title="Delete Row"><i class="fas fa-trash"></i></button>
+    </div>
+
+    <!-- ═══ TOPBAR ═══ -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <div class="logo-icon">🌐</div>
+            <span>Website Builder Pro</span>
+            <span id="page-title-display" class="breadcrumb">Home</span>
+        </div>
+        <div class="topbar-center">
+            <button onclick="app.undo()" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+            <button onclick="app.redo()" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+            <div class="divider-v"></div>
+            <button onclick="app.deselectAll()" title="Deselect (Esc)"><i class="fas fa-mouse-pointer"></i></button>
+        </div>
+        <div class="topbar-right">
+            <button onclick="app.previewSite()" title="Preview site"><i class="fas fa-eye"></i> Preview</button>
+            <button class="btn-primary" onclick="app.exportSite()"><i class="fas fa-download"></i> Export ZIP</button>
+        </div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ═══ LEFT SIDEBAR ═══ -->
+        <div class="sidebar">
+            <div class="sidebar-scroll">
+                <!-- Theme Colors -->
+                <div class="panel-section">
+                    <div class="panel-title collapsible" onclick="toggleCollapse(this)">🎨 Theme Colors</div>
+                    <div class="collapsible-body">
+                        <div class="grid-2" style="margin-bottom:7px;">
+                            <div class="color-row" title="Light BG"><input type="color" id="light-bg" value="#ffffff"><span>Light BG</span></div>
+                            <div class="color-row" title="Light Text"><input type="color" id="light-txt" value="#0f172a"><span>Light Text</span></div>
+                            <div class="color-row" title="Dark BG"><input type="color" id="dark-bg" value="#0f172a"><span>Dark BG</span></div>
+                            <div class="color-row" title="Dark Text"><input type="color" id="dark-txt" value="#f8fafc"><span>Dark Text</span></div>
+                        </div>
+                        <label>Accent / Brand Color</label>
+                        <div class="color-row"><input type="color" id="site-accent" value="#5b6af0" style="width:100%;"><span id="accent-hex">#5b6af0</span></div>
+                        <div class="grid-2" style="margin-top:8px;">
+                            <button onclick="app.updateSiteTheme()" class="btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Apply</button>
+                            <button onclick="app.toggleCanvasTheme()" class="btn-sm"><i class="fas fa-adjust"></i> Dark Mode</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pages -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <span class="section-label">📄 Pages</span>
+                        <button class="btn-sm btn-primary" onclick="app.addPage()"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                    <div id="page-list"></div>
+                </div>
+
+                <!-- Layout Sections & Rows -->
+                <div class="panel-section">
+                    <div class="panel-title collapsible" onclick="toggleCollapse(this)">🧱 Layout Sections & Rows</div>
+                    <div class="collapsible-body">
+                        <div class="info-box">Sections wrap the page. Rows go inside Sections.</div>
+                        <label>Add New Section</label>
+                        <div class="el-btn-grid" style="margin-bottom:8px;">
+                            <button class="el-btn" onclick="app.addSection('col-1')"><i class="fas fa-square-full"></i> 1 Col</button>
+                            <button class="el-btn" onclick="app.addSection('col-2')"><i class="fas fa-columns"></i> 2 Cols</button>
+                            <button class="el-btn" onclick="app.addSection('col-3')"><i class="fas fa-table-columns"></i> 3 Cols</button>
+                            <button class="el-btn" onclick="app.addSection('col-4')"><i class="fas fa-border-all"></i> 4 Cols</button>
+                        </div>
+                        <label>Add Row (To Selected Section)</label>
+                        <div class="el-btn-grid" style="margin-bottom:8px;">
+                            <button class="el-btn" onclick="app.addRow('col-1')"><i class="fas fa-square-full"></i> 1 Col Row</button>
+                            <button class="el-btn" onclick="app.addRow('col-2')"><i class="fas fa-columns"></i> 2 Col Row</button>
+                            <button class="el-btn" onclick="app.addRow('col-3')"><i class="fas fa-table-columns"></i> 3 Col Row</button>
+                            <button class="el-btn" onclick="app.addRow('col-4')"><i class="fas fa-border-all"></i> 4 Col Row</button>
+                        </div>
+                        <div class="el-btn-grid">
+                            <button class="el-btn" onclick="app.addSpacer()"><i class="fas fa-arrows-alt-v"></i> Spacer</button>
+                            <button class="el-btn" onclick="app.addEl('divider')"><i class="fas fa-minus"></i> Divider</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Elements -->
+                <div class="panel-section">
+                    <div class="panel-title collapsible" onclick="toggleCollapse(this)">✨ Elements</div>
+                    <div class="collapsible-body">
+                        <div class="el-btn-grid">
+                            <button class="el-btn" onclick="app.addEl('h1')"><i class="fas fa-heading"></i> Heading 1</button>
+                            <button class="el-btn" onclick="app.addEl('h2')"><i class="fas fa-h"></i> Heading 2</button>
+                            <button class="el-btn" onclick="app.addEl('h3')"><i class="fas fa-h"></i> Heading 3</button>
+                            <button class="el-btn" onclick="app.addEl('p')"><i class="fas fa-paragraph"></i> Paragraph</button>
+                            <button class="el-btn" onclick="app.addEl('btn')"><i class="fas fa-hand-pointer"></i> Button</button>
+                            <button class="el-btn" onclick="app.addEl('img')"><i class="fas fa-image"></i> Image</button>
+                            <button class="el-btn" onclick="app.addEl('video')"><i class="fas fa-video"></i> Video/YouTube</button>
+                            <button class="el-btn" onclick="app.addEl('icon')"><i class="fas fa-star"></i> Icon</button>
+                            <button class="el-btn" onclick="app.addEl('list')"><i class="fas fa-list"></i> List</button>
+                            <button class="el-btn" onclick="app.addEl('blockquote')"><i class="fas fa-quote-left"></i> Quote</button>
+                            <button class="el-btn" onclick="app.addEl('map')"><i class="fas fa-map-marker-alt"></i> Map</button>
+                            <button class="el-btn" onclick="app.addEl('form')"><i class="fas fa-envelope"></i> Form</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pre-built Sections -->
+                <div class="panel-section">
+                    <div class="panel-title collapsible" onclick="toggleCollapse(this)">📦 Pre-built Sections</div>
+                    <div class="collapsible-body">
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'hero')"><i class="fas fa-bolt"></i> Hero Section</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'features')"><i class="fas fa-cubes"></i> Features Grid</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'testimonial')"><i class="fas fa-comment-dots"></i> Testimonial</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'contact')"><i class="fas fa-envelope"></i> Contact Form</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'gallery')"><i class="fas fa-images"></i> Image Gallery</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'cta')"><i class="fas fa-bullhorn"></i> CTA Banner</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'pricing')"><i class="fas fa-tag"></i> Pricing Cards</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'stats')"><i class="fas fa-chart-bar"></i> Stats Row</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'team')"><i class="fas fa-users"></i> Team Cards</div>
+                        <div class="component-item" draggable="true" ondragstart="app.dragComponent(event,'faq')"><i class="fas fa-question-circle"></i> FAQ Section</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ CANVAS AREA ═══ -->
+        <div class="workspace">
+            <div class="canvas-wrap" id="canvas-wrap" onclick="app.deselectAll(event)" ondrop="app.handleDrop(event)" ondragover="app.handleDragOver(event)" ondragleave="app.handleDragLeave(event)">
+                <div id="canvas" data-site-theme="light">
+                    <header class="site-header" id="global-header" data-label="Header">
+                        <h2 class="b-el" contenteditable="true" data-label="Brand" style="font-size:1.35rem;margin:0;font-weight:700;">MyBrand</h2>
+                        <nav class="site-nav" id="site-nav"></nav>
+                    </header>
+                    <main id="page-content"></main>
+                    <footer class="site-footer" id="global-footer" data-label="Footer">
+                        <p class="b-el" contenteditable="true" data-label="Copyright" style="font-size:0.85rem;opacity:0.6;margin:0;">© 2024 MyBrand. All rights reserved.</p>
+                    </footer>
+                </div>
+            </div>
+            <div class="status-bar">
+                <span><span class="status-dot"></span> Ready</span>
+                <span id="status-el">No selection</span>
+                <span style="margin-left:auto;"><span class="kbd">Del</span> Delete &nbsp; <span class="kbd">Ctrl+Z</span> Undo &nbsp; <span class="kbd">Ctrl+D</span> Duplicate &nbsp; <span class="kbd">↑↓</span> Move</span>
+            </div>
+        </div>
+
+        <!-- ═══ RIGHT SIDEBAR (Properties) ═══ -->
+        <div class="sidebar right">
+            <div id="selected-badge">
+                <div class="badge-icon"><i class="fas fa-cube" id="badge-icon-el"></i></div>
+                <div>
+                    <div class="badge-label" id="badge-label-text">Element</div>
+                    <div class="badge-tag" id="badge-tag-text">—</div>
+                </div>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="app.switchTab(0)">Layout</div>
+                <div class="tab" onclick="app.switchTab(1)">Style</div>
+                <div class="tab" onclick="app.switchTab(2)">Hover</div>
+                <div class="tab" onclick="app.switchTab(3)">Settings</div>
+                <div class="tab" onclick="app.switchTab(4)">Assets</div>
+                <div class="tab" onclick="app.switchTab(5)">Layers</div>
+            </div>
+
+            <div id="props-empty">
+                <span class="empty-icon">🖱️</span>
+                <p><strong>Click any element</strong> to edit its properties.</p>
+                <div class="shortcut">
+                    <div style="margin-bottom:6px;font-weight:600;font-size:0.72rem;">Keyboard Shortcuts</div>
+                    <div style="display:flex;flex-direction:column;gap:4px;color:var(--ui-text-muted);">
+                        <div><span class="key">Del</span> Delete selected</div>
+                        <div><span class="key">Ctrl+Z</span> Undo / <span class="key">Ctrl+Y</span> Redo</div>
+                        <div><span class="key">Ctrl+D</span> Duplicate</div>
+                        <div><span class="key">↑ ↓</span> Move element</div>
+                        <div><span class="key">Esc</span> Deselect</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="props-panel" style="display:none;flex:1;min-height:0;display:none;flex-direction:column;">
+                <!-- Dynamic content -->
+                <div id="dynamic-content-panel" class="panel-section"></div>
+
+                <div id="props-tabs-content">
+                    <!-- LAYOUT TAB -->
+                    <div class="tab-content active" id="tab-0">
+                        <!-- Section/Row specific controls -->
+                        <div id="section-controls" style="display:none;" class="panel-section">
+                            <div class="panel-title">Section Settings</div>
+                            <div class="toggle-row">
+                                <label>Full Width (100vw)</label>
+                                <label class="toggle"><input type="checkbox" id="toggle-fullbleed" onchange="app.setFullBleed(this.checked)"><span class="toggle-slider"></span></label>
+                            </div>
+                            <label style="margin-top:10px;">Section Padding</label>
+                            <div class="grid-2">
+                                <div><input type="text" id="sec-pt" placeholder="40px" oninput="app.setSectionInnerStyle('paddingTop',this.value)"><span class="input-group-label">Top</span></div>
+                                <div><input type="text" id="sec-pb" placeholder="40px" oninput="app.setSectionInnerStyle('paddingBottom',this.value)"><span class="input-group-label">Bottom</span></div>
+                                <div><input type="text" id="sec-pl" placeholder="5%" oninput="app.setSectionInnerStyle('paddingLeft',this.value)"><span class="input-group-label">Left</span></div>
+                                <div><input type="text" id="sec-pr" placeholder="5%" oninput="app.setSectionInnerStyle('paddingRight',this.value)"><span class="input-group-label">Right</span></div>
+                            </div>
+                            <label style="margin-top:10px;">Column Gap</label>
+                            <input type="text" id="sec-gap" placeholder="20px" oninput="app.setRowStyle('gap', this.value)">
+                            <hr>
+                            <label>Column Layout</label>
+                            <div class="grid-4" style="margin-bottom:6px;">
+                                <button class="btn-sm" onclick="app.changeRowLayout('col-1')" title="1 col">1</button>
+                                <button class="btn-sm" onclick="app.changeRowLayout('col-2')" title="2 col">2</button>
+                                <button class="btn-sm" onclick="app.changeRowLayout('col-3')" title="3 col">3</button>
+                                <button class="btn-sm" onclick="app.changeRowLayout('col-4')" title="4 col">4</button>
+                            </div>
+                            <label>Custom Column Widths (e.g. 2fr 1fr)</label>
+                            <input type="text" id="custom-cols" placeholder="1fr 2fr" onchange="app.setCustomColWidths(this.value)">
+                            <hr>
+                            <button class="btn-sm btn-danger" style="width:100%" onclick="app.deleteEl()"><i class="fas fa-trash"></i> Delete Section</button>
+                        </div>
+
+                        <div class="panel-section">
+                            <label>Padding <span id="padding-display"></span></label>
+                            <div class="grid-4">
+                                <div><input type="number" id="p-pt" placeholder="0" oninput="app.setStyle('paddingTop',this.value+'px')"><span class="input-group-label">Top</span></div>
+                                <div><input type="number" id="p-pr" placeholder="0" oninput="app.setStyle('paddingRight',this.value+'px')"><span class="input-group-label">Right</span></div>
+                                <div><input type="number" id="p-pb" placeholder="0" oninput="app.setStyle('paddingBottom',this.value+'px')"><span class="input-group-label">Bottom</span></div>
+                                <div><input type="number" id="p-pl" placeholder="0" oninput="app.setStyle('paddingLeft',this.value+'px')"><span class="input-group-label">Left</span></div>
+                            </div>
+                            <label style="margin-top:9px;">Margin</label>
+                            <div class="grid-4">
+                                <div><input type="number" id="p-mt" placeholder="0" oninput="app.setStyle('marginTop',this.value+'px')"><span class="input-group-label">Top</span></div>
+                                <div><input type="number" id="p-mr" placeholder="0" oninput="app.setStyle('marginRight',this.value+'px')"><span class="input-group-label">Right</span></div>
+                                <div><input type="number" id="p-mb" placeholder="0" oninput="app.setStyle('marginBottom',this.value+'px')"><span class="input-group-label">Bottom</span></div>
+                                <div><input type="number" id="p-ml" placeholder="0" oninput="app.setStyle('marginLeft',this.value+'px')"><span class="input-group-label">Left</span></div>
+                            </div>
+                            <hr>
+                            <label>Sizing</label>
+                            <div class="grid-2">
+                                <div><label style="margin-top:0">Width</label><input type="text" id="p-width" placeholder="auto" onchange="app.setStyle('width',this.value)"></div>
+                                <div><label style="margin-top:0">Height</label><input type="text" id="p-height" placeholder="auto" onchange="app.setStyle('height',this.value)"></div>
+                                <div><label>Max Width</label><input type="text" id="p-maxw" placeholder="none" onchange="app.setStyle('maxWidth',this.value)"></div>
+                                <div><label>Min Height</label><input type="text" id="p-minh" placeholder="0" onchange="app.setStyle('minHeight',this.value)"></div>
+                            </div>
+                            <hr>
+                            <label>Display</label>
+                            <select onchange="app.setStyle('display',this.value)" id="p-display">
+                                <option value="">Default</option>
+                                <option value="block">Block</option>
+                                <option value="inline-block">Inline Block</option>
+                                <option value="flex">Flex</option>
+                                <option value="grid">Grid</option>
+                                <option value="none">Hidden</option>
+                            </select>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0">Direction</label>
+                                    <select onchange="app.setStyle('flexDirection',this.value)">
+                                        <option value="row">Row →</option>
+                                        <option value="column">Column ↓</option>
+                                        <option value="row-reverse">Row ←</option>
+                                    </select>
+                                </div>
+                                <div><label style="margin-top:0">Justify</label>
+                                    <select onchange="app.setStyle('justifyContent',this.value)">
+                                        <option value="flex-start">Start</option>
+                                        <option value="center">Center</option>
+                                        <option value="space-between">Space Between</option>
+                                        <option value="space-around">Space Around</option>
+                                        <option value="flex-end">End</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <label>Align Items</label>
+                            <select onchange="app.setStyle('alignItems',this.value)">
+                                <option value="stretch">Stretch</option>
+                                <option value="flex-start">Start</option>
+                                <option value="center">Center</option>
+                                <option value="flex-end">End</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- STYLE TAB -->
+                    <div class="tab-content" id="tab-1">
+                        <div class="panel-section">
+                            <div class="info-box">Styles apply to the <strong>selected element</strong> only — not the whole column.</div>
+                            <label>Font Family</label>
+                            <select id="p-font" onchange="app.setStyle('fontFamily',this.value)">
+                                <option value="'DM Sans', sans-serif">DM Sans</option>
+                                <option value="'Inter', sans-serif">Inter</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                <option value="system-ui, sans-serif">System UI</option>
+                            </select>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0;">Font Size</label><input type="text" id="p-fs" placeholder="16px" onchange="app.setStyle('fontSize',this.value)"></div>
+                                <div><label style="margin-top:0;">Weight</label>
+                                    <select id="p-fw" onchange="app.setStyle('fontWeight',this.value)">
+                                        <option value="300">Light 300</option>
+                                        <option value="400">Normal 400</option>
+                                        <option value="500">Medium 500</option>
+                                        <option value="600">Semibold 600</option>
+                                        <option value="700">Bold 700</option>
+                                        <option value="800">Extra Bold</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <label>Text Alignment</label>
+                            <div class="grid-4">
+                                <button onclick="app.setStyle('textAlign','left')" title="Left"><i class="fas fa-align-left"></i></button>
+                                <button onclick="app.setStyle('textAlign','center')" title="Center"><i class="fas fa-align-center"></i></button>
+                                <button onclick="app.setStyle('textAlign','right')" title="Right"><i class="fas fa-align-right"></i></button>
+                                <button onclick="app.setStyle('textAlign','justify')" title="Justify"><i class="fas fa-align-justify"></i></button>
+                            </div>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0;">Transform</label>
+                                    <select onchange="app.setStyle('textTransform',this.value)">
+                                        <option value="none">None</option>
+                                        <option value="uppercase">UPPERCASE</option>
+                                        <option value="lowercase">lowercase</option>
+                                        <option value="capitalize">Capitalize</option>
+                                    </select>
+                                </div>
+                                <div><label style="margin-top:0;">Decoration</label>
+                                    <select onchange="app.setStyle('textDecoration',this.value)">
+                                        <option value="none">None</option>
+                                        <option value="underline">Underline</option>
+                                        <option value="line-through">Strikethrough</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0;">Line Height</label><input type="text" id="p-lh" placeholder="1.6" onchange="app.setStyle('lineHeight',this.value)"></div>
+                                <div><label style="margin-top:0;">Letter Spacing</label><input type="text" id="p-ls" placeholder="0px" onchange="app.setStyle('letterSpacing',this.value)"></div>
+                            </div>
+                            <hr>
+                            <label>Text & Background Colors</label>
+                            <div class="color-pair">
+                                <div class="color-row" style="flex:1;"><input type="color" id="p-color" onchange="app.setStyle('color',this.value)"><span>Text</span></div>
+                                <div class="color-row" style="flex:1;"><input type="color" id="p-bgc" onchange="app.setStyle('backgroundColor',this.value)"><span>BG</span></div>
+                            </div>
+                            <hr>
+                            <label>Background Image</label>
+                            <div class="grid-2">
+                                <button onclick="app.triggerBgUpload()" class="btn-sm"><i class="fas fa-upload"></i> Upload</button>
+                                <button onclick="app.clearBg()" class="btn-sm"><i class="fas fa-times"></i> Clear BG</button>
+                            </div>
+                            <label style="margin-top:9px;">Gradient Presets</label>
+                            <select onchange="app.setGradient(this.value)">
+                                <option value="">— None —</option>
+                                <option value="linear-gradient(135deg, #5b6af0, #818cf8)">Indigo</option>
+                                <option value="linear-gradient(135deg, #ef4444, #f97316)">Sunset</option>
+                                <option value="linear-gradient(135deg, #10b981, #059669)">Emerald</option>
+                                <option value="linear-gradient(135deg, #f43f5e, #8b5cf6)">Rose-Purple</option>
+                                <option value="linear-gradient(135deg, #0f172a, #1e293b)">Dark Slate</option>
+                                <option value="linear-gradient(135deg, #fbbf24, #f59e0b)">Amber</option>
+                                <option value="linear-gradient(180deg, rgba(91,106,240,0.08) 0%, rgba(91,106,240,0) 100%)">Subtle Blue Fade</option>
+                            </select>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0;">BG Size</label>
+                                    <select onchange="app.setStyle('backgroundSize',this.value)">
+                                        <option value="cover">Cover</option>
+                                        <option value="contain">Contain</option>
+                                        <option value="auto">Auto</option>
+                                        <option value="100% 100%">Stretch</option>
+                                    </select>
+                                </div>
+                                <div><label style="margin-top:0;">BG Position</label>
+                                    <select onchange="app.setStyle('backgroundPosition',this.value)">
+                                        <option value="center">Center</option>
+                                        <option value="top">Top</option>
+                                        <option value="bottom">Bottom</option>
+                                        <option value="left">Left</option>
+                                        <option value="right">Right</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <hr>
+                            <label>Border Radius <span id="rad-val">0px</span></label>
+                            <input type="range" id="p-rad" min="0" max="100" value="0" oninput="app.setStyle('borderRadius',this.value+'px');document.getElementById('rad-val').textContent=this.value+'px'">
+                            <label>Border</label>
+                            <div style="display:flex;gap:5px;align-items:center;">
+                                <input type="number" id="p-bw" min="0" max="20" value="0" placeholder="px" style="width:56px;" onchange="app.updateBorder()">
+                                <select id="p-bs" onchange="app.updateBorder()" style="flex:1;">
+                                    <option value="solid">Solid</option>
+                                    <option value="dashed">Dashed</option>
+                                    <option value="dotted">Dotted</option>
+                                    <option value="double">Double</option>
+                                </select>
+                                <input type="color" id="p-bc" value="#5b6af0" onchange="app.updateBorder()" style="width:34px;height:34px;padding:2px;border-radius:6px;border:1px solid var(--ui-border);">
+                            </div>
+                            <label>Box Shadow</label>
+                            <select onchange="app.setStyle('boxShadow',this.value)">
+                                <option value="none">None</option>
+                                <option value="0 1px 3px rgba(0,0,0,0.12)">Subtle</option>
+                                <option value="0 4px 12px rgba(0,0,0,0.15)">Light</option>
+                                <option value="0 10px 30px rgba(0,0,0,0.25)">Medium</option>
+                                <option value="0 25px 50px -12px rgba(0,0,0,0.45)">Heavy</option>
+                                <option value="0 0 0 3px rgba(91,106,240,0.3)">Accent Ring</option>
+                                <option value="inset 0 0 0 2px rgba(91,106,240,0.3)">Inset Ring</option>
+                            </select>
+                            <label>Opacity <span id="op-val">100%</span></label>
+                            <input type="range" min="0" max="1" step="0.05" value="1" oninput="app.setStyle('opacity',this.value);document.getElementById('op-val').textContent=Math.round(this.value*100)+'%'">
+                        </div>
+                    </div>
+
+                    <!-- HOVER TAB -->
+                    <div class="tab-content" id="tab-2">
+                        <div class="panel-section">
+                            <div class="info-box">Styles applied on mouse hover. Element needs a unique ID (auto-generated).</div>
+                            <label>Hover Background</label>
+                            <div class="color-row"><input type="color" id="p-hbg" onchange="app.setHoverStyle('backgroundColor',this.value)"><span>Background Color</span></div>
+                            <label>Hover Text Color</label>
+                            <div class="color-row"><input type="color" id="p-hcolor" onchange="app.setHoverStyle('color',this.value)"><span>Text Color</span></div>
+                            <label>Hover Scale <span id="hover-scale-val">1.0</span></label>
+                            <input type="range" min="0.8" max="1.2" step="0.02" value="1" oninput="app.setHoverStyle('transform','scale('+this.value+')');document.getElementById('hover-scale-val').textContent=parseFloat(this.value).toFixed(2)">
+                            <label>Hover Opacity <span id="hover-op-val">100%</span></label>
+                            <input type="range" min="0" max="1" step="0.05" value="1" oninput="app.setHoverStyle('opacity',this.value);document.getElementById('hover-op-val').textContent=Math.round(this.value*100)+'%'">
+                            <label>Transition Duration</label>
+                            <select onchange="app.setHoverStyle('transition','all '+this.value+' ease')">
+                                <option value="0.1s">Fast (0.1s)</option>
+                                <option value="0.2s" selected>Normal (0.2s)</option>
+                                <option value="0.35s">Smooth (0.35s)</option>
+                                <option value="0.5s">Slow (0.5s)</option>
+                            </select>
+                            <hr>
+                            <button onclick="app.clearHoverStyles()" class="btn-sm btn-danger" style="width:100%;"><i class="fas fa-times-circle"></i> Clear Hover Styles</button>
+                        </div>
+                    </div>
+
+                    <!-- SETTINGS TAB -->
+                    <div class="tab-content" id="tab-3">
+                        <div class="panel-section">
+                            <label>Element ID</label>
+                            <input type="text" id="p-id" onchange="app.setAttr('id',this.value)" placeholder="e.g. hero-section">
+                            <label>Custom CSS Classes</label>
+                            <input type="text" id="p-class" onchange="app.setCustomClass(this.value)" placeholder="my-class animate">
+                            <hr>
+                            <label>Responsive Visibility</label>
+                            <select onchange="app.setResponsiveVisibility(this.value)">
+                                <option value="all">All screens</option>
+                                <option value="desktop-only">Desktop only</option>
+                                <option value="mobile-only">Mobile only</option>
+                                <option value="hidden">Always hidden</option>
+                            </select>
+                            <hr>
+                            <label>Position Type</label>
+                            <select onchange="app.setStyle('position',this.value)">
+                                <option value="">Default (static)</option>
+                                <option value="relative">Relative</option>
+                                <option value="absolute">Absolute</option>
+                                <option value="fixed">Fixed</option>
+                                <option value="sticky">Sticky</option>
+                            </select>
+                            <div class="grid-2" style="margin-top:7px;">
+                                <div><label style="margin-top:0">Top</label><input type="text" placeholder="auto" onchange="app.setStyle('top',this.value)"></div>
+                                <div><label style="margin-top:0">Left</label><input type="text" placeholder="auto" onchange="app.setStyle('left',this.value)"></div>
+                            </div>
+                            <hr>
+                            <label>Site-Wide Custom CSS</label>
+                            <textarea id="custom-css" rows="7" placeholder="/* Global CSS */&#10;body { ... }"></textarea>
+                            <button onclick="app.updateSiteTheme()" class="btn-sm btn-primary" style="width:100%;margin-top:7px;"><i class="fas fa-check"></i> Apply Custom CSS</button>
+                            <hr>
+                            <label>Upload Favicon</label>
+                            <button onclick="app.uploadFavicon()" style="width:100%;" class="btn-sm"><i class="fas fa-upload"></i> Upload .ico / .png</button>
+                        </div>
+                    </div>
+
+                    <!-- ASSETS TAB -->
+                    <div class="tab-content" id="tab-4">
+                        <div class="panel-section">
+                            <button onclick="document.getElementById('asset-upload').click()" class="btn-primary" style="width:100%;"><i class="fas fa-cloud-upload-alt"></i> Upload Images / Videos</button>
+                            <p style="font-size:0.71rem;color:var(--ui-text-muted);margin:7px 0 0;">Double-click to insert. Assets are embedded in export (no broken links!).</p>
+                            <div id="asset-grid" class="asset-grid"></div>
+                            <div id="asset-empty" style="text-align:center;padding:22px;color:var(--ui-text-muted);font-size:0.76rem;">
+                                <i class="fas fa-photo-video" style="font-size:1.8rem;opacity:0.3;display:block;margin-bottom:7px;"></i>
+                                No assets yet.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LAYERS TAB -->
+                    <div class="tab-content" id="tab-5">
+                        <div class="panel-section" style="padding:10px;">
+                            <div id="layers-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
