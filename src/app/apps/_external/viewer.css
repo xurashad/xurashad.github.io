@@ -1,0 +1,151 @@
+/* External App Viewer — scoped .ev- prefix */
+
+.ev-root {
+  position: fixed;
+  inset: 0;
+  top: 60px; /* clear the website's nav */
+  z-index: 10; /* sit above the footer */
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  overflow: hidden;
+}
+
+/* ── Banner ── */
+.ev-banner {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #1a1f2e, #0f1420);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 0;
+  animation: evSlideDown 0.4s ease;
+}
+.ev-banner-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ev-banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.ev-banner-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  min-width: 200px;
+}
+.ev-banner-text strong {
+  color: #e2e8f0;
+}
+.ev-banner-link {
+  color: #818cf8;
+  text-decoration: none;
+  font-weight: 500;
+}
+.ev-banner-link:hover {
+  text-decoration: underline;
+  color: #a5b4fc;
+}
+.ev-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+}
+.ev-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.ev-btn-outline {
+  background: transparent;
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+.ev-btn-outline:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #818cf8;
+}
+.ev-btn-dismiss {
+  background: rgba(255, 255, 255, 0.05);
+  color: #64748b;
+  border: 1px solid #2b2e36;
+}
+.ev-btn-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+/* ── Iframe ── */
+.ev-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  display: block;
+  background: #000;
+}
+
+/* ── Corner badge ── */
+.ev-badge {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(15, 20, 32, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  z-index: 100;
+  transition: 0.2s;
+  font-family: inherit;
+}
+.ev-badge:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: #818cf8;
+  color: #a5b4fc;
+}
+
+/* ── Animations ── */
+@keyframes evSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .ev-banner-inner {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .ev-banner-text {
+    font-size: 0.8rem;
+  }
+  .ev-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

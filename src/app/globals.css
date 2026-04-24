@@ -1,0 +1,371 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap");
+@import "tailwindcss";
+
+/* ── Custom Arabic font ──────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "DecoTypeThuluth";
+  src: url("/fonts/DecoTypeThuluth.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Tailwind v4 Theme Configuration ────────────────────────────────────────── */
+@theme {
+  /* Font families */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Cosmos color palette */
+  --color-cosmos-50:  #eef0f7;
+  --color-cosmos-100: #d5d9ee;
+  --color-cosmos-200: #aab3dd;
+  --color-cosmos-300: #7f8dcc;
+  --color-cosmos-400: #5467bb;
+  --color-cosmos-500: #2941aa;
+  --color-cosmos-600: #213488;
+  --color-cosmos-700: #192766;
+  --color-cosmos-800: #101a44;
+  --color-cosmos-900: #080d22;
+  --color-cosmos-950: #0a0a0f;
+
+  /* Olive Green (Palestinian flag) */
+  --color-olive-50:  #f4f7ee;
+  --color-olive-100: #e5eccc;
+  --color-olive-200: #c9d998;
+  --color-olive-300: #a8c261;
+  --color-olive-400: #8bac35;
+  --color-olive-500: #6b8f27;
+  --color-olive-600: #537120;
+  --color-olive-700: #3e541a;
+  --color-olive-800: #293714;
+  --color-olive-900: #141b0a;
+  --color-olive:     #6b8f27;
+
+  /* Crimson Red (Palestinian flag) */
+  --color-crimson-50:  #fef2f2;
+  --color-crimson-100: #fee2e2;
+  --color-crimson-200: #fecaca;
+  --color-crimson-300: #fca5a5;
+  --color-crimson-400: #f87171;
+  --color-crimson-500: #dc143c;
+  --color-crimson-600: #b91c1c;
+  --color-crimson-700: #991b1b;
+  --color-crimson-800: #7f1d1d;
+  --color-crimson-900: #450a0a;
+  --color-crimson:     #dc143c;
+
+  /* Dark matter void */
+  --color-void:     #0a0a0f;
+  --color-void-50:  #1a1a2e;
+  --color-void-100: #16213e;
+  --color-void-200: #0f3460;
+
+  /* Photon white */
+  --color-photon:       #f8f9fa;
+  --color-photon-dim:   #e9ecef;
+  --color-photon-muted: #adb5bd;
+
+  /* Quantum electric blue */
+  --color-quantum-50:  #e0f7ff;
+  --color-quantum-100: #b2edff;
+  --color-quantum-200: #66d9ff;
+  --color-quantum-300: #00c3f5;
+  --color-quantum-400: #00a8d6;
+  --color-quantum-500: #0088b3;
+  --color-quantum-600: #006a8e;
+  --color-quantum-700: #004d69;
+  --color-quantum-800: #003144;
+  --color-quantum-900: #001522;
+  --color-quantum:     #00c3f5;
+
+  /* Custom animations */
+  --animate-float:       float 6s ease-in-out infinite;
+  --animate-float-slow:  float 10s ease-in-out infinite;
+  --animate-float-fast:  float 4s ease-in-out infinite;
+  --animate-orbit:       orbit 12s linear infinite;
+  --animate-orbit-slow:  orbit 20s linear infinite;
+  --animate-shimmer:     shimmer 2.5s linear infinite;
+  --animate-pulse-ring:  pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  --animate-gradient-shift: gradientShift 8s ease infinite;
+  --animate-glow-pulse:  glowPulse 3s ease-in-out infinite;
+  --animate-drift:       drift 8s ease-in infinite;
+
+  /* Keyframes */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-12px); }
+  }
+
+  @keyframes orbit {
+    0%   { transform: rotate(0deg) translateX(var(--orbit-radius, 80px)) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(var(--orbit-radius, 80px)) rotate(-360deg); }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes pulseRing {
+    0%   { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(0,195,245,0.3), 0 0 10px rgba(0,195,245,0.1); }
+    50%       { box-shadow: 0 0 20px rgba(0,195,245,0.6), 0 0 40px rgba(0,195,245,0.3); }
+  }
+
+  @keyframes drift {
+    0%   { transform: translate(0, 0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.8; }
+    100% { transform: translate(var(--dx, 0px), var(--dy, -200px)); opacity: 0; }
+  }
+}
+
+/* ── Design Tokens (CSS vars) ────────────────────────────────────────────────── */
+:root {
+  --background:       #f8f9fa;
+  --foreground:       #0a0a0f;
+  --surface:          rgba(255, 255, 255, 0.7);
+  --surface-border:   rgba(0, 0, 0, 0.08);
+  --nav-bg:           rgba(248, 249, 250, 0.85);
+  --quantum:          #00c3f5;
+  --olive:            #6b8f27;
+  --crimson:          #dc143c;
+  --void:             #0a0a0f;
+}
+
+.dark {
+  --background:       #0a0a0f;
+  --foreground:       #f8f9fa;
+  --surface:          rgba(16, 26, 68, 0.5);
+  --surface-border:   rgba(0, 195, 245, 0.12);
+  --nav-bg:           rgba(10, 10, 15, 0.85);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h4, h5, h6 {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 600;
+}
+
+code, pre {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,195,245,0.3); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,195,245,0.6); }
+::selection { background: rgba(0,195,245,0.3); color: inherit; }
+
+/* ── Glassmorphism ──────────────────────────────────────────────────────────── */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+}
+
+.glass-nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--surface-border);
+  border-radius: 1.25rem;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+}
+
+.dark .glass-card:hover {
+  border-color: rgba(0,195,245,0.3);
+  box-shadow: 0 0 30px rgba(0,195,245,0.15);
+}
+
+/* ── Keffiyeh Grid Background ───────────────────────────────────────────────── */
+.keffiyeh-bg {
+  background-image:
+    linear-gradient(rgba(0,195,245,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,195,245,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(107,143,39,0.04) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(107,143,39,0.04) 2px, transparent 2px);
+  background-size: 40px 40px, 40px 40px, 10px 10px, 10px 10px;
+}
+
+/* ── Gradient Text ──────────────────────────────────────────────────────────── */
+.gradient-text-quantum {
+  background: linear-gradient(135deg, #00c3f5 0%, #6b8f27 50%, #dc143c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: gradientShift 6s ease infinite;
+}
+
+.gradient-text-olive {
+  background: linear-gradient(135deg, #a8c261 0%, #6b8f27 50%, #3e541a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-cosmos {
+  background: linear-gradient(135deg, #00c3f5 0%, #7f8dcc 50%, #f8f9fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow helpers ───────────────────────────────────────────────────────────── */
+.quantum-glow  { box-shadow: 0 0 20px rgba(0,195,245,0.4), 0 0 60px rgba(0,195,245,0.15); }
+.olive-glow    { box-shadow: 0 0 20px rgba(107,143,39,0.4), 0 0 60px rgba(107,143,39,0.15); }
+.crimson-glow  { box-shadow: 0 0 20px rgba(220,20,60,0.4), 0 0 60px rgba(220,20,60,0.15); }
+
+/* ── Nav link underline ─────────────────────────────────────────────────────── */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--quantum), var(--olive));
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-link:hover::after,
+.nav-link.active::after { width: 100%; }
+
+/* ── Palestinian flag helpers ───────────────────────────────────────────────── */
+.bg-flag-black  { background-color: #000000; }
+.bg-flag-white  { background-color: #ffffff; }
+.bg-flag-green  { background-color: var(--olive); }
+.bg-flag-red    { background-color: var(--crimson); }
+
+/* ── Section container ──────────────────────────────────────────────────────── */
+.section-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px)  { .section-container { padding-left: 2.5rem; padding-right: 2.5rem; } }
+@media (min-width: 1280px) { .section-container { padding-left: 4rem;   padding-right: 4rem;   } }
+
+.animate-float       { animation: float 6s ease-in-out infinite; }
+.animate-float-slow  { animation: float 10s ease-in-out infinite; }
+.animate-orbit       { animation: orbit 12s linear infinite; }
+.animate-orbit-slow  { animation: orbit 20s linear infinite; }
+.animate-shimmer     { animation: shimmer 2.5s linear infinite; }
+.animate-pulse-ring  { animation: pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+.animate-drift       { animation: drift 8s ease-in infinite; }
+.animate-glow-pulse  { animation: glowPulse 3s ease-in-out infinite; }
+.animate-blink       { animation: blink 1s step-start infinite; }
+
+/* ── Blink cursor keyframe ────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Ping animation (for orbit dots) ─────────────────────────────────────── */
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+/* ── Timeline gradient line shimmer ─────────────────────────────────────── */
+.timeline-line {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0,195,245,0.4) 10%,
+    rgba(107,143,39,0.3) 50%,
+    rgba(220,20,60,0.2) 90%,
+    transparent
+  );
+}
+
+/* ── CV page hover helpers ────────────────────────────────────────────────── */
+.skill-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s ease-out;
+}
+
+/* ── 2048 tile animations ─────────────────────────────────────────────────── */
+@keyframes spawn {
+  0%   { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes merge {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeUp {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-32px); }
+}
