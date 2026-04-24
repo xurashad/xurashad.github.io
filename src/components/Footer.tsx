@@ -50,8 +50,8 @@ export function Footer() {
               </p>
               {/* Palestinian flag colors */}
               <div className="flex gap-1 items-center">
-                <div className="w-4 h-4 rounded-sm bg-black dark:bg-gray-200" />
-                <div className="w-4 h-4 rounded-sm bg-photon-dim dark:bg-photon-muted" />
+                <div className="w-4 h-4 rounded-sm bg-black" />
+                <div className="w-4 h-4 rounded-sm bg-photon-dim" />
                 <div className="w-4 h-4 rounded-sm bg-olive" />
                 <div className="w-4 h-4 rounded-sm bg-crimson" />
                 <span className="text-xs text-foreground/40 ml-1 font-mono">🇵🇸</span>

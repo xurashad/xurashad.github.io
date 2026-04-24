@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
@@ -223,16 +223,16 @@ function OliveLeaf({ style, delay = 0 }: { style?: React.CSSProperties; delay?: 
 /* ─── Keffiyeh background pattern ────────────────────────────────────────── */
 function KeffiyehHero() {
   return (
-    <div className="relative min-h-[60vh] flex items-center overflow-hidden">
+    <div className="relative min-h-[60vh] flex items-center overflow-hidden bg-gradient-to-br from-olive-50 via-white to-olive-100 dark:from-black dark:via-[#0a0a1a] dark:to-[#0c1a0c]">
       {/* Flag gradient bars */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a1a] to-[#0c1a0c]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-olive-50 via-white to-olive-100 dark:from-black dark:via-[#0a0a1a] dark:to-[#0c1a0c]" />
         {/* Keffiyeh grid */}
-        <div className="absolute inset-0 keffiyeh-bg opacity-80" />
+        <div className="absolute inset-0 keffiyeh-bg opacity-40 dark:opacity-80" />
         {/* Colour washes */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-black via-white/20 to-black" />
-        <div className="absolute top-1.5 left-0 w-full h-1.5 bg-gradient-to-r from-black via-white/10 to-black" />
-        <div className="absolute bottom-2 left-0 w-full h-8 bg-gradient-to-t from-crimson/15 to-transparent" />
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-olive-100 via-olive/20 to-olive-100 dark:from-black dark:via-white/20 dark:to-black" />
+        <div className="absolute top-1.5 left-0 w-full h-1.5 bg-gradient-to-r from-olive-100 via-olive/10 to-olive-100 dark:from-black dark:via-white/10 dark:to-black" />
+        <div className="absolute bottom-2 left-0 w-full h-8 bg-gradient-to-t from-crimson/10 dark:from-crimson/15 to-transparent" />
         <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-transparent via-olive/30 to-transparent" />
       </div>
 
@@ -263,10 +263,10 @@ function KeffiyehHero() {
           <h1 className="text-5xl sm:text-7xl font-serif font-bold leading-tight mb-6">
             <span className="gradient-text-olive">Palestine</span>
             <br />
-            <span className="text-white/90 text-4xl sm:text-5xl font-light">will be free.</span>
+            <span className="text-foreground/80 dark:text-white/90 text-4xl sm:text-5xl font-light">will be free.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/55 leading-relaxed max-w-2xl mb-8 font-light">
+          <p className="text-lg sm:text-xl text-foreground/50 dark:text-white/55 leading-relaxed max-w-2xl mb-8 font-light">
             This page is an act of memory. Palestine is not a political opinion —
             it is a{" "}
             <span className="text-olive-400 font-medium">people</span>,
@@ -636,15 +636,15 @@ export default function PalestinePage() {
       </section>
 
       {/* ── Final solidarity banner ────────────────────────────────────────── */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a100a] to-black" />
-        <div className="absolute inset-0 keffiyeh-bg opacity-60" />
+      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-olive-50 via-white to-olive-100 dark:from-black dark:via-[#0a100a] dark:to-black">
+        <div className="absolute inset-0 bg-gradient-to-br from-olive-50 via-white to-olive-100 dark:from-black dark:via-[#0a100a] dark:to-black" />
+        <div className="absolute inset-0 keffiyeh-bg opacity-30 dark:opacity-60" />
 
         {/* Vertical flag stripes */}
-        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-black via-white/10 to-black" />
+        <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-olive-100 via-olive/10 to-olive-100 dark:from-black dark:via-white/10 dark:to-black" />
         <div className="absolute left-2 top-0 bottom-0 w-2 bg-gradient-to-b from-transparent via-olive/60 to-transparent" />
         <div className="absolute right-2 top-0 bottom-0 w-2 bg-gradient-to-b from-transparent via-crimson/60 to-transparent" />
-        <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-b from-black via-black/50 to-black" />
+        <div className="absolute right-0 top-0 bottom-0 w-2 bg-gradient-to-b from-olive-100 via-olive/10 to-olive-100 dark:from-black dark:via-black/50 dark:to-black" />
 
         <div className="section-container relative z-10 text-center">
           <motion.div
@@ -655,7 +655,7 @@ export default function PalestinePage() {
             className="space-y-5"
           >
             <div className="text-5xl">🇵🇸</div>
-            <h2 className="text-4xl sm:text-5xl font-serif font-bold text-white">
+            <h2 className="text-4xl sm:text-5xl font-serif font-bold text-foreground dark:text-white">
               <span className={`text-olive-400 ${palestineFont.className}`}
                 style={{
                   lineHeight: 1.6,
@@ -663,8 +663,8 @@ export default function PalestinePage() {
                   direction: "rtl",
                 }}>فَلَسْطِيْن حُرَّة</span>
             </h2>
-            <p className="text-xl text-white/70 font-light">Palestine will be free.</p>
-            <p className="text-sm text-white/35 font-mono max-w-lg mx-auto leading-relaxed">
+            <p className="text-xl text-foreground/60 dark:text-white/70 font-light">Palestine will be free.</p>
+            <p className="text-sm text-foreground/40 dark:text-white/35 font-mono max-w-lg mx-auto leading-relaxed">
               This is not a slogan. It is a declaration of the right of return,
               the right to exist, the right to be free — which belongs to all people
               and cannot be made illegal by those who violate it.
@@ -674,7 +674,7 @@ export default function PalestinePage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-olive/40 hover:border-olive/70 text-olive-400 hover:text-olive-300 font-semibold text-sm transition-all duration-300"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-olive/40 hover:border-olive/70 text-olive-600 dark:text-olive-400 hover:text-olive-500 dark:hover:text-olive-300 font-semibold text-sm transition-all duration-300"
                 >
                   <Heart size={14} />
                   Get in touch
