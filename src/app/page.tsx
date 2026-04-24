@@ -702,10 +702,10 @@ export default function HomePage() {
           SOLIDARITY BANNER
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="py-16 relative overflow-hidden">
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-void-50 to-black" />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-olive-50 via-white to-olive-50 dark:from-black dark:via-void-50 dark:to-black" />
         {/* Keffiyeh grid on top */}
-        <div className="absolute inset-0 keffiyeh-bg opacity-60" />
+        <div className="absolute inset-0 keffiyeh-bg opacity-30 dark:opacity-60" />
 
         {/* Palestinian flag vertical stripes */}
         <div className="absolute left-0 top-0 bottom-0 flex">
@@ -729,11 +729,11 @@ export default function HomePage() {
             className="space-y-4"
           >
             <div className="text-4xl mb-2">🇵🇸</div>
-            <p className="text-2xl sm:text-3xl font-serif text-white font-bold leading-tight">
+            <p className="text-2xl sm:text-3xl font-serif text-foreground dark:text-white font-bold leading-tight">
               <span className="text-olive-400">Palestine</span> will be{" "}
               <span className="text-crimson">free</span>.
             </p>
-            <p className="text-sm text-white/40 font-mono max-w-lg mx-auto leading-relaxed">
+            <p className="text-sm text-foreground/40 dark:text-white/40 font-mono max-w-lg mx-auto leading-relaxed">
               Science cannot be separated from conscience.
               Knowledge without justice is noise.
               <br className="hidden sm:block" />
