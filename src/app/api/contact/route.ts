@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         // Allow self-signed certs injected by local proxies / antivirus
         rejectUnauthorized: false,
       },
-    });
+    } as any);
 
     /* ── Send ── */
     await transporter.sendMail({

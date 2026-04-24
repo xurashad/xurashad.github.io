@@ -448,8 +448,8 @@ export default function PalestinePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {POEMS.map((poem, i) => {
-              const border = poem.accent === "olive" ? "border-olive/25 hover:border-olive/50" : poem.accent === "crimson" ? "border-crimson/25 hover:border-crimson/50" : "border-quantum/25 hover:border-quantum/50";
-              const accentText = poem.accent === "olive" ? "text-olive-400" : poem.accent === "crimson" ? "text-crimson" : "text-quantum";
+              const border = poem.accent === "olive" ? "border-olive/25 hover:border-olive/50" : poem.accent === "indigo" ? "border-indigo-500/25 hover:border-indigo-500/50" : poem.accent === "emerald" ? "border-emerald-500/25 hover:border-emerald-500/50" : "border-quantum/25 hover:border-quantum/50";
+              const accentText = poem.accent === "olive" ? "text-olive-400" : poem.accent === "indigo" ? "text-indigo-400" : poem.accent === "emerald" ? "text-emerald-400" : "text-quantum";
 
               return (
                 <motion.div
