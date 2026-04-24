@@ -185,7 +185,7 @@ export default function ContactPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          access_key: "YOUR_ACCESS_KEY_HERE",
+          access_key: "6866e4cf-c0e7-4087-9d27-905a9556667b",
           name,
           email,
           subject: `[Contact Form] ${subject}`,
