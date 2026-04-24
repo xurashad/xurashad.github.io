@@ -181,15 +181,25 @@ export default function ContactPage() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify({
+          access_key: "YOUR_ACCESS_KEY_HERE",
+          name,
+          email,
+          subject: `[Contact Form] ${subject}`,
+          message,
+          from_name: "Rashad Hamidi Website",
+          // Honeypot spam protection
+          botcheck: "",
+        }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to send message.");
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to send message.");
       }
 
       setStatus("success");
