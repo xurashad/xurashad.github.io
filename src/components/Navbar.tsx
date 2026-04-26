@@ -15,7 +15,7 @@ const NAV_LINKS = [
   //  { href: "/blog", label: "Blog", emoji: "🌊" },
   { href: "/documents", label: "Documents", emoji: "📁" },
   { href: "/cv", label: "CV", emoji: "🛸" },
-  { href: "/palestine", label: "Palestine", emoji: "🌿" },
+  //  { href: "/palestine", label: "Palestine", emoji: "🌿" },
   { href: "/contact", label: "Contact", emoji: "✉️" },
 ];
 

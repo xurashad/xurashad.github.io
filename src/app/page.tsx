@@ -16,7 +16,6 @@ const TITLES = [
   "Mathematician",
   "Data Scientist",
   "AI Enthusiast",
-  "Palestinian Scholar",
 ];
 
 function TypedTitle() {
@@ -182,10 +181,10 @@ const STATS = [
 const QUICK_LINKS = [
   { href: "/apps", icon: Atom, label: "Apps", color: "text-quantum", bg: "bg-quantum/10", border: "hover:border-quantum/40", desc: "Software & tools" },
   { href: "/datasets", icon: Database, label: "Datasets", color: "text-olive-400", bg: "bg-olive/10", border: "hover:border-olive/40", desc: "Research data nodes" },
-  { href: "/blog", icon: BookOpen, label: "Blog", color: "text-quantum", bg: "bg-quantum/10", border: "hover:border-quantum/40", desc: "Thoughts & theory" },
+  //  { href: "/blog", icon: BookOpen, label: "Blog", color: "text-quantum", bg: "bg-quantum/10", border: "hover:border-quantum/40", desc: "Thoughts & theory" },
   { href: "/documents", icon: FileText, label: "Documents", color: "text-crimson", bg: "bg-crimson/10", border: "hover:border-crimson/40", desc: "Papers & whitepapers" },
   { href: "/cv", icon: User, label: "CV", color: "text-olive-400", bg: "bg-olive/10", border: "hover:border-olive/40", desc: "Orbital career path" },
-  { href: "/palestine", icon: Globe, label: "Palestine", color: "text-olive-300", bg: "bg-olive/10", border: "hover:border-olive/50", desc: "Cultural tribute 🇵🇸" },
+  //  { href: "/palestine", icon: Globe, label: "Palestine", color: "text-olive-300", bg: "bg-olive/10", border: "hover:border-olive/50", desc: "Cultural tribute 🇵🇸" },
   { href: "/contact", icon: Mail, label: "Contact", color: "text-quantum", bg: "bg-quantum/10", border: "hover:border-quantum/40", desc: "Quantum entanglement" },
 ];
 
@@ -194,7 +193,7 @@ const EQUATIONS = [
   { label: "Schrödinger", eq: "iℏ ∂ψ/∂t = Ĥψ", color: "text-quantum" },
   { label: "Dirac", eq: "(iγᵘ∂ᵤ − m)ψ = 0", color: "text-olive-400" },
   { label: "Klein-Gordon", eq: "(□ + m²)φ = 0", color: "text-quantum" },
-  { label: "Resilience", eq: "∀t: Resilience(t) > 0", color: "text-crimson" },
+  //  { label: "Resilience", eq: "∀t: Resilience(t) > 0", color: "text-crimson" },
 ];
 
 /* ─── Featured Publications ───────────────────────────────────────────────── */
@@ -255,7 +254,7 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-quantum/20 text-xs font-mono text-quantum/80 mb-6"
               >
                 <Zap size={12} className="text-quantum" />
-                Physics × Palestine × Code
+                Physics × Math × Code
                 <span className="w-2 h-2 rounded-full bg-olive-400 animate-pulse" />
               </motion.div>
 
@@ -301,14 +300,9 @@ export default function HomePage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-base text-foreground/55 leading-relaxed mb-3 max-w-2xl"
               >
-                I explore the deepest mysteries of existence — from the theoretical physics
-                of the cosmos to the philosophies that shape human reality.
-                My heritage is Palestinian.
-                My expertise is in theoretical physics.
-                My work focuses on integrable models, string theory and quantum field theories.
-                My hopies are in the realms of programming and AI.
-                My philosophies are anything logical and humane.
-                My portfolio lives at the confluence of
+                I'm a Theoretical Physicist. My work focuses on integrable models, string
+                theory and quantum field theories. My hopies are in the realms of programming
+                and AI. My portfolio lives at the confluence of
                 fundamental <span className="text-quantum font-medium">science</span>,
                 tomorrow's <span className="text-olive-400 font-medium">technologies</span>,
                 and human <span className="text-crimson font-medium">thought</span>.
@@ -342,7 +336,7 @@ export default function HomePage() {
                     <ArrowRight size={13} />
                   </motion.button>
                 </Link>
-                <Link href="/palestine">
+                {/*<Link href="/palestine">
                   <motion.button
                     whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(107,143,39,0.3)" }}
                     whileTap={{ scale: 0.97 }}
@@ -350,7 +344,7 @@ export default function HomePage() {
                   >
                     🌿 Palestine
                   </motion.button>
-                </Link>
+                </Link>*/}
                 <Link href="/cv">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -508,22 +502,24 @@ export default function HomePage() {
                 // About Me
               </div>
               <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-6 leading-tight">
-                Physicist. Researcher.{" "}
-                <span className="gradient-text-olive">Palestinian.</span>
+                Theoretical Physics{" "}
+                <span className="gradient-text-olive">Researcher.</span>
               </h2>
               <div className="space-y-4 text-foreground/55 leading-relaxed text-sm sm:text-base">
                 <p>
                   I am a PhD candidate in{" "}
-                  <span className="text-quantum font-medium">theoretical physics</span> at Durham University.
-                  My research focuses on integrable field theories, and spans quantum field theories and string theory.
+                  <span className="text-quantum font-medium">theoretical physics</span>{" "}
+                  at Durham University.
+                  My research focuses on integrable field theories, and spans quantum field theories
+                  and string theory.
                 </p>
-                <p>
+                {/*<p>
                   Beyond physics, I carry the identity of a{" "}
                   <span className="text-olive-400 font-medium">Palestinian</span> — a people
                   whose intellectual tradition, cultural resilience, and enduring presence
                   mirrors the most fundamental laws of nature: conserved, invariant, and
                   impossible to erase.
-                </p>
+                </p>*/}
                 <p>
                   This portfolio is my lab notebook, my archive, and my act of memory.
                 </p>
@@ -700,14 +696,14 @@ export default function HomePage() {
 
       {/* ═══════════════════════════════════════════════════════════════════
           SOLIDARITY BANNER
-      ═══════════════════════════════════════════════════════════════════ */}
+      ═══════════════════════════════════════════════════════════════════
       <section className="py-16 relative overflow-hidden">
-        {/* Overlay */}
+        //Overlay//
         <div className="absolute inset-0 bg-gradient-to-r from-olive-50 via-white to-olive-50 dark:from-black dark:via-void-50 dark:to-black" />
-        {/* Keffiyeh grid on top */}
+        //Keffiyeh grid on top//
         <div className="absolute inset-0 keffiyeh-bg opacity-30 dark:opacity-60" />
 
-        {/* Palestinian flag vertical stripes */}
+        //Palestinian flag vertical stripes//
         <div className="absolute left-0 top-0 bottom-0 flex">
           <div className="w-3 bg-black/80" />
           <div className="w-3 bg-white/15" />
@@ -720,7 +716,7 @@ export default function HomePage() {
           <div className="w-3 bg-white/15" />
           <div className="w-3 bg-black/80" />
         </div>
-
+        
         <div className="section-container relative z-10 text-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -751,7 +747,8 @@ export default function HomePage() {
             </Link>
           </motion.div>
         </div>
-      </section>
-    </div>
+      </section >
+      */}
+    </div >
   );
 }

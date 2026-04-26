@@ -54,7 +54,7 @@ export function Footer() {
                 <div className="w-4 h-4 rounded-sm bg-photon-dim" />
                 <div className="w-4 h-4 rounded-sm bg-olive" />
                 <div className="w-4 h-4 rounded-sm bg-crimson" />
-                <span className="text-xs text-foreground/40 ml-1 font-mono">🇵🇸</span>
+                {/*<span className="text-xs text-foreground/40 ml-1 font-mono">🇵🇸</span>*/}
               </div>
             </div>
 
@@ -107,9 +107,9 @@ export function Footer() {
               © {new Date().getFullYear()} Rashad Hamidi. Built with ⚛️ & 🌿
             </p>
             <p className="text-xs text-foreground/30 font-mono">
-              <span className="text-crimson">Free Palestine</span>
+              <span className="text-crimson">Theoretical</span>
               {" · "}
-              <span className="text-olive-400">Science for all</span>
+              <span className="text-olive-400">Physics</span>
             </p>
           </div>
         </div>

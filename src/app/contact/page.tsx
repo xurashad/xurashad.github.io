@@ -372,7 +372,7 @@ export default function ContactPage() {
                         I&apos;m reaching out about…
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {["Research collaboration", "Postdoc opportunity", "Speaking / lecture", "Open source", "Palestine initiative", "Just saying hi"].map((topic) => (
+                        {["Research collaboration", "Postdoc opportunity", "Speaking / lecture", "Open source", "Just saying hi"].map((topic) => (
                           <button
                             key={topic}
                             type="button"
