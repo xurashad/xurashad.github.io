@@ -9,10 +9,10 @@ const FOOTER_LINKS = [
   { href: "/", label: "Home" },
   { href: "/apps", label: "Apps" },
   { href: "/datasets", label: "Datasets" },
-  { href: "/blog", label: "Blog" },
+  // { href: "/blog", label: "Blog" },
   { href: "/documents", label: "Documents" },
   { href: "/cv", label: "CV" },
-  { href: "/palestine", label: "Palestine" },
+  // { href: "/palestine", label: "Palestine" },
   { href: "/contact", label: "Contact" },
 ];
 
