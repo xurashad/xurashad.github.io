@@ -3,31 +3,32 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
-  FileText, Download, Eye, ExternalLink,
-  Search, BookOpen, Code2, Atom, GraduationCap,
+  FileText, Download, Eye, ExternalLink, Box,
+  Search, BookOpen, Apple, Atom, GraduationCap,
+  Notebook,
 } from "lucide-react";
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */
-type DocCategory = "Integrability" | "General Relativity" | "Academic";
-type DocFormat   = "Notebook" | "PDF";
+type DocCategory = "Integrability" | "General Relativity" | "Academic" | "Lie Groups and Lie Algebras";
+type DocFormat = "Notebook" | "PDF";
 
 interface DocLink {
   label: string;
-  href:  string;
-  type:  "download" | "view";
+  href: string;
+  type: "download" | "view";
 }
 
 interface Doc {
-  id:        string;
-  title:     string;
-  desc:      string;
-  category:  DocCategory;
-  format:    DocFormat;
-  accent:    "quantum" | "olive" | "crimson";
+  id: string;
+  title: string;
+  desc: string;
+  category: DocCategory;
+  format: DocFormat;
+  accent: "quantum" | "olive" | "crimson";
   featured?: boolean;
   reference?: string;
-  refLink?:  string;
-  links:     DocLink[];
+  refLink?: string;
+  links: DocLink[];
 }
 
 /* ─── Real Data ───────────────────────────────────────────────────────────── */
@@ -35,66 +36,66 @@ const DOCS: Doc[] = [
 
   /* ── Integrability ────────────────────────────────────────────────────── */
   {
-    id:       "defect-sum",
-    title:    "Defect Sum",
-    desc:     "Give a twist function and the code will calculate the zeros, poles, levels, and the defect sum.",
+    id: "defect-sum",
+    title: "Defect Sum",
+    desc: "Give a twist function and the code will calculate the zeros, poles, levels, and the defect sum.",
     category: "Integrability",
-    format:   "Notebook",
-    accent:   "quantum",
+    format: "Notebook",
+    accent: "quantum",
     featured: true,
     links: [
       { label: "Download (.nb)", href: "/documents/defect.nb", type: "download" },
     ],
   },
   {
-    id:       "eta-model-eta-def",
-    title:    "SU(2) η-Deformed ℤ₂-Twisted η-Model",
-    desc:     "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
+    id: "eta-model-eta-def",
+    title: "SU(2) η-Deformed ℤ₂-Twisted η-Model",
+    desc: "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
     category: "Integrability",
-    format:   "Notebook",
-    accent:   "quantum",
+    format: "Notebook",
+    accent: "quantum",
     featured: true,
     reference: "Hamidi, R., Hoare, B. Twists of trigonometric sigma models. J. High Energ. Phys. 2025, 90 (2025).",
-    refLink:  "https://doi.org/10.1007/JHEP08(2025)090",
+    refLink: "https://doi.org/10.1007/JHEP08(2025)090",
     links: [
       { label: "Download (.nb)", href: "/documents/eta_model_eta_def.nb", type: "download" },
     ],
   },
   {
-    id:       "lambda-model-eta-def",
-    title:    "SU(2) λ-Deformed ℤ₂-Twisted η-Model",
-    desc:     "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
+    id: "lambda-model-eta-def",
+    title: "SU(2) λ-Deformed ℤ₂-Twisted η-Model",
+    desc: "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
     category: "Integrability",
-    format:   "Notebook",
-    accent:   "quantum",
+    format: "Notebook",
+    accent: "quantum",
     reference: "Hamidi, R., Hoare, B. Twists of trigonometric sigma models. J. High Energ. Phys. 2025, 90 (2025).",
-    refLink:  "https://doi.org/10.1007/JHEP08(2025)090",
+    refLink: "https://doi.org/10.1007/JHEP08(2025)090",
     links: [
       { label: "Download (.nb)", href: "/documents/lambda_model_eta_def.nb", type: "download" },
     ],
   },
   {
-    id:       "eta-model-lambda-def",
-    title:    "SU(2) η-Deformed ℤ₂-Twisted λ-Model",
-    desc:     "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
+    id: "eta-model-lambda-def",
+    title: "SU(2) η-Deformed ℤ₂-Twisted λ-Model",
+    desc: "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
     category: "Integrability",
-    format:   "Notebook",
-    accent:   "quantum",
+    format: "Notebook",
+    accent: "quantum",
     reference: "Hamidi, R., Hoare, B. Twists of trigonometric sigma models. J. High Energ. Phys. 2025, 90 (2025).",
-    refLink:  "https://doi.org/10.1007/JHEP08(2025)090",
+    refLink: "https://doi.org/10.1007/JHEP08(2025)090",
     links: [
       { label: "Download (.nb)", href: "/documents/eta_model_lambda_def.nb", type: "download" },
     ],
   },
   {
-    id:       "lambda-model-lambda-def",
-    title:    "SU(2) λ-Deformed ℤ₂-Twisted λ-Model",
-    desc:     "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
+    id: "lambda-model-lambda-def",
+    title: "SU(2) λ-Deformed ℤ₂-Twisted λ-Model",
+    desc: "For given SU(2) generators, a general field element of SU(2), R-matrix that satisfies the modified classical Yang-Baxter equation, and ℤ₂ automorphism, the code computes the currents j=g⁻¹∂g, the Lax matrix, the Lagrangian, equations of motion, flatness of the Lax, and the metric and B-field.",
     category: "Integrability",
-    format:   "Notebook",
-    accent:   "quantum",
+    format: "Notebook",
+    accent: "quantum",
     reference: "Hamidi, R., Hoare, B. Twists of trigonometric sigma models. J. High Energ. Phys. 2025, 90 (2025).",
-    refLink:  "https://doi.org/10.1007/JHEP08(2025)090",
+    refLink: "https://doi.org/10.1007/JHEP08(2025)090",
     links: [
       { label: "Download (.nb)", href: "/documents/lambda_model_lambda_def.nb", type: "download" },
     ],
@@ -102,82 +103,96 @@ const DOCS: Doc[] = [
 
   /* ── General Relativity ───────────────────────────────────────────────── */
   {
-    id:       "metric",
-    title:    "Metric",
-    desc:     "Give the dimension of the manifold, the coordinates, and the metric — the code calculates the inverse metric, Christoffel symbols, Riemann curvature tensor, Ricci tensor, scalar curvature, and Einstein tensor.",
+    id: "metric",
+    title: "Metric",
+    desc: "Give the dimension of the manifold, the coordinates, and the metric — the code calculates the inverse metric, Christoffel symbols, Riemann curvature tensor, Ricci tensor, scalar curvature, and Einstein tensor.",
     category: "General Relativity",
-    format:   "Notebook",
-    accent:   "olive",
+    format: "Notebook",
+    accent: "olive",
     featured: true,
     links: [
       { label: "Download (.nb)", href: "/documents/metric.nb", type: "download" },
     ],
   },
 
+  /* ── Lie Groups and Lie Algebras ──────────────────────────────────────── */
+  {
+    id: "su-n-generators",
+    title: "SU(N) Generators",
+    desc: "Generators of the SU(N) Lie algebra in the fundamental representation, including the structure constants and the d-coefficients.",
+    category: "Lie Groups and Lie Algebras",
+    format: "Notebook",
+    accent: "olive",
+    featured: true,
+    links: [
+      { label: "Download (.nb)", href: "/documents/alg_nb/su_n_generators.nb", type: "download" },
+    ],
+  },
+
   /* ── Academic ─────────────────────────────────────────────────────────── */
   {
-    id:       "final-exam-comp-phys",
-    title:    "Final Exam: Computational Physics",
-    desc:     "Final exam paper for the Computational Physics module.",
+    id: "final-exam-comp-phys",
+    title: "Final Exam: Computational Physics",
+    desc: "Final exam paper for the Computational Physics module.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
       { label: "View (PDF)", href: "/documents/final_exam_comp_phys.pdf", type: "view" },
     ],
   },
   {
-    id:       "hw-qed",
-    title:    "Homework: Quantum Electrodynamics",
-    desc:     "Homework assignment for the Quantum Electrodynamics module.",
+    id: "hw-qed",
+    title: "Homework: Quantum Electrodynamics",
+    desc: "Homework assignment for the Quantum Electrodynamics module.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
       { label: "View (PDF)", href: "/documents/qed_hw.pdf", type: "view" },
     ],
   },
   {
-    id:       "hw-gr",
-    title:    "Homework: General Relativity",
-    desc:     "Homework assignment for the General Relativity module.",
+    id: "hw-gr",
+    title: "Homework: General Relativity",
+    desc: "Homework assignment for the General Relativity module.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
       { label: "View (PDF)", href: "/documents/gr_hw.pdf", type: "view" },
     ],
   },
   {
-    id:       "hw-group-theory",
-    title:    "Homework: Group Theory",
-    desc:     "Homework assignment for the Group Theory module.",
+    id: "hw-group-theory",
+    title: "Homework: Group Theory",
+    desc: "Homework assignment for the Group Theory module.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
       { label: "View (PDF)", href: "/documents/grp_hw.pdf", type: "view" },
     ],
   },
   {
-    id:       "hw-qft",
-    title:    "Homework: Quantum Field Theory",
-    desc:     "Homework assignments for the Quantum Field Theory module, split into two parts.",
+    id: "hw-qft",
+    title: "Homework: Quantum Field Theory",
+    desc: "Homework assignments for the Quantum Field Theory module, split into two parts.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
-      { label: "View Part I (PDF)",  href: "/documents/qfti_hw.pdf",  type: "view" },
+      { label: "View Part I (PDF)", href: "/documents/qfti_hw.pdf", type: "view" },
       { label: "View Part II (PDF)", href: "/documents/qftii_hw.pdf", type: "view" },
     ],
   },
   {
-    id:       "hw-sm",
-    title:    "Homework: Standard Model",
-    desc:     "Homework assignment for the Standard Model module.",
+    id: "hw-sm",
+    title: "Homework: Standard Model",
+    desc: "Homework assignment for the Standard Model module.",
     category: "Academic",
-    format:   "PDF",
-    accent:   "crimson",
+    format: "PDF",
+    accent: "crimson",
     links: [
       { label: "View (PDF)", href: "/documents/sm_hw.pdf", type: "view" },
     ],
@@ -186,32 +201,33 @@ const DOCS: Doc[] = [
 
 /* ─── Category config ─────────────────────────────────────────────────────── */
 const CATEGORIES: { id: DocCategory; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
-  { id: "Integrability",     label: "Integrability",     icon: Atom        },
-  { id: "General Relativity",label: "General Relativity",icon: Code2       },
-  { id: "Academic",          label: "Academic",           icon: GraduationCap },
+  { id: "Integrability", label: "Integrability", icon: Atom },
+  { id: "General Relativity", label: "General Relativity", icon: Apple },
+  { id: "Lie Groups and Lie Algebras", label: "Lie Groups and Lie Algebras", icon: Box },
+  { id: "Academic", label: "Academic", icon: GraduationCap },
 ];
 
 const ACCENT = {
   quantum: {
-    border:  "hover:border-quantum/40",
-    bg:      "bg-quantum/10",
-    text:    "text-quantum",
-    pill:    "bg-quantum/15 text-quantum border-quantum/25",
-    header:  "text-quantum/70",
+    border: "hover:border-quantum/40",
+    bg: "bg-quantum/10",
+    text: "text-quantum",
+    pill: "bg-quantum/15 text-quantum border-quantum/25",
+    header: "text-quantum/70",
   },
   olive: {
-    border:  "hover:border-olive/40",
-    bg:      "bg-olive/10",
-    text:    "text-olive-400",
-    pill:    "bg-olive/15 text-olive-400 border-olive/25",
-    header:  "text-olive-400/70",
+    border: "hover:border-olive/40",
+    bg: "bg-olive/10",
+    text: "text-olive-400",
+    pill: "bg-olive/15 text-olive-400 border-olive/25",
+    header: "text-olive-400/70",
   },
   crimson: {
-    border:  "hover:border-crimson/40",
-    bg:      "bg-crimson/10",
-    text:    "text-crimson",
-    pill:    "bg-crimson/15 text-crimson border-crimson/25",
-    header:  "text-crimson/70",
+    border: "hover:border-crimson/40",
+    bg: "bg-crimson/10",
+    text: "text-crimson",
+    pill: "bg-crimson/15 text-crimson border-crimson/25",
+    header: "text-crimson/70",
   },
 };
 
@@ -230,7 +246,7 @@ function DocCard({ doc, index }: { doc: Doc; index: number }) {
         {/* Icon */}
         <div className={`w-10 h-10 rounded-xl ${a.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
           {doc.format === "Notebook"
-            ? <Code2    size={18} className={a.text} />
+            ? <Notebook size={18} className={a.text} />
             : <FileText size={18} className={a.text} />
           }
         </div>
@@ -287,7 +303,7 @@ function DocCard({ doc, index }: { doc: Doc; index: number }) {
               >
                 {l.type === "download"
                   ? <Download size={11} />
-                  : <Eye      size={11} />
+                  : <Eye size={11} />
                 }
                 {l.label}
               </a>
@@ -301,7 +317,7 @@ function DocCard({ doc, index }: { doc: Doc; index: number }) {
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function DocumentsPage() {
-  const [search,      setSearch]      = useState("");
+  const [search, setSearch] = useState("");
   const [activeCategory, setCategory] = useState<DocCategory | null>(null);
 
   const filtered = DOCS.filter((d) => {
@@ -386,11 +402,10 @@ export default function DocumentsPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCategory(null)}
-              className={`text-xs font-mono px-3 py-1.5 rounded-full border transition-all ${
-                activeCategory === null
-                  ? "bg-quantum/15 text-quantum border-quantum/30"
-                  : "border-white/8 text-foreground/35 hover:border-white/20"
-              }`}
+              className={`text-xs font-mono px-3 py-1.5 rounded-full border transition-all ${activeCategory === null
+                ? "bg-quantum/15 text-quantum border-quantum/30"
+                : "border-white/8 text-foreground/35 hover:border-white/20"
+                }`}
             >
               All ({DOCS.length})
             </button>
@@ -398,11 +413,10 @@ export default function DocumentsPage() {
               <button
                 key={id}
                 onClick={() => setCategory(activeCategory === id ? null : id)}
-                className={`flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-full border transition-all ${
-                  activeCategory === id
-                    ? "bg-quantum/15 text-quantum border-quantum/30"
-                    : "border-white/8 text-foreground/35 hover:border-white/20"
-                }`}
+                className={`flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-full border transition-all ${activeCategory === id
+                  ? "bg-quantum/15 text-quantum border-quantum/30"
+                  : "border-white/8 text-foreground/35 hover:border-white/20"
+                  }`}
               >
                 <Icon size={11} />
                 {label} ({DOCS.filter((d) => d.category === id).length})
