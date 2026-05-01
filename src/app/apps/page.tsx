@@ -8,6 +8,7 @@ import {
   Search, BookOpen, Download, Shuffle, Type,
   QrCode, Gamepad2, Crown, ExternalLink,
   LayoutList, Filter, Sparkles, Braces, Infinity,
+  ImagePlus,
 } from "lucide-react";
 import { WaveDivider } from "@/components/ui";
 
@@ -129,6 +130,18 @@ const APPS: App[] = [
   },
 
   /* ── AI ──────────────────────────────────────────── */
+  {
+    id: "artforge-imgen",
+    title: "ArtForge AI Image Generator",
+    desc: "Generate stunning AI images with advanced controls — anime, realistic, fantasy, cyberpunk and 25+ art styles. Multiple AI models, custom dimensions, prompt enhancement, and batch generation. Powered by Pollinations.ai, 100% free.",
+    icon: ImagePlus,
+    category: "AI",
+    accent: "crimson",
+    featured: true,
+    tags: ["AI", "Image Generation", "Art", "Anime", "Text-to-Image"],
+    mine: true,
+    links: [{ label: "Open App", href: "/apps/imgen" }],
+  },
   {
     id: "ai-chatbot",
     title: "AI Chatbot",
