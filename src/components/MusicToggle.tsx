@@ -9,133 +9,97 @@ const TRACKS = [
   "/music/Levantine Mirage.mp3",
 ];
 
-// Events that count as real "user gestures" for unlocking audio
-const USER_GESTURE_EVENTS = [
-  "click",
-  "mousedown",
-  "pointerdown",
-  "keydown",
-  "touchstart",
-  "touchmove",
-  "touchend",
-  "scroll",
-] as const;
-
 export function MusicToggle() {
   const [mounted, setMounted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackIndexRef = useRef(0);
-  const triggeredRef = useRef(false);
-  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startedRef = useRef(false);
 
-  // Core play function — tries everything possible to start audio
-  const tryStartPlayback = () => {
-    if (triggeredRef.current) return;
-
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // Ensure audio source is set
-    if (!audio.src || audio.src === window.location.href) {
-      audio.src = TRACKS[trackIndexRef.current];
-    }
-
-    const doPlay = () => {
-      audio.muted = false;
-      audio.volume = 0.3;
-      audio.play().then(() => {
-        triggeredRef.current = true;
-        setIsPlaying(true);
-        // Stop the retry loop
-        if (retryTimerRef.current) {
-          clearInterval(retryTimerRef.current);
-          retryTimerRef.current = null;
-        }
-        // Remove all gesture listeners
-        USER_GESTURE_EVENTS.forEach((evt) =>
-          document.removeEventListener(evt, tryStartPlayback, true)
-        );
-        document.removeEventListener("visibilitychange", handleVisibility);
-        window.removeEventListener("focus", tryStartPlayback);
-      }).catch(() => {
-        // Autoplay blocked — will retry on next opportunity
-      });
-    };
-
-    if (audio.readyState >= 2) {
-      doPlay();
-    } else {
-      audio.addEventListener("canplaythrough", doPlay, { once: true });
-    }
-  };
-
-  const handleVisibility = () => {
-    if (document.visibilityState === "visible") {
-      tryStartPlayback();
-    }
-  };
-
-  // Initialize audio and attempt immediate playback
   useEffect(() => {
     setMounted(true);
 
+    // Create and EAGERLY preload the audio so it's ready
+    // before any user gesture happens
     const audio = new Audio();
     audio.volume = 0.3;
     audio.preload = "auto";
-    audio.loop = false;
     audioRef.current = audio;
 
-    // Pick a random starting track
     trackIndexRef.current = Math.floor(Math.random() * TRACKS.length);
     audio.src = TRACKS[trackIndexRef.current];
+    // Force the browser to start downloading
+    audio.load();
 
-    // When one track ends, advance to the next
-    const handleEnded = () => {
+    // Cycle to next track when one ends
+    const onEnded = () => {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
       audio.play().catch(() => {});
     };
-    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("ended", onEnded);
 
-    // === STRATEGY 1: Try playing immediately ===
-    // Some browsers allow autoplay if the user has previously
-    // interacted with the site or has it whitelisted
-    setTimeout(() => tryStartPlayback(), 100);
+    // ─── The ONE handler that starts music ───
+    // audio.play() MUST be called synchronously inside the gesture
+    // handler — any deferral (setTimeout, await, canplaythrough)
+    // causes the browser to revoke user activation.
+    const startMusic = () => {
+      if (startedRef.current) return;
+      // Call play() immediately — the browser decides right now
+      // whether the user activation is still valid.
+      audio.play().then(() => {
+        startedRef.current = true;
+        setIsPlaying(true);
+        cleanup();
+      }).catch(() => {
+        // Not allowed yet — leave listeners active to try again
+      });
+    };
 
-    // === STRATEGY 2: Retry periodically ===
-    // Some browsers unlock audio after the page is "settled"
-    retryTimerRef.current = setInterval(() => {
-      if (triggeredRef.current) {
-        if (retryTimerRef.current) clearInterval(retryTimerRef.current);
-        return;
-      }
-      tryStartPlayback();
-    }, 1500);
+    // ─── Strategy 1: Try immediately on page load ───
+    // Works when the browser has previously whitelisted the site
+    startMusic();
 
-    // === STRATEGY 3: Listen for user gestures ===
-    USER_GESTURE_EVENTS.forEach((evt) =>
-      document.addEventListener(evt, tryStartPlayback, true)
-    );
+    // ─── Strategy 2: Every kind of user interaction ───
+    // Desktop: click, mousedown, keydown, wheel (scroll)
+    // Mobile:  touchstart, touchend, pointerdown
+    const events = [
+      "click",
+      "mousedown",
+      "pointerdown",
+      "keydown",
+      "touchstart",
+      "touchend",
+      "wheel",       // desktop scroll wheel — IS a user gesture
+    ];
 
-    // === STRATEGY 4: Tab focus / visibility changes ===
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("focus", tryStartPlayback);
+    events.forEach((e) => document.addEventListener(e, startMusic, { capture: true, passive: true }));
+
+    // Also listen for scroll — mobile Safari sometimes allows play()
+    // inside scroll handlers if a touchstart recently happened
+    window.addEventListener("scroll", startMusic, { capture: true, passive: true });
+
+    // ─── Strategy 3: Periodic retry ───
+    const retryId = setInterval(() => {
+      if (startedRef.current) { clearInterval(retryId); return; }
+      startMusic();
+    }, 2000);
+
+    function cleanup() {
+      events.forEach((e) => document.removeEventListener(e, startMusic, true));
+      window.removeEventListener("scroll", startMusic, true);
+      clearInterval(retryId);
+    }
 
     return () => {
-      audio.removeEventListener("ended", handleEnded);
+      cleanup();
+      audio.removeEventListener("ended", onEnded);
       audio.pause();
       audio.src = "";
-      if (retryTimerRef.current) clearInterval(retryTimerRef.current);
-      USER_GESTURE_EVENTS.forEach((evt) =>
-        document.removeEventListener(evt, tryStartPlayback, true)
-      );
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("focus", tryStartPlayback);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ─── Manual toggle via button ───
   const toggleMusic = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -146,7 +110,7 @@ export function MusicToggle() {
     } else {
       audio.play().then(() => {
         setIsPlaying(true);
-        triggeredRef.current = true;
+        startedRef.current = true;
       }).catch(() => {});
     }
   };
@@ -172,7 +136,6 @@ export function MusicToggle() {
       `}
       aria-label={isPlaying ? "Mute music" : "Play music"}
     >
-      {/* Animated sound wave ring when playing */}
       {isPlaying && (
         <motion.span
           className="absolute inset-0 rounded-full border border-quantum/30"
@@ -192,15 +155,12 @@ export function MusicToggle() {
             transition={{ duration: 0.2 }}
             className="flex items-center gap-[2px]"
           >
-            {/* Animated equalizer bars */}
             <div className="flex items-end gap-[2px] h-4">
               {[0, 1, 2, 3].map((i) => (
                 <motion.span
                   key={i}
                   className="w-[2.5px] rounded-full bg-current"
-                  animate={{
-                    height: ["4px", "14px", "6px", "12px", "4px"],
-                  }}
+                  animate={{ height: ["4px", "14px", "6px", "12px", "4px"] }}
                   transition={{
                     duration: 0.8 + i * 0.15,
                     repeat: Infinity,
