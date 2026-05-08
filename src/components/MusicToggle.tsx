@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TRACKS = [
@@ -9,14 +9,27 @@ const TRACKS = [
   "/music/Levantine Mirage.mp3",
 ];
 
+// These are the ONLY event types desktop browsers treat as "user gestures"
+// that can unlock audio playback. `scroll` does NOT count.
+const USER_GESTURE_EVENTS = [
+  "click",
+  "mousedown",
+  "pointerdown",
+  "keydown",
+  "touchstart",
+  "touchend",
+] as const;
+
 export function MusicToggle() {
   const [mounted, setMounted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackIndexRef = useRef(0);
+  // Use a ref for the "already triggered" flag so the event handler
+  // closure always sees the latest value — no stale-state bugs.
+  const triggeredRef = useRef(false);
 
-  // Initialize audio on mount
+  // Initialize audio element once
   useEffect(() => {
     setMounted(true);
 
@@ -25,11 +38,11 @@ export function MusicToggle() {
     audio.preload = "auto";
     audioRef.current = audio;
 
-    // Shuffle starting track
+    // Pick a random starting track
     trackIndexRef.current = Math.floor(Math.random() * TRACKS.length);
     audio.src = TRACKS[trackIndexRef.current];
 
-    // When a track ends, play the next one
+    // When one track ends, advance to the next
     const handleEnded = () => {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
@@ -45,42 +58,57 @@ export function MusicToggle() {
     };
   }, []);
 
-  // Auto-play on first user interaction with the page
-  const handleFirstInteraction = useCallback(() => {
-    if (hasInteracted) return;
-    setHasInteracted(true);
-
-    const audio = audioRef.current;
-    if (audio) {
-      audio.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {
-        // Autoplay blocked — user can click the button manually
-      });
-    }
-
-    // Remove listeners after first interaction
-    document.removeEventListener("click", handleFirstInteraction);
-    document.removeEventListener("keydown", handleFirstInteraction);
-    document.removeEventListener("scroll", handleFirstInteraction);
-    document.removeEventListener("touchstart", handleFirstInteraction);
-  }, [hasInteracted]);
-
+  // Listen for the FIRST real user gesture to unlock & start playback
   useEffect(() => {
     if (!mounted) return;
 
-    document.addEventListener("click", handleFirstInteraction, { once: false });
-    document.addEventListener("keydown", handleFirstInteraction, { once: false });
-    document.addEventListener("scroll", handleFirstInteraction, { once: false });
-    document.addEventListener("touchstart", handleFirstInteraction, { once: false });
+    const tryPlay = () => {
+      // Ref check — prevents double-firing and avoids stale closures
+      if (triggeredRef.current) return;
+      triggeredRef.current = true;
+
+      // Tear down all listeners immediately
+      USER_GESTURE_EVENTS.forEach((evt) =>
+        document.removeEventListener(evt, tryPlay, true)
+      );
+
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      // The audio might still be loading; wait for it
+      const attemptPlay = () => {
+        audio.play().then(() => {
+          setIsPlaying(true);
+        }).catch(() => {
+          // Browser still blocked — reset so the user can click the button
+          triggeredRef.current = false;
+        });
+      };
+
+      if (audio.readyState >= 2) {
+        // HAVE_CURRENT_DATA or better — play now
+        attemptPlay();
+      } else {
+        // Not loaded yet — wait, then play
+        audio.addEventListener("canplaythrough", attemptPlay, { once: true });
+        // Also try after a short delay as a fallback
+        setTimeout(() => {
+          if (audio.readyState >= 2) attemptPlay();
+        }, 500);
+      }
+    };
+
+    // Use capture: true so we fire before anything else can stopPropagation
+    USER_GESTURE_EVENTS.forEach((evt) =>
+      document.addEventListener(evt, tryPlay, true)
+    );
 
     return () => {
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-      document.removeEventListener("scroll", handleFirstInteraction);
-      document.removeEventListener("touchstart", handleFirstInteraction);
+      USER_GESTURE_EVENTS.forEach((evt) =>
+        document.removeEventListener(evt, tryPlay, true)
+      );
     };
-  }, [mounted, handleFirstInteraction]);
+  }, [mounted]);
 
   const toggleMusic = () => {
     const audio = audioRef.current;
@@ -92,7 +120,7 @@ export function MusicToggle() {
     } else {
       audio.play().then(() => {
         setIsPlaying(true);
-        if (!hasInteracted) setHasInteracted(true);
+        triggeredRef.current = true;
       }).catch(() => {});
     }
   };
