@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { MusicToggle } from "./MusicToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", emoji: "⚛️" },
@@ -131,6 +132,7 @@ export function Navbar() {
 
           {/* Right side controls */}
           <div className="flex items-center gap-3">
+            <MusicToggle />
             <ThemeToggle />
 
             {/* Mobile hamburger */}
