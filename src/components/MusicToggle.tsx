@@ -9,8 +9,7 @@ const TRACKS = [
   "/music/Levantine Mirage.mp3",
 ];
 
-// These are the ONLY event types desktop browsers treat as "user gestures"
-// that can unlock audio playback. `scroll` does NOT count.
+// Events that count as real "user gestures" for unlocking audio
 const USER_GESTURE_EVENTS = [
   "click",
   "mousedown",
@@ -25,17 +24,64 @@ export function MusicToggle() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackIndexRef = useRef(0);
-  // Use a ref for the "already triggered" flag so the event handler
-  // closure always sees the latest value — no stale-state bugs.
   const triggeredRef = useRef(false);
+  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Initialize audio element once
+  // Core play function — tries everything possible to start audio
+  const tryStartPlayback = () => {
+    if (triggeredRef.current) return;
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Ensure audio source is set
+    if (!audio.src || audio.src === window.location.href) {
+      audio.src = TRACKS[trackIndexRef.current];
+    }
+
+    const doPlay = () => {
+      audio.muted = false;
+      audio.volume = 0.3;
+      audio.play().then(() => {
+        triggeredRef.current = true;
+        setIsPlaying(true);
+        // Stop the retry loop
+        if (retryTimerRef.current) {
+          clearInterval(retryTimerRef.current);
+          retryTimerRef.current = null;
+        }
+        // Remove all gesture listeners
+        USER_GESTURE_EVENTS.forEach((evt) =>
+          document.removeEventListener(evt, tryStartPlayback, true)
+        );
+        document.removeEventListener("visibilitychange", handleVisibility);
+        window.removeEventListener("focus", tryStartPlayback);
+      }).catch(() => {
+        // Autoplay blocked — will retry on next opportunity
+      });
+    };
+
+    if (audio.readyState >= 2) {
+      doPlay();
+    } else {
+      audio.addEventListener("canplaythrough", doPlay, { once: true });
+    }
+  };
+
+  const handleVisibility = () => {
+    if (document.visibilityState === "visible") {
+      tryStartPlayback();
+    }
+  };
+
+  // Initialize audio and attempt immediate playback
   useEffect(() => {
     setMounted(true);
 
     const audio = new Audio();
     audio.volume = 0.3;
     audio.preload = "auto";
+    audio.loop = false;
     audioRef.current = audio;
 
     // Pick a random starting track
@@ -48,67 +94,45 @@ export function MusicToggle() {
       audio.src = TRACKS[trackIndexRef.current];
       audio.play().catch(() => {});
     };
-
     audio.addEventListener("ended", handleEnded);
+
+    // === STRATEGY 1: Try playing immediately ===
+    // Some browsers allow autoplay if the user has previously
+    // interacted with the site or has it whitelisted
+    setTimeout(() => tryStartPlayback(), 100);
+
+    // === STRATEGY 2: Retry periodically ===
+    // Some browsers unlock audio after the page is "settled"
+    retryTimerRef.current = setInterval(() => {
+      if (triggeredRef.current) {
+        if (retryTimerRef.current) clearInterval(retryTimerRef.current);
+        return;
+      }
+      tryStartPlayback();
+    }, 1500);
+
+    // === STRATEGY 3: Listen for user gestures ===
+    USER_GESTURE_EVENTS.forEach((evt) =>
+      document.addEventListener(evt, tryStartPlayback, true)
+    );
+
+    // === STRATEGY 4: Tab focus / visibility changes ===
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", tryStartPlayback);
 
     return () => {
       audio.removeEventListener("ended", handleEnded);
       audio.pause();
       audio.src = "";
+      if (retryTimerRef.current) clearInterval(retryTimerRef.current);
+      USER_GESTURE_EVENTS.forEach((evt) =>
+        document.removeEventListener(evt, tryStartPlayback, true)
+      );
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", tryStartPlayback);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Listen for the FIRST real user gesture to unlock & start playback
-  useEffect(() => {
-    if (!mounted) return;
-
-    const tryPlay = () => {
-      // Ref check — prevents double-firing and avoids stale closures
-      if (triggeredRef.current) return;
-      triggeredRef.current = true;
-
-      // Tear down all listeners immediately
-      USER_GESTURE_EVENTS.forEach((evt) =>
-        document.removeEventListener(evt, tryPlay, true)
-      );
-
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      // The audio might still be loading; wait for it
-      const attemptPlay = () => {
-        audio.play().then(() => {
-          setIsPlaying(true);
-        }).catch(() => {
-          // Browser still blocked — reset so the user can click the button
-          triggeredRef.current = false;
-        });
-      };
-
-      if (audio.readyState >= 2) {
-        // HAVE_CURRENT_DATA or better — play now
-        attemptPlay();
-      } else {
-        // Not loaded yet — wait, then play
-        audio.addEventListener("canplaythrough", attemptPlay, { once: true });
-        // Also try after a short delay as a fallback
-        setTimeout(() => {
-          if (audio.readyState >= 2) attemptPlay();
-        }, 500);
-      }
-    };
-
-    // Use capture: true so we fire before anything else can stopPropagation
-    USER_GESTURE_EVENTS.forEach((evt) =>
-      document.addEventListener(evt, tryPlay, true)
-    );
-
-    return () => {
-      USER_GESTURE_EVENTS.forEach((evt) =>
-        document.removeEventListener(evt, tryPlay, true)
-      );
-    };
-  }, [mounted]);
 
   const toggleMusic = () => {
     const audio = audioRef.current;
