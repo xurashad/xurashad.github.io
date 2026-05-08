@@ -16,7 +16,9 @@ const USER_GESTURE_EVENTS = [
   "pointerdown",
   "keydown",
   "touchstart",
+  "touchmove",
   "touchend",
+  "scroll",
 ] as const;
 
 export function MusicToggle() {
