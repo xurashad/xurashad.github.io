@@ -5,8 +5,10 @@ import { VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TRACKS = [
-  "/music/Ancient Sands & Emerald Isles.mp3",
-  "/music/Levantine Mirage.mp3",
+  "/music/1 Levantine Mirage.mp3",
+  "/music/2 Ancient Sands & Emerald Isles.mp3",
+  "/music/3 Levantine Mystic Fantasy.mp3",
+  "/music/4 Ancient Sands & Harps.mp3",
 ];
 
 export function MusicToggle() {
@@ -35,7 +37,7 @@ export function MusicToggle() {
     const onEnded = () => {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
     };
     audio.addEventListener("ended", onEnded);
 
@@ -111,7 +113,7 @@ export function MusicToggle() {
       audio.play().then(() => {
         setIsPlaying(true);
         startedRef.current = true;
-      }).catch(() => {});
+      }).catch(() => { });
     }
   };
 
