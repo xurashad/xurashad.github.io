@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import Link from "next/link";
 import {
   Atom, LayoutGrid, Zap, GitFork, TrendingUp,
   Hash, Binary, Globe, Star, FileText, Bot,
@@ -380,19 +381,25 @@ function AppCard({ app, index }: { app: App; index: number }) {
       <div className="flex flex-wrap gap-2 mt-auto">
         {app.links.map((l) => {
           const isExternal = l.href.startsWith("http");
-          return (
+          const cls = `flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play"
+            ? ac.link
+            : "bg-white/5 text-foreground/40 hover:text-foreground/70 hover:bg-white/8 border-white/8"
+          }`;
+          return isExternal ? (
             <a
               key={l.label}
               href={l.href}
-              {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play"
-                ? ac.link
-                : "bg-white/5 text-foreground/40 hover:text-foreground/70 hover:bg-white/8 border-white/8"
-                }`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cls}
             >
-              {isExternal && <ExternalLink size={10} />}
+              <ExternalLink size={10} />
               {l.label}
             </a>
+          ) : (
+            <Link key={l.label} href={l.href} className={cls}>
+              {l.label}
+            </Link>
           );
         })}
       </div>
@@ -437,18 +444,23 @@ function AppRow({ app, index }: { app: App; index: number }) {
           </div>
         </div>
         <div className="flex-shrink-0">
-          {(() => {
-            const isExternal = app.links[0].href.startsWith("http");
-            return (
-              <a
-                href={app.links[0].href}
-                {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all ${ac.link}`}
-              >
-                {isExternal && <ExternalLink size={10} />} {app.links[0].label}
-              </a>
-            );
-          })()}
+          {app.links[0].href.startsWith("http") ? (
+            <a
+              href={app.links[0].href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all ${ac.link}`}
+            >
+              <ExternalLink size={10} /> {app.links[0].label}
+            </a>
+          ) : (
+            <Link
+              href={app.links[0].href}
+              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all ${ac.link}`}
+            >
+              {app.links[0].label}
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

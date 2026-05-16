@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,46 +11,65 @@ const TRACKS = [
   "/music/4 Ancient Sands & Harps.mp3",
 ];
 
+/* ─── Module-level singleton ──────────────────────────────────────────────
+   The Audio object lives OUTSIDE React so it survives component
+   unmount / remount cycles that happen during Next.js page navigation.   */
+
+let _audio: HTMLAudioElement | null = null;
+let _trackIndex = -1;
+let _started = false;
+let _userMuted = false; // true when the user explicitly clicked mute
+
+function getAudio(): HTMLAudioElement {
+  if (!_audio) {
+    _audio = new Audio();
+    _audio.volume = 0.3;
+    _audio.preload = "auto";
+
+    _trackIndex = Math.floor(Math.random() * TRACKS.length);
+    _audio.src = TRACKS[_trackIndex];
+    _audio.load();
+
+    // Cycle to next track when one ends
+    _audio.addEventListener("ended", () => {
+      _trackIndex = (_trackIndex + 1) % TRACKS.length;
+      _audio!.src = TRACKS[_trackIndex];
+      _audio!.play().catch(() => {});
+    });
+  }
+  return _audio;
+}
+
 export function MusicToggle() {
   const [mounted, setMounted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const trackIndexRef = useRef(0);
-  const startedRef = useRef(false);
+  const listenersAttached = useRef(false);
 
+  /* Sync UI state with the actual singleton audio state on mount */
   useEffect(() => {
     setMounted(true);
+    const audio = getAudio();
 
-    // Create and EAGERLY preload the audio so it's ready
-    // before any user gesture happens
-    const audio = new Audio();
-    audio.volume = 0.3;
-    audio.preload = "auto";
-    audioRef.current = audio;
+    // If audio was already playing (component remounted), just sync the UI
+    if (_started && !_userMuted && !audio.paused) {
+      setIsPlaying(true);
+      return;
+    }
 
-    trackIndexRef.current = Math.floor(Math.random() * TRACKS.length);
-    audio.src = TRACKS[trackIndexRef.current];
-    // Force the browser to start downloading
-    audio.load();
+    // If user had previously muted, keep it muted
+    if (_userMuted) {
+      setIsPlaying(false);
+      return;
+    }
 
-    // Cycle to next track when one ends
-    const onEnded = () => {
-      trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
-      audio.src = TRACKS[trackIndexRef.current];
-      audio.play().catch(() => { });
-    };
-    audio.addEventListener("ended", onEnded);
+    // ─── Auto-start logic (only wire up once globally) ───
+    if (listenersAttached.current) return;
+    listenersAttached.current = true;
 
-    // ─── The ONE handler that starts music ───
-    // audio.play() MUST be called synchronously inside the gesture
-    // handler — any deferral (setTimeout, await, canplaythrough)
-    // causes the browser to revoke user activation.
     const startMusic = () => {
-      if (startedRef.current) return;
-      // Call play() immediately — the browser decides right now
-      // whether the user activation is still valid.
+      if (_started || _userMuted) return;
       audio.play().then(() => {
-        startedRef.current = true;
+        _started = true;
         setIsPlaying(true);
         cleanup();
       }).catch(() => {
@@ -58,32 +77,20 @@ export function MusicToggle() {
       });
     };
 
-    // ─── Strategy 1: Try immediately on page load ───
-    // Works when the browser has previously whitelisted the site
+    // Strategy 1: Try immediately
     startMusic();
 
-    // ─── Strategy 2: Every kind of user interaction ───
-    // Desktop: click, mousedown, keydown, wheel (scroll)
-    // Mobile:  touchstart, touchend, pointerdown
+    // Strategy 2: Every kind of user interaction
     const events = [
-      "click",
-      "mousedown",
-      "pointerdown",
-      "keydown",
-      "touchstart",
-      "touchend",
-      "wheel",       // desktop scroll wheel — IS a user gesture
+      "click", "mousedown", "pointerdown", "keydown",
+      "touchstart", "touchend", "wheel",
     ];
-
     events.forEach((e) => document.addEventListener(e, startMusic, { capture: true, passive: true }));
-
-    // Also listen for scroll — mobile Safari sometimes allows play()
-    // inside scroll handlers if a touchstart recently happened
     window.addEventListener("scroll", startMusic, { capture: true, passive: true });
 
-    // ─── Strategy 3: Periodic retry ───
+    // Strategy 3: Periodic retry
     const retryId = setInterval(() => {
-      if (startedRef.current) { clearInterval(retryId); return; }
+      if (_started) { clearInterval(retryId); return; }
       startMusic();
     }, 2000);
 
@@ -93,29 +100,29 @@ export function MusicToggle() {
       clearInterval(retryId);
     }
 
+    // NOTE: No cleanup return that pauses/destroys audio!
+    // The audio singleton intentionally outlives the component.
     return () => {
       cleanup();
-      audio.removeEventListener("ended", onEnded);
-      audio.pause();
-      audio.src = "";
     };
   }, []);
 
   // ─── Manual toggle via button ───
-  const toggleMusic = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const toggleMusic = useCallback(() => {
+    const audio = getAudio();
 
     if (isPlaying) {
       audio.pause();
+      _userMuted = true;
       setIsPlaying(false);
     } else {
       audio.play().then(() => {
+        _started = true;
+        _userMuted = false;
         setIsPlaying(true);
-        startedRef.current = true;
-      }).catch(() => { });
+      }).catch(() => {});
     }
-  };
+  }, [isPlaying]);
 
   if (!mounted) {
     return (
