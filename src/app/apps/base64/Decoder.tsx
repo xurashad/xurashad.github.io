@@ -19,7 +19,7 @@ const COMMON_MIME_TYPES = [
   "application/pdf", "application/json", "application/xml",
 ] as const;
 
-const DATA_URL_REGEX = /^data:([a-zA-Z0-9][a-zA-Z0-9!#$&\-^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*);base64,([A-Za-z0-9+/=\s]+)$/;
+const DATA_URL_REGEX = /^data:([a-zA-Z0-9][a-zA-Z0-9!#$&\-^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*(?:;[^;,]+)*);base64,([A-Za-z0-9+/=\s]+)$/;
 const RAW_BASE64_REGEX = /^[A-Za-z0-9+/\s]+=*$/;
 
 function isValidBase64(str: string): boolean {
@@ -74,7 +74,7 @@ export function Decoder() {
         setError("The Base64 data section is corrupted or invalid.");
         return;
       }
-      setDecodedMedia({ src: trimmed, mimeType: match[1] });
+      setDecodedMedia({ src: trimmed, mimeType: match[1].split(";")[0] });
       return;
     }
 

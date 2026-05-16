@@ -45,7 +45,7 @@ export function Preview({ src, mimeType }: PreviewProps) {
             Text Content
           </p>
           <p className="text-sm font-mono text-foreground/70 whitespace-pre-wrap break-words">
-            {atob(src.split(",")[1] ?? "")}
+            {decodeURIComponent(escape(atob(src.split(",")[1] ?? "")))}
           </p>
         </div>
       );
