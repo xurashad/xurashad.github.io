@@ -1,289 +1,289 @@
-import type { BuilderState } from "./types";
-import { getBaseCSS } from "./css";
-import { getPageExportPath, getRelativePrefix } from "./reducer";
+// ============================================================
+// Website Builder Pro — Export Engine
+// ============================================================
 
-/* ────────────────────────────────────────────────────────────────────────────
-   Export ZIP + Preview generation
-   ──────────────────────────────────────────────────────────────────────────── */
+import type { BuilderProject, SectionNode, RowNode, ElementNode, PageData, SiteTheme } from './types';
+import { generateBaseCSS, getGoogleFontsUrl, stylesToCSS, collectHoverCSS } from './css-engine';
 
-/* ── video URL conversion ── */
-function convertVideoUrl(url: string): string {
-  if (!url) return url;
-  let m = url.match(
-    /(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0`;
-  m = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
-  if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0`;
-  m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (m) return `https://player.vimeo.com/video/${m[1]}`;
-  return url;
+/* ========== Render Element to HTML ========== */
+
+function renderElement(el: ElementNode): string {
+  if (el.hidden) return '';
+  const style = stylesToCSS(el.styles);
+  const styleAttr = style ? ` style="${style}"` : '';
+  const id = ` data-id="${el.id}"`;
+
+  switch (el.type) {
+    case 'heading': {
+      const tag = `h${el.headingLevel ?? 2}`;
+      return `<${tag}${id}${styleAttr}>${el.content}</${tag}>`;
+    }
+    case 'paragraph':
+      return `<p${id}${styleAttr}>${el.content}</p>`;
+    case 'button':
+      return `<a${id} href="${el.attributes.href || '#'}"${el.attributes.target ? ` target="${el.attributes.target}"` : ''} class="wb-btn"${styleAttr}>${el.content}</a>`;
+    case 'link':
+      return `<a${id} href="${el.attributes.href || '#'}"${el.attributes.target ? ` target="${el.attributes.target}"` : ''}${styleAttr}>${el.content}</a>`;
+    case 'image':
+      return `<img${id} src="${el.content}" alt="${el.attributes.alt || ''}"${styleAttr} loading="lazy">`;
+    case 'video':
+      return `<div${id} class="wb-video-wrapper"${styleAttr}><iframe src="${el.content}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div>`;
+    case 'icon':
+      return `<i${id} class="${el.content} wb-icon"${styleAttr}></i>`;
+    case 'list':
+      return `<ul${id}${styleAttr}>${el.content}</ul>`;
+    case 'blockquote':
+      return `<blockquote${id}${styleAttr}>${el.content}</blockquote>`;
+    case 'code':
+      return `<pre${id} class="wb-code"${styleAttr}><code>${escapeHtml(el.content)}</code></pre>`;
+    case 'divider':
+      return `<div${id}${styleAttr}></div>`;
+    case 'spacer':
+      return `<div${id}${styleAttr}></div>`;
+    case 'form': {
+      const action = el.attributes.action || '#';
+      const method = el.attributes.method || 'POST';
+      const submitText = el.attributes.submitText || 'Submit';
+      return `<form${id} class="wb-form" action="${action}" method="${method}"${styleAttr}>
+  <div class="form-group"><label>Name</label><input type="text" name="name" placeholder="Your name" required></div>
+  <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="Your email" required></div>
+  <div class="form-group"><label>Message</label><textarea name="message" rows="4" placeholder="Your message" required></textarea></div>
+  <button type="submit">${submitText}</button>
+</form>`;
+    }
+    case 'map':
+      return `<div${id} class="wb-map"${styleAttr}><iframe src="${el.content}" frameborder="0" allowfullscreen loading="lazy"></iframe></div>`;
+    case 'embed':
+      return `<div${id} class="wb-embed"${styleAttr}><iframe src="${el.content}" frameborder="0" title="${el.attributes.title || 'Embed'}" loading="lazy"></iframe></div>`;
+    case 'social-links': {
+      let links: Array<{ platform: string; url: string; icon: string }> = [];
+      try { links = JSON.parse(el.attributes.links || '[]'); } catch { /* ignore */ }
+      const items = links.map(l => `<a href="${l.url}" target="_blank" rel="noopener noreferrer" aria-label="${l.platform}"><i class="${l.icon}"></i></a>`).join('\n  ');
+      return `<div${id} class="wb-social-links"${styleAttr}>\n  ${items}\n</div>`;
+    }
+    case 'container': {
+      const children = el.children.map(renderElement).join('\n');
+      return `<div${id}${styleAttr}>${children}</div>`;
+    }
+    default:
+      return `<div${id}${styleAttr}>${el.content}</div>`;
+  }
 }
 
-export { convertVideoUrl };
-
-/* ── Hover CSS extraction from a DOM tree ── */
-function extractHoverCSS(container: HTMLElement): string {
-  let css = "";
-  container.querySelectorAll("[data-hover]").forEach((el) => {
-    const id = (el as HTMLElement).id;
-    if (!id) return;
-    try {
-      const hover = JSON.parse(
-        el.getAttribute("data-hover") || "{}"
-      ) as Record<string, string>;
-      const rules = Object.entries(hover)
-        .map(
-          ([p, v]) =>
-            `${p.replace(/([A-Z])/g, "-$1").toLowerCase()}:${v}!important`
-        )
-        .join(";");
-      if (rules) css += `#${id}:hover{${rules};transition:all 0.2s ease;}\n`;
-    } catch {
-      /* ignore bad JSON */
-    }
-  });
-  return css;
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/* ── Clean a cloned DOM node for export ── */
-function cleanNode(
-  node: HTMLElement,
-  prefix: string,
-  assets: BuilderState["assets"]
-) {
-  node
-    .querySelectorAll(".active-el")
-    .forEach((e) => e.classList.remove("active-el"));
-  node
-    .querySelectorAll("[contenteditable]")
-    .forEach((e) => e.removeAttribute("contenteditable"));
-  node.querySelectorAll(".b-col").forEach((c) => {
-    const el = c as HTMLElement;
-    if (!el.style.border || el.style.border === "none")
-      el.style.border = "none";
-  });
-  node.querySelectorAll("[data-asset]").forEach((e) => {
-    const aid = e.getAttribute("data-asset")!;
-    if (assets[aid]) {
-      const fname = prefix + "assets/" + assets[aid].name;
-      if (e.tagName === "IMG") (e as HTMLImageElement).src = fname;
-      else if (e.tagName === "VIDEO") (e as HTMLVideoElement).src = fname;
-      else if (e.classList.contains("video-wrapper")) {
-        const v = e.querySelector("video");
-        if (v) v.src = fname;
-      }
-    }
-  });
-  node.querySelectorAll("[data-bg-asset]").forEach((e) => {
-    const aid = e.getAttribute("data-bg-asset")!;
-    if (assets[aid]) {
-      (e as HTMLElement).style.backgroundImage = `url('${prefix}assets/${assets[aid].name}')`;
-    }
-  });
+/* ========== Render Section ========== */
+
+function renderSection(section: SectionNode, isHeaderOrFooter?: 'header' | 'footer'): string {
+  const sectionStyle = stylesToCSS(section.styles);
+  const wrapperClass = isHeaderOrFooter === 'header' ? 'site-header' : isHeaderOrFooter === 'footer' ? 'site-footer' : '';
+  const sectionClass = `wb-section${section.fullBleed ? ' full-bleed' : ''}`;
+
+  const rowsHtml = section.rows.map(row => {
+    const rowStyle = stylesToCSS(row.styles);
+    const colsHtml = row.columns.map(col => {
+      const colStyle = stylesToCSS(col.styles);
+      const elHtml = col.elements.map(renderElement).join('\n      ');
+      return `    <div class="wb-col wb-col-${col.span}"${colStyle ? ` style="${colStyle}"` : ''}>\n      ${elHtml}\n    </div>`;
+    }).join('\n');
+    return `  <div class="wb-row"${rowStyle ? ` style="${rowStyle}"` : ''}>\n${colsHtml}\n  </div>`;
+  }).join('\n');
+
+  const inner = `<div class="wb-section-inner">\n${rowsHtml}\n</div>`;
+
+  if (wrapperClass) {
+    return `<${isHeaderOrFooter === 'header' ? 'header' : 'footer'} class="${wrapperClass}">\n<div class="${sectionClass}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>\n${inner}\n</div>\n</${isHeaderOrFooter === 'header' ? 'header' : 'footer'}>`;
+  }
+  return `<section class="${sectionClass}"${sectionStyle ? ` style="${sectionStyle}"` : ''}>\n${inner}\n</section>`;
 }
 
-/* ── Preview HTML ─────────────────────────────────────────────────────────── */
+/* ========== Generate Single Page HTML ========== */
 
-export function generatePreviewHTML(
-  state: BuilderState,
-  headerHTML: string,
-  footerHTML: string,
-  mainHTML: string
+function generatePageHTML(
+  project: BuilderProject,
+  page: PageData,
+  cssFilePath: string,
 ): string {
-  /* collect hover CSS from all pages */
-  let allHoverCSS = "";
-  const tempDiv = document.createElement("div");
+  const fontsUrl = getGoogleFontsUrl(project.theme);
+  const allSections = [...(project.settings.headerEnabled ? [project.header] : []), ...page.sections, ...(project.settings.footerEnabled ? [project.footer] : [])];
+  const hoverCSS = collectHoverCSS(allSections);
 
-  for (const id in state.pages) {
-    tempDiv.innerHTML = state.pages[id].html;
-    allHoverCSS += extractHoverCSS(tempDiv);
-  }
-
-  /* clean the page HTML snippets for preview */
-  const cleanPages: Record<string, { title: string; html: string }> = {};
-  const pathMap: Record<string, string> = {};
-
-  for (const id in state.pages) {
-    pathMap[getPageExportPath(id, state.pages)] = id;
-    tempDiv.innerHTML = state.pages[id].html;
-    tempDiv
-      .querySelectorAll(".active-el")
-      .forEach((e) => e.classList.remove("active-el"));
-    tempDiv
-      .querySelectorAll("[contenteditable]")
-      .forEach((e) => e.removeAttribute("contenteditable"));
-    tempDiv.querySelectorAll(".b-col").forEach((c) => {
-      const el = c as HTMLElement;
-      if (!el.style.border || el.style.border === "none")
-        el.style.border = "none";
-    });
-    cleanPages[id] = {
-      title: state.pages[id].title,
-      html: tempDiv.innerHTML,
-    };
-  }
-
-  /* clean header/footer */
-  const hDiv = document.createElement("div");
-  hDiv.innerHTML = headerHTML;
-  const fDiv = document.createElement("div");
-  fDiv.innerHTML = footerHTML;
-  [hDiv, fDiv].forEach((d) => {
-    d.querySelectorAll(".active-el").forEach((e) =>
-      e.classList.remove("active-el")
-    );
-    d.querySelectorAll("[contenteditable]").forEach((e) =>
-      e.removeAttribute("contenteditable")
-    );
-    d.querySelectorAll("a[data-page-id]").forEach((a) => {
-      const pid = a.getAttribute("data-page-id")!;
-      a.setAttribute("href", getPageExportPath(pid, state.pages));
-      a.removeAttribute("onclick");
-    });
-  });
-
-  const cleanMainDiv = document.createElement("div");
-  cleanMainDiv.innerHTML = mainHTML;
-  cleanMainDiv
-    .querySelectorAll(".active-el")
-    .forEach((e) => e.classList.remove("active-el"));
-  cleanMainDiv
-    .querySelectorAll("[contenteditable]")
-    .forEach((e) => e.removeAttribute("contenteditable"));
-
-  const pagesJson = JSON.stringify(cleanPages)
-    .replace(/</g, "\\u003c")
-    .replace(/>/g, "\\u003e");
-  const pathMapJson = JSON.stringify(pathMap);
-
-  const mode = state.canvasThemeMode;
-  const t = state.theme;
+  const bodyContent = [
+    project.settings.headerEnabled ? renderSection(project.header, 'header') : '',
+    '<main>',
+    ...page.sections.map(s => renderSection(s)),
+    '</main>',
+    project.settings.footerEnabled ? renderSection(project.footer, 'footer') : '',
+  ].filter(Boolean).join('\n\n');
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Preview — ${state.pages[state.currentPage]?.title || "Untitled"}</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-:root{--site-bg:${t.light.bg};--site-text:${t.light.txt};--site-accent:${t.accent};}
-[data-theme="dark"]{--site-bg:${t.dark.bg};--site-text:${t.dark.txt};}
-body{margin:0;font-family:'DM Sans',sans-serif;background:var(--site-bg);color:var(--site-text);transition:background 0.3s,color 0.3s;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
-${getBaseCSS()}
-#theme-toggle{position:fixed;bottom:20px;right:20px;background:var(--site-text);color:var(--site-bg);border:none;padding:10px 18px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;box-shadow:0 8px 20px rgba(0,0,0,0.2);z-index:100;font-size:0.85rem;}
-${state.customCSS}
-${allHoverCSS}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${page.seo.title || page.title} — ${project.settings.siteName}</title>
+  <meta name="description" content="${page.seo.description || ''}">
+  ${page.seo.ogImage ? `<meta property="og:image" content="${page.seo.ogImage}">` : ''}
+  <meta property="og:title" content="${page.seo.title || page.title}">
+  ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="${fontsUrl}" rel="stylesheet">` : ''}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="${cssFilePath}">
+  ${project.settings.favicon ? `<link rel="icon" href="assets/favicon.png">` : ''}
+  ${hoverCSS ? `<style>\n${hoverCSS}\n</style>` : ''}
+  ${project.settings.globalCSS ? `<style>\n${project.settings.globalCSS}\n</style>` : ''}
 </head>
-<body data-theme="${mode}">
-${hDiv.innerHTML}
-<main id="page-content">${cleanMainDiv.innerHTML}</main>
-${fDiv.innerHTML}
-<button id="theme-toggle" onclick="var b=document.body,t=b.getAttribute('data-theme')==='light';b.setAttribute('data-theme',t?'dark':'light');this.textContent=t?'☀️ Light':'🌙 Dark'">${mode === "dark" ? "☀️ Light" : "🌙 Dark"}</button>
+<body>
+${bodyContent}
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
 <script>
-var siteData=${pagesJson};
-var pathMap=${pathMapJson};
-window.app={loadPage:function(id){if(siteData[id]){document.getElementById('page-content').innerHTML=siteData[id].html;document.title='Preview — '+siteData[id].title;window.scrollTo(0,0);}}};
-document.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var h=a.getAttribute('href');if(h&&pathMap[h]){e.preventDefault();window.app.loadPage(pathMap[h]);}});
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');localStorage.setItem('theme',h.getAttribute('data-theme'));}
+(function(){const t=localStorage.getItem('theme')||((window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();
+</script>
+${project.settings.analyticsId ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${project.settings.analyticsId}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${project.settings.analyticsId}');</script>` : ''}
+</body>
+</html>`;
+}
+
+/* ========== Preview HTML (all-in-one) ========== */
+
+export function generatePreviewHTML(project: BuilderProject, themeMode: 'light' | 'dark'): string {
+  const fontsUrl = getGoogleFontsUrl(project.theme);
+  const css = generateBaseCSS(project.theme);
+  const pages = project.pageOrder.map(id => project.pages[id]).filter(Boolean);
+
+  const pagesHTML = pages.map(page => {
+    const bodyContent = [
+      project.settings.headerEnabled ? renderSection(project.header, 'header') : '',
+      '<main>',
+      ...page.sections.map(s => renderSection(s)),
+      '</main>',
+      project.settings.footerEnabled ? renderSection(project.footer, 'footer') : '',
+    ].filter(Boolean).join('\n');
+
+    const allSections = [...(project.settings.headerEnabled ? [project.header] : []), ...page.sections, ...(project.settings.footerEnabled ? [project.footer] : [])];
+    const hoverCSS = collectHoverCSS(allSections);
+
+    return `<div class="wb-page" data-page-id="${page.id}" data-page-title="${page.title}" style="display:none;">\n${bodyContent}\n${hoverCSS ? `<style>${hoverCSS}</style>` : ''}\n</div>`;
+  }).join('\n');
+
+  const navLinks = pages.filter(p => !p.hidden).map(p =>
+    `<a href="#" data-goto="${p.id}" class="preview-nav-link">${p.title}</a>`
+  ).join('\n    ');
+
+  return `<!DOCTYPE html>
+<html lang="en" data-theme="${themeMode}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview — ${project.settings.siteName}</title>
+  ${fontsUrl ? `<link href="${fontsUrl}" rel="stylesheet">` : ''}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>${css}</style>
+  ${project.settings.globalCSS ? `<style>${project.settings.globalCSS}</style>` : ''}
+  <style>
+    .preview-bar { position:fixed;top:0;left:0;right:0;height:48px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;gap:1rem;z-index:10000;font-family:system-ui;font-size:0.85rem; }
+    .preview-bar a,.preview-bar button { color:#fff;background:none;border:1px solid #333;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;text-decoration:none; }
+    .preview-bar a.active,.preview-bar button.active { background:#6366f1;border-color:#6366f1; }
+    .preview-content { padding-top:48px; }
+  </style>
+</head>
+<body>
+<div class="preview-bar">
+  <span style="font-weight:600;margin-right:1rem;">${project.settings.siteName}</span>
+  ${navLinks}
+  <span style="margin-left:auto;display:flex;gap:0.5rem;">
+    <button onclick="setViewport('100%')" class="active" id="vd">Desktop</button>
+    <button onclick="setViewport('768px')" id="vt">Tablet</button>
+    <button onclick="setViewport('375px')" id="vm">Mobile</button>
+    <button onclick="toggleTheme()">🌓</button>
+  </span>
+</div>
+<div class="preview-content" id="preview-content">
+${pagesHTML}
+</div>
+<script>
+function showPage(id){document.querySelectorAll('.wb-page').forEach(p=>p.style.display='none');const el=document.querySelector('[data-page-id="'+id+'"]');if(el)el.style.display='block';document.querySelectorAll('.preview-nav-link').forEach(a=>{a.classList.toggle('active',a.getAttribute('data-goto')===id);});}
+document.querySelectorAll('[data-goto]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.getAttribute('data-goto'));}));
+showPage('${pages[0]?.id ?? ''}');
+function setViewport(w){const c=document.getElementById('preview-content');c.style.maxWidth=w;c.style.margin='48px auto 0';document.querySelectorAll('#vd,#vt,#vm').forEach(b=>b.classList.remove('active'));if(w==='100%')document.getElementById('vd').classList.add('active');else if(w==='768px')document.getElementById('vt').classList.add('active');else document.getElementById('vm').classList.add('active');}
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');}
 </script>
 </body>
 </html>`;
 }
 
-/* ── Export ZIP ────────────────────────────────────────────────────────────── */
+/* ========== Export as ZIP ========== */
 
-export async function exportSiteZip(
-  state: BuilderState,
-  headerEl: HTMLElement,
-  footerEl: HTMLElement
-): Promise<Blob> {
-  /* dynamically import JSZip */
-  const JSZip = (await import("jszip")).default;
+export async function exportProjectZip(project: BuilderProject): Promise<Blob> {
+  const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
-  const assetsFolder = zip.folder("assets")!;
 
-  /* bundle assets */
-  for (const id in state.assets) {
-    const asset = state.assets[id];
-    if (asset.base64) assetsFolder.file(asset.name, asset.base64, { base64: true });
-  }
-  if (state.favicon) {
-    const b64 = state.favicon.split(",")[1];
-    assetsFolder.file("favicon.png", b64, { base64: true });
-  }
+  // Generate CSS
+  const css = generateBaseCSS(project.theme);
+  zip.file('style.css', css);
 
-  /* CSS file */
-  const t = state.theme;
-  const css = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
-:root{--site-bg:${t.light.bg};--site-text:${t.light.txt};--site-accent:${t.accent};}
-[data-theme="dark"]{--site-bg:${t.dark.bg};--site-text:${t.dark.txt};}
-body{margin:0;font-family:'DM Sans',sans-serif;background:var(--site-bg);color:var(--site-text);transition:background 0.3s,color 0.3s;min-height:100vh;display:flex;flex-direction:column;}
-${getBaseCSS()}
-#theme-toggle{position:fixed;bottom:20px;right:20px;background:var(--site-text);color:var(--site-bg);border:none;padding:10px 18px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;box-shadow:0 8px 20px rgba(0,0,0,0.2);z-index:100;font-size:0.85rem;}
-${state.customCSS}`;
+  // Generate pages
+  const pages = project.pageOrder.map(id => project.pages[id]).filter(Boolean);
 
-  zip.file("style.css", css);
-
-  const allPaths = Object.keys(state.pages).map((p) =>
-    getPageExportPath(p, state.pages)
-  );
-
-  /* per-page HTML */
-  for (const id in state.pages) {
-    const prefix = getRelativePrefix(id, state.pages);
-    const pagePath = getPageExportPath(id, state.pages);
-    const pageDiv = document.createElement("div");
-    pageDiv.innerHTML = state.pages[id].html;
-
-    const ph = headerEl.cloneNode(true) as HTMLElement;
-    const pf = footerEl.cloneNode(true) as HTMLElement;
-
-    [pageDiv, ph, pf].forEach((node) => {
-      cleanNode(node as HTMLElement, prefix, state.assets);
-      node.querySelectorAll("a").forEach((a) => {
-        const href = a.getAttribute("href");
-        if (href && allPaths.includes(href)) {
-          a.setAttribute("href", prefix + href);
-        }
-      });
-    });
-
-    /* fix nav links */
-    ph.querySelectorAll(".site-nav a[data-page-id]").forEach((a) => {
-      const pid = a.getAttribute("data-page-id")!;
-      a.setAttribute("href", prefix + getPageExportPath(pid, state.pages));
-      a.classList.toggle("active-link", pid === id);
-      a.removeAttribute("data-page-id");
-      a.removeAttribute("onclick");
-    });
-
-    const hoverCSS = extractHoverCSS(pageDiv);
-
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${state.pages[id].title}</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link rel="stylesheet" href="${prefix}style.css">
-${state.favicon ? `<link rel="icon" href="${prefix}assets/favicon.png">` : ""}
-${hoverCSS ? `<style>${hoverCSS}</style>` : ""}
-</head>
-<body data-theme="light">
-${ph.outerHTML}
-<main id="page-content">${pageDiv.innerHTML}</main>
-${pf.outerHTML}
-<button id="theme-toggle" onclick="var b=document.body,t=b.getAttribute('data-theme')==='light';b.setAttribute('data-theme',t?'dark':'light');this.textContent=t?'☀️ Light':'🌙 Dark'">🌙 Dark</button>
-<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.body.setAttribute('data-theme','dark');document.getElementById('theme-toggle').textContent='☀️ Light';}<\/script>
-</body>
-</html>`;
-    zip.file(pagePath, html);
+  for (const page of pages) {
+    const depth = getPageDepth(page, project.pages);
+    const prefix = '../'.repeat(depth);
+    const cssPath = `${prefix}style.css`;
+    const html = generatePageHTML(project, page, cssPath);
+    const filePath = getPageFilePath(page, project.pages);
+    zip.file(filePath, html);
   }
 
-  return zip.generateAsync({ type: "blob" });
+  // Export assets
+  for (const asset of Object.values(project.assets)) {
+    try {
+      const base64Data = asset.dataUrl.split(',')[1];
+      if (base64Data) {
+        const ext = asset.mimeType.split('/')[1] || 'bin';
+        zip.file(`assets/${asset.id}.${ext}`, base64Data, { base64: true });
+      }
+    } catch { /* skip invalid assets */ }
+  }
+
+  // Favicon
+  if (project.settings.favicon) {
+    try {
+      const base64 = project.settings.favicon.split(',')[1];
+      if (base64) zip.file('assets/favicon.png', base64, { base64: true });
+    } catch { /* skip */ }
+  }
+
+  return zip.generateAsync({ type: 'blob' });
+}
+
+/* ========== Helpers ========== */
+
+function getPageFilePath(page: PageData, pages: Record<string, PageData>): string {
+  const parts: string[] = [];
+  let current: PageData | undefined = page;
+  while (current?.parentId) {
+    const parent: PageData | undefined = pages[current.parentId];
+    if (parent) {
+      parts.unshift(parent.slug);
+      current = parent;
+    } else break;
+  }
+  if (page.slug === 'index') {
+    return parts.length > 0 ? `${parts.join('/')}/index.html` : 'index.html';
+  }
+  return [...parts, `${page.slug}.html`].join('/');
+}
+
+function getPageDepth(page: PageData, pages: Record<string, PageData>): number {
+  let depth = 0;
+  let current: PageData | undefined = page;
+  while (current?.parentId) {
+    const parent: PageData | undefined = pages[current.parentId];
+    if (parent) { depth++; current = parent; }
+    else break;
+  }
+  return depth;
 }

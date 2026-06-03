@@ -1,598 +1,527 @@
-"use client";
+'use client';
+// ============================================================
+// Website Builder Pro — Right Sidebar (Property Editor)
+// ============================================================
 
-import { useState, useCallback, useEffect } from "react";
-import type { BuilderState, BuilderAction } from "../lib/types";
-import { toast } from "../lib/reducer";
+import React, { useState, useCallback, useMemo } from 'react';
+import { Box, Paintbrush, Sparkles, Settings, Image, Palette, Upload, Trash2, X } from 'lucide-react';
+import type { BuilderState, BuilderAction, RightSidebarTab, ElementNode, ElementStyles } from '../lib/types';
+import { FONT_LIST, GRADIENT_PRESETS, SHADOW_PRESETS } from '../lib/defaults';
+import { getSelectedElement } from '../lib/reducer';
 
-interface Props {
+interface RightSidebarProps {
   state: BuilderState;
   dispatch: React.Dispatch<BuilderAction>;
-  getSelectedEl: () => HTMLElement | null;
-  onSavePage: () => void;
 }
 
-const TABS = ["Layout", "Style", "Hover", "Settings", "Assets", "Layers"];
+export default function RightSidebar({ state, dispatch }: RightSidebarProps) {
+  if (!state.rightSidebarOpen) return null;
 
-export function RightSidebar({
-  state,
-  dispatch,
-  getSelectedEl,
-  onSavePage,
-}: Props) {
-  const [activeTab, setActiveTab] = useState(0);
-  const sel = getSelectedEl();
-
-  /* ── helpers ── */
-  function setStyle(prop: string, val: string) {
-    const el = getSelectedEl();
-    if (!el) return;
-    el.style.setProperty(
-      prop.replace(/([A-Z])/g, "-$1").toLowerCase(),
-      val
-    );
-    onSavePage();
-  }
-
-  function setAttr(attr: string, val: string) {
-    const el = getSelectedEl();
-    if (!el) return;
-    if (val === "") el.removeAttribute(attr);
-    else el.setAttribute(attr, val);
-    onSavePage();
-  }
-
-  function rgb2hex(rgb: string): string {
-    if (!rgb || rgb === "rgba(0, 0, 0, 0)" || rgb === "transparent")
-      return "#000000";
-    const m = rgb.match(/\d+/g);
-    return m
-      ? "#" +
-          m
-            .slice(0, 3)
-            .map((x) => parseInt(x).toString(16).padStart(2, "0"))
-            .join("")
-      : "#000000";
-  }
-
-  /* no selection */
-  if (!sel) {
-    return (
-      <div className="wb-sidebar right">
-        <div className="wb-empty">
-          <span className="empty-icon">🖱️</span>
-          <p>
-            <strong>Click any element</strong> to edit its properties.
-          </p>
-          <div className="shortcut">
-            <div style={{ marginBottom: 6, fontWeight: 600, fontSize: "0.72rem" }}>
-              Keyboard Shortcuts
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, color: "var(--wb-muted)" }}>
-              <div><span className="kbd">Del</span> Delete selected</div>
-              <div><span className="kbd">Ctrl+Z</span> Undo / <span className="kbd">Ctrl+Y</span> Redo</div>
-              <div><span className="kbd">Ctrl+D</span> Duplicate</div>
-              <div><span className="kbd">↑ ↓</span> Move element</div>
-              <div><span className="kbd">Esc</span> Deselect</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* get computed values */
-  const s = window.getComputedStyle(sel);
-  const label = sel.getAttribute("data-label") || sel.tagName;
-  const tagInfo =
-    sel.tagName.toLowerCase() +
-    (sel.className
-      ? " · " +
-        Array.from(sel.classList)
-          .filter(
-            (c) =>
-              !["active-el", "b-el", "b-row", "b-col", "b-section"].includes(c)
-          )
-          .slice(0, 2)
-          .join(" ")
-      : "");
-
-  const isSection =
-    sel.classList.contains("b-section") ||
-    sel.classList.contains("b-row") ||
-    sel.classList.contains("b-col");
+  const selectedElement = useMemo(() => getSelectedElement(state), [state]);
+  const tabs: { key: RightSidebarTab; icon: React.ReactNode; label: string }[] = [
+    { key: 'layout', icon: <Box size={16} />, label: 'Layout' },
+    { key: 'style', icon: <Paintbrush size={16} />, label: 'Style' },
+    { key: 'effects', icon: <Sparkles size={16} />, label: 'Effects' },
+    { key: 'settings', icon: <Settings size={16} />, label: 'Settings' },
+    { key: 'assets', icon: <Image size={16} />, label: 'Assets' },
+    { key: 'theme', icon: <Palette size={16} />, label: 'Theme' },
+  ];
 
   return (
-    <div className="wb-sidebar right">
-      {/* badge */}
-      <div className="wb-badge">
-        <div className="wb-badge-icon">
-          <i className="fas fa-cube" />
-        </div>
-        <div>
-          <div className="wb-badge-label">{label}</div>
-          <div className="wb-badge-tag">{tagInfo}</div>
-        </div>
-      </div>
-
-      {/* tabs */}
-      <div className="tabs">
-        {TABS.map((t, i) => (
-          <div
-            key={t}
-            className={`tab ${activeTab === i ? "active" : ""}`}
-            onClick={() => setActiveTab(i)}
+    <div className="wb-right-sidebar">
+      <div className="wb-sidebar-tabs">
+        {tabs.map(({ key, icon, label }) => (
+          <button
+            key={key}
+            className={`wb-sidebar-tab ${state.rightSidebarTab === key ? 'active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_RIGHT_TAB', payload: { tab: key } })}
+            title={label}
           >
-            {t}
-          </div>
+            {icon}
+          </button>
         ))}
       </div>
-
-      {/* tab content */}
-      <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
-        {/* ── LAYOUT TAB ── */}
-        {activeTab === 0 && (
-          <div className="panel-section">
-            <label>Padding</label>
-            <div className="grid-4">
-              {(["Top", "Right", "Bottom", "Left"] as const).map((side) => {
-                const prop = `padding${side}` as keyof CSSStyleDeclaration;
-                return (
-                  <div key={side}>
-                    <input
-                      type="number"
-                      defaultValue={parseInt(sel.style[prop] as string) || 0}
-                      onBlur={(e) =>
-                        setStyle(`padding${side}`, e.target.value + "px")
-                      }
-                    />
-                    <span className="input-label">{side}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <label style={{ marginTop: 9 }}>Margin</label>
-            <div className="grid-4">
-              {(["Top", "Right", "Bottom", "Left"] as const).map((side) => {
-                const prop = `margin${side}` as keyof CSSStyleDeclaration;
-                return (
-                  <div key={side}>
-                    <input
-                      type="number"
-                      defaultValue={parseInt(sel.style[prop] as string) || 0}
-                      onBlur={(e) =>
-                        setStyle(`margin${side}`, e.target.value + "px")
-                      }
-                    />
-                    <span className="input-label">{side}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <hr />
-            <label>Sizing</label>
-            <div className="grid-2">
-              <div>
-                <label style={{ marginTop: 0 }}>Width</label>
-                <input
-                  type="text"
-                  defaultValue={sel.style.width || ""}
-                  placeholder="auto"
-                  onBlur={(e) => setStyle("width", e.target.value)}
-                />
-              </div>
-              <div>
-                <label style={{ marginTop: 0 }}>Height</label>
-                <input
-                  type="text"
-                  defaultValue={sel.style.height || ""}
-                  placeholder="auto"
-                  onBlur={(e) => setStyle("height", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── STYLE TAB ── */}
-        {activeTab === 1 && (
-          <div className="panel-section">
-            <div className="info-box">
-              Styles apply to the <strong>selected element</strong> only.
-            </div>
-            <label>Font Family</label>
-            <select
-              defaultValue={sel.style.fontFamily || "'DM Sans', sans-serif"}
-              onChange={(e) => setStyle("fontFamily", e.target.value)}
-            >
-              <option value="'DM Sans', sans-serif">DM Sans</option>
-              <option value="'Inter', sans-serif">Inter</option>
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="'Courier New', monospace">Courier New</option>
-              <option value="system-ui, sans-serif">System UI</option>
-            </select>
-            <div className="grid-2" style={{ marginTop: 7 }}>
-              <div>
-                <label style={{ marginTop: 0 }}>Font Size</label>
-                <input
-                  type="text"
-                  defaultValue={sel.style.fontSize || s.fontSize}
-                  placeholder="16px"
-                  onBlur={(e) => setStyle("fontSize", e.target.value)}
-                />
-              </div>
-              <div>
-                <label style={{ marginTop: 0 }}>Weight</label>
-                <select
-                  defaultValue={sel.style.fontWeight || s.fontWeight}
-                  onChange={(e) => setStyle("fontWeight", e.target.value)}
-                >
-                  <option value="300">Light 300</option>
-                  <option value="400">Normal 400</option>
-                  <option value="500">Medium 500</option>
-                  <option value="600">Semibold 600</option>
-                  <option value="700">Bold 700</option>
-                  <option value="800">Extra Bold</option>
-                </select>
-              </div>
-            </div>
-            <label>Text Alignment</label>
-            <div className="grid-4">
-              {(["left", "center", "right", "justify"] as const).map((a) => (
-                <button key={a} onClick={() => setStyle("textAlign", a)}>
-                  <i className={`fas fa-align-${a}`} />
-                </button>
-              ))}
-            </div>
-            <hr />
-            <label>Text & Background Colors</label>
-            <div style={{ display: "flex", gap: 5 }}>
-              <div className="color-row" style={{ flex: 1 }}>
-                <input
-                  type="color"
-                  defaultValue={rgb2hex(sel.style.color || s.color)}
-                  onChange={(e) => setStyle("color", e.target.value)}
-                />
-                <span>Text</span>
-              </div>
-              <div className="color-row" style={{ flex: 1 }}>
-                <input
-                  type="color"
-                  defaultValue={rgb2hex(sel.style.backgroundColor)}
-                  onChange={(e) =>
-                    setStyle("backgroundColor", e.target.value)
-                  }
-                />
-                <span>BG</span>
-              </div>
-            </div>
-            <hr />
-            <label>Border Radius</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              defaultValue={parseInt(sel.style.borderRadius) || 0}
-              onInput={(e) =>
-                setStyle(
-                  "borderRadius",
-                  (e.target as HTMLInputElement).value + "px"
-                )
-              }
-            />
-            <label>Box Shadow</label>
-            <select
-              onChange={(e) => setStyle("boxShadow", e.target.value)}
-            >
-              <option value="none">None</option>
-              <option value="0 1px 3px rgba(0,0,0,0.12)">Subtle</option>
-              <option value="0 4px 12px rgba(0,0,0,0.15)">Light</option>
-              <option value="0 10px 30px rgba(0,0,0,0.25)">Medium</option>
-              <option value="0 25px 50px -12px rgba(0,0,0,0.45)">Heavy</option>
-            </select>
-            <label>Gradient Presets</label>
-            <select
-              onChange={(e) => {
-                if (e.target.value) setStyle("backgroundImage", e.target.value);
-              }}
-            >
-              <option value="">— None —</option>
-              <option value="linear-gradient(135deg, #5b6af0, #818cf8)">Indigo</option>
-              <option value="linear-gradient(135deg, #ef4444, #f97316)">Sunset</option>
-              <option value="linear-gradient(135deg, #10b981, #059669)">Emerald</option>
-              <option value="linear-gradient(135deg, #f43f5e, #8b5cf6)">Rose-Purple</option>
-              <option value="linear-gradient(135deg, #0f172a, #1e293b)">Dark Slate</option>
-            </select>
-          </div>
-        )}
-
-        {/* ── HOVER TAB ── */}
-        {activeTab === 2 && (
-          <div className="panel-section">
-            <div className="info-box">
-              Hover styles. Element auto-gets a unique ID.
-            </div>
-            <label>Hover Background</label>
-            <div className="color-row">
-              <input
-                type="color"
-                onChange={(e) => {
-                  const el = getSelectedEl();
-                  if (!el) return;
-                  if (!el.id) el.id = "el-" + Math.random().toString(36).substring(2, 10);
-                  let hover: Record<string, string> = {};
-                  try {
-                    hover = JSON.parse(el.getAttribute("data-hover") || "{}");
-                  } catch {}
-                  hover.backgroundColor = e.target.value;
-                  el.setAttribute("data-hover", JSON.stringify(hover));
-                  onSavePage();
-                }}
-              />
-              <span>Background Color</span>
-            </div>
-            <label>Hover Text Color</label>
-            <div className="color-row">
-              <input
-                type="color"
-                onChange={(e) => {
-                  const el = getSelectedEl();
-                  if (!el) return;
-                  if (!el.id) el.id = "el-" + Math.random().toString(36).substring(2, 10);
-                  let hover: Record<string, string> = {};
-                  try {
-                    hover = JSON.parse(el.getAttribute("data-hover") || "{}");
-                  } catch {}
-                  hover.color = e.target.value;
-                  el.setAttribute("data-hover", JSON.stringify(hover));
-                  onSavePage();
-                }}
-              />
-              <span>Text Color</span>
-            </div>
-          </div>
-        )}
-
-        {/* ── SETTINGS TAB ── */}
-        {activeTab === 3 && (
-          <div className="panel-section">
-            <label>Element ID</label>
-            <input
-              type="text"
-              defaultValue={sel.id || ""}
-              placeholder="e.g. hero-section"
-              onBlur={(e) => setAttr("id", e.target.value)}
-            />
-            <label>Custom CSS Classes</label>
-            <input
-              type="text"
-              placeholder="my-class animate"
-              onBlur={(e) => {
-                const el = getSelectedEl();
-                if (!el) return;
-                const keep = Array.from(el.classList).filter(
-                  (c) =>
-                    [
-                      "b-el", "b-row", "b-col", "b-section",
-                      "full-bleed", "col-1", "col-2", "col-3", "col-4",
-                      "active-el", "icon", "btn", "divider", "spacer",
-                      "map", "form-group", "video-wrapper",
-                    ].includes(c) || c.startsWith("fa")
-                );
-                el.className = [
-                  ...keep,
-                  ...e.target.value.split(" ").filter(Boolean),
-                ].join(" ");
-                onSavePage();
-              }}
-            />
-            <hr />
-            <label>Site-Wide Custom CSS</label>
-            <textarea
-              rows={7}
-              defaultValue={state.customCSS}
-              placeholder="/* Global CSS */&#10;body { ... }"
-              onBlur={(e) =>
-                dispatch({ type: "SET_CUSTOM_CSS", css: e.target.value })
-              }
-            />
-          </div>
-        )}
-
-        {/* ── ASSETS TAB ── */}
-        {activeTab === 4 && (
-          <div className="panel-section">
-            <button
-              className="btn-primary"
-              style={{ width: "100%" }}
-              onClick={() => {
-                const input = document.createElement("input");
-                input.type = "file";
-                input.multiple = true;
-                input.accept = "image/*,video/*";
-                input.onchange = (e) => {
-                  const files = Array.from(
-                    (e.target as HTMLInputElement).files || []
-                  );
-                  files.forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      const id =
-                        "asset_" +
-                        Date.now() +
-                        "_" +
-                        Math.random().toString(36).substring(2, 8);
-                      dispatch({
-                        type: "ADD_ASSET",
-                        id,
-                        asset: {
-                          name: file.name.replace(/[^a-zA-Z0-9.]/g, "_"),
-                          url: ev.target!.result as string,
-                          type: file.type,
-                          base64: (ev.target!.result as string).split(",")[1],
-                        },
-                      });
-                    };
-                    reader.readAsDataURL(file);
-                  });
-                  toast(dispatch, `${files.length} file(s) uploaded!`, "success");
-                };
-                input.click();
-              }}
-            >
-              <i className="fas fa-cloud-upload-alt" /> Upload Images / Videos
-            </button>
-            <p
-              style={{
-                fontSize: "0.71rem",
-                color: "var(--wb-muted)",
-                margin: "7px 0 0",
-              }}
-            >
-              Double-click to insert. Assets are embedded in export.
-            </p>
-            <div className="asset-grid">
-              {Object.entries(state.assets).map(([id, asset]) => (
-                <div
-                  key={id}
-                  className="asset-item"
-                  title={asset.name}
-                  draggable
-                  onDragStart={(e) =>
-                    e.dataTransfer.setData("text/plain", `asset:${id}`)
-                  }
-                >
-                  {asset.type.startsWith("image") ? (
-                    <img src={asset.url} alt={asset.name} />
-                  ) : (
-                    <i
-                      className="fas fa-film"
-                      style={{
-                        fontSize: "1.6rem",
-                        color: "var(--wb-muted)",
-                        margin: "8px 0",
-                        display: "block",
-                      }}
-                    />
-                  )}
-                  <span>{asset.name}</span>
-                </div>
-              ))}
-            </div>
-            {Object.keys(state.assets).length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: 22,
-                  color: "var(--wb-muted)",
-                  fontSize: "0.76rem",
-                }}
-              >
-                <i
-                  className="fas fa-photo-video"
-                  style={{
-                    fontSize: "1.8rem",
-                    opacity: 0.3,
-                    display: "block",
-                    marginBottom: 7,
-                  }}
-                />
-                No assets yet.
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── LAYERS TAB ── */}
-        {activeTab === 5 && (
-          <div className="panel-section" style={{ padding: 10 }}>
-            <LayersTree
-              state={state}
-              dispatch={dispatch}
-              getSelectedEl={getSelectedEl}
-            />
-          </div>
-        )}
+      <div className="wb-sidebar-content">
+        {state.rightSidebarTab === 'layout' && <LayoutTab element={selectedElement} dispatch={dispatch} />}
+        {state.rightSidebarTab === 'style' && <StyleTab element={selectedElement} dispatch={dispatch} />}
+        {state.rightSidebarTab === 'effects' && <EffectsTab element={selectedElement} dispatch={dispatch} />}
+        {state.rightSidebarTab === 'settings' && <SettingsTab element={selectedElement} state={state} dispatch={dispatch} />}
+        {state.rightSidebarTab === 'assets' && <AssetsTab state={state} dispatch={dispatch} />}
+        {state.rightSidebarTab === 'theme' && <ThemeTab state={state} dispatch={dispatch} />}
       </div>
     </div>
   );
 }
 
-/* ── Layers Tree sub-component ── */
-function LayersTree({
-  state,
-  dispatch,
-  getSelectedEl,
-}: {
-  state: BuilderState;
-  dispatch: React.Dispatch<BuilderAction>;
-  getSelectedEl: () => HTMLElement | null;
-}) {
-  const [, forceUpdate] = useState(0);
+/* ========== Shared Helpers ========== */
 
-  useEffect(() => {
-    /* re-render on selection change */
-    forceUpdate((n) => n + 1);
-  }, [state.selectedElDataId]);
+function NoSelection() {
+  return <div className="wb-no-selection"><p>Select an element to edit its properties</p></div>;
+}
 
-  const canvas = document.querySelector(".wb-canvas");
-  if (!canvas) return <div style={{ color: "var(--wb-muted)", fontSize: "0.76rem" }}>Canvas not loaded</div>;
+function StyleInput({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
+  return (
+    <div className="wb-style-input">
+      <label>{label}</label>
+      <input type={type} value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+    </div>
+  );
+}
 
-  function getIcon(el: HTMLElement): string {
-    if (el.id === "global-header") return "fa-window-maximize";
-    if (el.id === "global-footer") return "fa-window-minimize";
-    if (el.classList.contains("b-section")) return "fa-layer-group";
-    if (el.classList.contains("b-row")) return "fa-grip-horizontal";
-    if (el.classList.contains("b-col")) return "fa-grip-vertical";
-    if (el.tagName === "H1") return "fa-heading";
-    if (el.tagName === "H2" || el.tagName === "H3") return "fa-h";
-    if (el.tagName === "P") return "fa-align-left";
-    if (el.tagName === "A") return "fa-hand-pointer";
-    if (el.tagName === "IMG") return "fa-image";
-    if (el.classList.contains("video-wrapper")) return "fa-video";
-    if (el.classList.contains("icon")) return "fa-star";
-    if (el.tagName === "HR") return "fa-minus";
-    if (el.classList.contains("map")) return "fa-map-marker-alt";
-    if (el.classList.contains("form-group")) return "fa-envelope";
-    if (el.tagName === "BLOCKQUOTE") return "fa-quote-left";
-    if (el.classList.contains("spacer")) return "fa-arrows-alt-v";
-    return "fa-cube";
-  }
+function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="wb-color-input">
+      <label>{label}</label>
+      <div className="wb-color-row">
+        <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)} />
+        <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder="#000000" />
+      </div>
+    </div>
+  );
+}
 
-  function buildTree(parent: Element, depth: number): React.ReactNode[] {
-    const items: React.ReactNode[] = [];
-    Array.from(parent.children).forEach((child) => {
-      const el = child as HTMLElement;
-      const isTarget =
-        el.classList.contains("site-header") ||
-        el.classList.contains("site-footer") ||
-        el.classList.contains("b-section") ||
-        el.classList.contains("b-row") ||
-        el.classList.contains("b-col") ||
-        el.classList.contains("b-el");
-      if (!isTarget) return;
-      if (!el.dataset.id) el.dataset.id = "el_" + Math.random().toString(36).substring(2, 10);
-      const lbl = el.getAttribute("data-label") || el.tagName.toLowerCase();
-      const active = el.dataset.id === state.selectedElDataId;
-      items.push(
-        <div
-          key={el.dataset.id}
-          className={`layer-item ${active ? "active" : ""}`}
-          style={{ paddingLeft: 10 + depth * 10 }}
-          onClick={() =>
-            dispatch({ type: "SELECT_ELEMENT", dataId: el.dataset.id! })
-          }
-        >
-          <i className={`fas ${getIcon(el)}`} />
-          {lbl}
+function SelectInput({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  return (
+    <div className="wb-style-input">
+      <label>{label}</label>
+      <select value={value || ''} onChange={(e) => onChange(e.target.value)}>
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function SectionTitle({ title }: { title: string }) {
+  return <div className="wb-section-title">{title}</div>;
+}
+
+/* ========== Layout Tab ========== */
+
+function LayoutTab({ element, dispatch }: { element: ElementNode | null; dispatch: React.Dispatch<BuilderAction> }) {
+  if (!element) return <NoSelection />;
+
+  const updateStyle = (styles: Partial<ElementStyles>) => {
+    dispatch({ type: 'UPDATE_ELEMENT_STYLES', payload: { elementId: element.id, styles } });
+  };
+
+  const s = element.styles;
+
+  return (
+    <div className="wb-tab-content">
+      <SectionTitle title="Sizing" />
+      <div className="wb-input-row">
+        <StyleInput label="Width" value={s.width ?? ''} onChange={(v) => updateStyle({ width: v })} placeholder="auto" />
+        <StyleInput label="Height" value={s.height ?? ''} onChange={(v) => updateStyle({ height: v })} placeholder="auto" />
+      </div>
+      <div className="wb-input-row">
+        <StyleInput label="Max Width" value={s.maxWidth ?? ''} onChange={(v) => updateStyle({ maxWidth: v })} placeholder="none" />
+        <StyleInput label="Min Height" value={s.minHeight ?? ''} onChange={(v) => updateStyle({ minHeight: v })} placeholder="0" />
+      </div>
+
+      <SectionTitle title="Padding" />
+      <div className="wb-spacing-grid">
+        <StyleInput label="Top" value={s.paddingTop ?? ''} onChange={(v) => updateStyle({ paddingTop: v })} placeholder="0" />
+        <StyleInput label="Right" value={s.paddingRight ?? ''} onChange={(v) => updateStyle({ paddingRight: v })} placeholder="0" />
+        <StyleInput label="Bottom" value={s.paddingBottom ?? ''} onChange={(v) => updateStyle({ paddingBottom: v })} placeholder="0" />
+        <StyleInput label="Left" value={s.paddingLeft ?? ''} onChange={(v) => updateStyle({ paddingLeft: v })} placeholder="0" />
+      </div>
+
+      <SectionTitle title="Margin" />
+      <div className="wb-spacing-grid">
+        <StyleInput label="Top" value={s.marginTop ?? ''} onChange={(v) => updateStyle({ marginTop: v })} placeholder="0" />
+        <StyleInput label="Right" value={s.marginRight ?? ''} onChange={(v) => updateStyle({ marginRight: v })} placeholder="0" />
+        <StyleInput label="Bottom" value={s.marginBottom ?? ''} onChange={(v) => updateStyle({ marginBottom: v })} placeholder="0" />
+        <StyleInput label="Left" value={s.marginLeft ?? ''} onChange={(v) => updateStyle({ marginLeft: v })} placeholder="0" />
+      </div>
+
+      <SectionTitle title="Display" />
+      <SelectInput label="Display" value={s.display ?? ''} onChange={(v) => updateStyle({ display: v })} options={[
+        { value: '', label: 'Default' }, { value: 'block', label: 'Block' }, { value: 'flex', label: 'Flex' },
+        { value: 'grid', label: 'Grid' }, { value: 'inline-block', label: 'Inline Block' }, { value: 'none', label: 'None' },
+      ]} />
+      {s.display === 'flex' && (
+        <>
+          <SelectInput label="Direction" value={s.flexDirection ?? ''} onChange={(v) => updateStyle({ flexDirection: v })} options={[
+            { value: 'row', label: 'Row' }, { value: 'column', label: 'Column' },
+          ]} />
+          <SelectInput label="Justify" value={s.justifyContent ?? ''} onChange={(v) => updateStyle({ justifyContent: v })} options={[
+            { value: '', label: 'Default' }, { value: 'flex-start', label: 'Start' }, { value: 'center', label: 'Center' },
+            { value: 'flex-end', label: 'End' }, { value: 'space-between', label: 'Between' }, { value: 'space-around', label: 'Around' },
+          ]} />
+          <SelectInput label="Align" value={s.alignItems ?? ''} onChange={(v) => updateStyle({ alignItems: v })} options={[
+            { value: '', label: 'Default' }, { value: 'flex-start', label: 'Start' }, { value: 'center', label: 'Center' },
+            { value: 'flex-end', label: 'End' }, { value: 'stretch', label: 'Stretch' },
+          ]} />
+          <StyleInput label="Gap" value={s.gap ?? ''} onChange={(v) => updateStyle({ gap: v })} placeholder="0" />
+        </>
+      )}
+      <SelectInput label="Overflow" value={s.overflow ?? ''} onChange={(v) => updateStyle({ overflow: v })} options={[
+        { value: '', label: 'Default' }, { value: 'hidden', label: 'Hidden' }, { value: 'auto', label: 'Auto' }, { value: 'scroll', label: 'Scroll' },
+      ]} />
+    </div>
+  );
+}
+
+/* ========== Style Tab ========== */
+
+function StyleTab({ element, dispatch }: { element: ElementNode | null; dispatch: React.Dispatch<BuilderAction> }) {
+  if (!element) return <NoSelection />;
+
+  const updateStyle = (styles: Partial<ElementStyles>) => {
+    dispatch({ type: 'UPDATE_ELEMENT_STYLES', payload: { elementId: element.id, styles } });
+  };
+
+  const s = element.styles;
+  const textTypes = ['heading', 'paragraph', 'button', 'link', 'list', 'blockquote', 'code'];
+  const showTypography = textTypes.includes(element.type);
+
+  return (
+    <div className="wb-tab-content">
+      {showTypography && (
+        <>
+          <SectionTitle title="Typography" />
+          <SelectInput label="Font Family" value={s.fontFamily ?? ''} onChange={(v) => updateStyle({ fontFamily: v })} options={[
+            { value: '', label: 'Inherit' },
+            ...FONT_LIST.map(f => ({ value: f.family, label: f.name })),
+          ]} />
+          <div className="wb-input-row">
+            <StyleInput label="Size" value={s.fontSize ?? ''} onChange={(v) => updateStyle({ fontSize: v })} placeholder="1rem" />
+            <SelectInput label="Weight" value={s.fontWeight ?? ''} onChange={(v) => updateStyle({ fontWeight: v })} options={[
+              { value: '', label: 'Default' }, { value: '300', label: 'Light' }, { value: '400', label: 'Regular' },
+              { value: '500', label: 'Medium' }, { value: '600', label: 'Semibold' }, { value: '700', label: 'Bold' },
+              { value: '800', label: 'Extra Bold' }, { value: '900', label: 'Black' },
+            ]} />
+          </div>
+          <div className="wb-input-row">
+            <StyleInput label="Line Height" value={s.lineHeight ?? ''} onChange={(v) => updateStyle({ lineHeight: v })} placeholder="1.6" />
+            <StyleInput label="Letter Spacing" value={s.letterSpacing ?? ''} onChange={(v) => updateStyle({ letterSpacing: v })} placeholder="normal" />
+          </div>
+          <div className="wb-align-group">
+            {['left', 'center', 'right', 'justify'].map(align => (
+              <button key={align} className={`wb-align-btn ${s.textAlign === align ? 'active' : ''}`} onClick={() => updateStyle({ textAlign: align })} title={`Align ${align}`}>
+                {align === 'left' ? '⫷' : align === 'center' ? '☰' : align === 'right' ? '⫸' : '⚌'}
+              </button>
+            ))}
+          </div>
+          <ColorInput label="Text Color" value={s.color ?? ''} onChange={(v) => updateStyle({ color: v })} />
+        </>
+      )}
+
+      <SectionTitle title="Background" />
+      <ColorInput label="Background Color" value={s.backgroundColor ?? ''} onChange={(v) => updateStyle({ backgroundColor: v })} />
+      <SelectInput label="Gradient" value={s.backgroundImage ?? ''} onChange={(v) => updateStyle({ backgroundImage: v })} options={
+        GRADIENT_PRESETS.map(g => ({ value: g.value, label: g.name }))
+      } />
+
+      <SectionTitle title="Border" />
+      <div className="wb-input-row">
+        <StyleInput label="Width" value={s.borderWidth ?? ''} onChange={(v) => updateStyle({ borderWidth: v })} placeholder="0" />
+        <SelectInput label="Style" value={s.borderStyle ?? ''} onChange={(v) => updateStyle({ borderStyle: v })} options={[
+          { value: '', label: 'None' }, { value: 'solid', label: 'Solid' }, { value: 'dashed', label: 'Dashed' }, { value: 'dotted', label: 'Dotted' },
+        ]} />
+      </div>
+      <ColorInput label="Border Color" value={s.borderColor ?? ''} onChange={(v) => updateStyle({ borderColor: v })} />
+      <StyleInput label="Border Radius" value={s.borderRadius ?? ''} onChange={(v) => updateStyle({ borderRadius: v })} placeholder="0" />
+
+      <SectionTitle title="Shadow" />
+      <SelectInput label="Box Shadow" value={s.boxShadow ?? ''} onChange={(v) => updateStyle({ boxShadow: v })} options={
+        SHADOW_PRESETS.map(s => ({ value: s.value, label: s.name }))
+      } />
+
+      <SectionTitle title="Opacity" />
+      <StyleInput label="Opacity" value={s.opacity ?? ''} onChange={(v) => updateStyle({ opacity: v })} placeholder="1" />
+    </div>
+  );
+}
+
+/* ========== Effects Tab ========== */
+
+function EffectsTab({ element, dispatch }: { element: ElementNode | null; dispatch: React.Dispatch<BuilderAction> }) {
+  if (!element) return <NoSelection />;
+
+  const updateHoverStyle = (styles: Partial<ElementStyles>) => {
+    dispatch({ type: 'UPDATE_ELEMENT_HOVER_STYLES', payload: { elementId: element.id, styles } });
+  };
+
+  const updateStyle = (styles: Partial<ElementStyles>) => {
+    dispatch({ type: 'UPDATE_ELEMENT_STYLES', payload: { elementId: element.id, styles } });
+  };
+
+  const h = element.hoverStyles;
+  const s = element.styles;
+
+  return (
+    <div className="wb-tab-content">
+      <SectionTitle title="Hover Styles" />
+      <ColorInput label="Hover BG Color" value={h.backgroundColor ?? ''} onChange={(v) => updateHoverStyle({ backgroundColor: v })} />
+      <ColorInput label="Hover Text Color" value={h.color ?? ''} onChange={(v) => updateHoverStyle({ color: v })} />
+      <StyleInput label="Hover Opacity" value={h.opacity ?? ''} onChange={(v) => updateHoverStyle({ opacity: v })} placeholder="1" />
+      <StyleInput label="Hover Transform" value={h.transform ?? ''} onChange={(v) => updateHoverStyle({ transform: v })} placeholder="none" />
+      <SelectInput label="Hover Shadow" value={h.boxShadow ?? ''} onChange={(v) => updateHoverStyle({ boxShadow: v })} options={
+        SHADOW_PRESETS.map(s => ({ value: s.value, label: s.name }))
+      } />
+
+      <SectionTitle title="Transition" />
+      <StyleInput label="Transition" value={s.transition ?? ''} onChange={(v) => updateStyle({ transition: v })} placeholder="all 0.2s ease" />
+
+      <SectionTitle title="Transform" />
+      <StyleInput label="Transform" value={s.transform ?? ''} onChange={(v) => updateStyle({ transform: v })} placeholder="none" />
+    </div>
+  );
+}
+
+/* ========== Settings Tab ========== */
+
+function SettingsTab({ element, state, dispatch }: { element: ElementNode | null; state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  if (!element) return <NoSelection />;
+
+  const updateAttr = (key: string, value: string) => {
+    dispatch({ type: 'UPDATE_ELEMENT', payload: { elementId: element.id, updates: { attributes: { ...element.attributes, [key]: value } } } });
+  };
+
+  const updateEl = (updates: Partial<ElementNode>) => {
+    dispatch({ type: 'UPDATE_ELEMENT', payload: { elementId: element.id, updates } });
+  };
+
+  return (
+    <div className="wb-tab-content">
+      <SectionTitle title="Element Settings" />
+
+      {/* Type-specific settings */}
+      {element.type === 'heading' && (
+        <SelectInput label="Heading Level" value={String(element.headingLevel ?? 2)} onChange={(v) => updateEl({ headingLevel: Number(v) as 1|2|3|4|5|6 })} options={[
+          { value: '1', label: 'H1' }, { value: '2', label: 'H2' }, { value: '3', label: 'H3' },
+          { value: '4', label: 'H4' }, { value: '5', label: 'H5' }, { value: '6', label: 'H6' },
+        ]} />
+      )}
+
+      {element.type === 'image' && (
+        <>
+          <StyleInput label="Image URL" value={element.content} onChange={(v) => updateEl({ content: v })} placeholder="https://..." />
+          <StyleInput label="Alt Text" value={element.attributes.alt ?? ''} onChange={(v) => updateAttr('alt', v)} placeholder="Image description" />
+        </>
+      )}
+
+      {element.type === 'video' && (
+        <StyleInput label="Video Embed URL" value={element.content} onChange={(v) => updateEl({ content: v })} placeholder="https://youtube.com/embed/..." />
+      )}
+
+      {(element.type === 'button' || element.type === 'link') && (
+        <>
+          <StyleInput label="Text" value={element.content} onChange={(v) => updateEl({ content: v })} />
+          <StyleInput label="Link URL" value={element.attributes.href ?? ''} onChange={(v) => updateAttr('href', v)} placeholder="https://..." />
+          <SelectInput label="Target" value={element.attributes.target ?? ''} onChange={(v) => updateAttr('target', v)} options={[
+            { value: '', label: 'Same Window' }, { value: '_blank', label: 'New Tab' },
+          ]} />
+        </>
+      )}
+
+      {element.type === 'icon' && (
+        <StyleInput label="Icon Class" value={element.content} onChange={(v) => updateEl({ content: v })} placeholder="fas fa-star" />
+      )}
+
+      {element.type === 'form' && (
+        <>
+          <StyleInput label="Form Action URL" value={element.attributes.action ?? ''} onChange={(v) => updateAttr('action', v)} placeholder="#" />
+          <SelectInput label="Method" value={element.attributes.method ?? 'POST'} onChange={(v) => updateAttr('method', v)} options={[
+            { value: 'POST', label: 'POST' }, { value: 'GET', label: 'GET' },
+          ]} />
+          <StyleInput label="Submit Button Text" value={element.attributes.submitText ?? ''} onChange={(v) => updateAttr('submitText', v)} placeholder="Submit" />
+        </>
+      )}
+
+      {element.type === 'map' && (
+        <StyleInput label="Map Embed URL" value={element.content} onChange={(v) => updateEl({ content: v })} placeholder="https://maps.google.com/..." />
+      )}
+
+      {element.type === 'embed' && (
+        <>
+          <StyleInput label="Embed URL" value={element.content} onChange={(v) => updateEl({ content: v })} placeholder="https://..." />
+          <StyleInput label="Title" value={element.attributes.title ?? ''} onChange={(v) => updateAttr('title', v)} placeholder="Embed title" />
+        </>
+      )}
+
+      <SectionTitle title="Visibility" />
+      <div className="wb-toggle-row">
+        <label>Hidden</label>
+        <input type="checkbox" checked={element.hidden} onChange={(e) => updateEl({ hidden: e.target.checked })} />
+      </div>
+      <div className="wb-toggle-row">
+        <label>Locked</label>
+        <input type="checkbox" checked={element.locked} onChange={(e) => updateEl({ locked: e.target.checked })} />
+      </div>
+    </div>
+  );
+}
+
+/* ========== Assets Tab ========== */
+
+function AssetsTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const assets = Object.values(state.project.assets);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const asset = {
+          id: `asset_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          name: file.name,
+          type: (file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'other') as 'image' | 'video' | 'other',
+          dataUrl,
+          size: file.size,
+          mimeType: file.type,
+        };
+        dispatch({ type: 'ADD_ASSET', payload: { asset } });
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleDragStart = (e: React.DragEvent, assetId: string) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ source: 'sidebar-asset', assetId }));
+    dispatch({ type: 'SET_DRAGGING', payload: { isDragging: true, data: { source: 'sidebar-asset', assetId } } });
+  };
+
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      dispatch({ type: 'UPDATE_SETTINGS', payload: { favicon: reader.result as string } });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <div className="wb-tab-content">
+      <SectionTitle title="Upload Assets" />
+      <label className="wb-upload-btn">
+        <Upload size={16} />
+        <span>Upload Files</span>
+        <input type="file" accept="image/*,video/*" multiple onChange={handleUpload} style={{ display: 'none' }} />
+      </label>
+
+      {assets.length > 0 && (
+        <>
+          <SectionTitle title={`Assets (${assets.length})`} />
+          <div className="wb-assets-grid">
+            {assets.map(asset => (
+              <div
+                key={asset.id}
+                className="wb-asset-item"
+                draggable
+                onDragStart={(e) => handleDragStart(e, asset.id)}
+              >
+                {asset.type === 'image' && (
+                  <img src={asset.dataUrl} alt={asset.name} className="wb-asset-thumb" />
+                )}
+                {asset.type === 'video' && (
+                  <div className="wb-asset-thumb wb-asset-video">▶</div>
+                )}
+                <div className="wb-asset-info">
+                  <span className="wb-asset-name" title={asset.name}>{asset.name}</span>
+                  <span className="wb-asset-size">{formatSize(asset.size)}</span>
+                </div>
+                <button className="wb-asset-delete" onClick={() => dispatch({ type: 'DELETE_ASSET', payload: { assetId: asset.id } })} title="Delete">
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {assets.length === 0 && (
+        <div className="wb-no-assets">
+          <Image size={32} style={{ opacity: 0.2 }} />
+          <p>No assets yet. Upload images or videos.</p>
         </div>
-      );
-      if (el.children.length && !el.classList.contains("b-el")) {
-        items.push(...buildTree(el, depth + 1));
-      }
-    });
-    return items;
-  }
+      )}
 
-  return <>{buildTree(canvas, 0)}</>;
+      <SectionTitle title="Favicon" />
+      <label className="wb-upload-btn small">
+        <Upload size={14} />
+        <span>{state.project.settings.favicon ? 'Change Favicon' : 'Upload Favicon'}</span>
+        <input type="file" accept="image/png,image/x-icon,image/svg+xml" onChange={handleFaviconUpload} style={{ display: 'none' }} />
+      </label>
+      {state.project.settings.favicon && (
+        <div className="wb-favicon-preview">
+          <img src={state.project.settings.favicon} alt="Favicon" width={32} height={32} />
+          <button onClick={() => dispatch({ type: 'UPDATE_SETTINGS', payload: { favicon: null } })}>
+            <X size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ========== Theme Tab ========== */
+
+function ThemeTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const theme = state.project.theme;
+
+  const setTheme = (updates: Partial<typeof theme>) => {
+    dispatch({ type: 'SET_THEME', payload: updates });
+  };
+
+  return (
+    <div className="wb-tab-content">
+      <SectionTitle title="Light Mode Colors" />
+      <ColorInput label="Background" value={theme.light.bg} onChange={(v) => setTheme({ light: { ...theme.light, bg: v } })} />
+      <ColorInput label="Text" value={theme.light.text} onChange={(v) => setTheme({ light: { ...theme.light, text: v } })} />
+      <ColorInput label="Surface" value={theme.light.surface} onChange={(v) => setTheme({ light: { ...theme.light, surface: v } })} />
+      <ColorInput label="Border" value={theme.light.border} onChange={(v) => setTheme({ light: { ...theme.light, border: v } })} />
+
+      <SectionTitle title="Dark Mode Colors" />
+      <ColorInput label="Background" value={theme.dark.bg} onChange={(v) => setTheme({ dark: { ...theme.dark, bg: v } })} />
+      <ColorInput label="Text" value={theme.dark.text} onChange={(v) => setTheme({ dark: { ...theme.dark, text: v } })} />
+      <ColorInput label="Surface" value={theme.dark.surface} onChange={(v) => setTheme({ dark: { ...theme.dark, surface: v } })} />
+      <ColorInput label="Border" value={theme.dark.border} onChange={(v) => setTheme({ dark: { ...theme.dark, border: v } })} />
+
+      <SectionTitle title="Accent Color" />
+      <ColorInput label="Accent" value={theme.accent} onChange={(v) => setTheme({ accent: v })} />
+
+      <SectionTitle title="Fonts" />
+      <SelectInput label="Heading Font" value={theme.fonts.heading} onChange={(v) => setTheme({ fonts: { ...theme.fonts, heading: v } })} options={FONT_LIST.map(f => ({ value: f.name, label: f.name }))} />
+      <SelectInput label="Body Font" value={theme.fonts.body} onChange={(v) => setTheme({ fonts: { ...theme.fonts, body: v } })} options={FONT_LIST.map(f => ({ value: f.name, label: f.name }))} />
+
+      <SectionTitle title="Border Radius" />
+      <StyleInput label="Global Radius" value={theme.borderRadius} onChange={(v) => setTheme({ borderRadius: v })} placeholder="8px" />
+
+      <SectionTitle title="Global CSS" />
+      <div className="wb-style-input">
+        <label>Custom CSS</label>
+        <textarea
+          className="wb-css-textarea"
+          value={state.project.settings.globalCSS}
+          onChange={(e) => dispatch({ type: 'UPDATE_SETTINGS', payload: { globalCSS: e.target.value } })}
+          placeholder="/* Custom CSS */"
+          rows={6}
+        />
+      </div>
+
+      <SectionTitle title="Site Settings" />
+      <StyleInput label="Site Name" value={state.project.settings.siteName} onChange={(v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { siteName: v } })} />
+      <StyleInput label="Analytics ID" value={state.project.settings.analyticsId} onChange={(v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { analyticsId: v } })} placeholder="G-XXXXXXXX" />
+      <div className="wb-toggle-row">
+        <label>Show Header</label>
+        <input type="checkbox" checked={state.project.settings.headerEnabled} onChange={(e) => dispatch({ type: 'UPDATE_SETTINGS', payload: { headerEnabled: e.target.checked } })} />
+      </div>
+      <div className="wb-toggle-row">
+        <label>Show Footer</label>
+        <input type="checkbox" checked={state.project.settings.footerEnabled} onChange={(e) => dispatch({ type: 'UPDATE_SETTINGS', payload: { footerEnabled: e.target.checked } })} />
+      </div>
+    </div>
+  );
 }

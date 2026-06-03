@@ -1,164 +1,125 @@
-"use client";
+'use client';
+// ============================================================
+// Website Builder Pro — Floating Toolbar
+// ============================================================
 
-import React from "react";
+import React, { useEffect, useState, useRef } from 'react';
+import { ArrowUp, ArrowDown, Copy, Trash2, ClipboardCopy, MoveVertical, Maximize2, CopyPlus } from 'lucide-react';
+import type { BuilderState, BuilderAction } from '../lib/types';
+import { getSelectedElement, getColumnForElement } from '../lib/reducer';
 
-interface ToolbarPos {
-  top: number;
-  left: number;
+interface FloatingToolbarProps {
+  state: BuilderState;
+  dispatch: React.Dispatch<BuilderAction>;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
-interface Props {
-  /* RTE */
-  rteVisible: boolean;
-  rtePos: ToolbarPos;
-  onFormat: (cmd: string) => void;
-  onLink: () => void;
+export default function FloatingToolbar({ state, dispatch, canvasRef }: FloatingToolbarProps) {
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
-  /* Element hover bar */
-  hoverBarVisible: boolean;
-  hoverBarPos: ToolbarPos;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
+  const selectedElement = state.selection?.target === 'element' ? getSelectedElement(state) : null;
+  const selectedSection = state.selection?.target === 'section' ? state.selection : null;
 
-  /* Row/Section bar */
-  rowBarVisible: boolean;
-  rowBarPos: ToolbarPos;
-  onAddColumn: () => void;
-  onRemoveColumn: () => void;
-  onToggleFullBleed: () => void;
-  onDuplicateRow: () => void;
-  onDeleteRow: () => void;
-}
+  // Position the toolbar based on the selected element's DOM position
+  useEffect(() => {
+    if (!state.selection || !canvasRef.current) {
+      setPosition(null);
+      return;
+    }
 
-export function FloatingToolbar({
-  rteVisible,
-  rtePos,
-  onFormat,
-  onLink,
-  hoverBarVisible,
-  hoverBarPos,
-  onMoveUp,
-  onMoveDown,
-  onDuplicate,
-  onDelete,
-  rowBarVisible,
-  rowBarPos,
-  onAddColumn,
-  onRemoveColumn,
-  onToggleFullBleed,
-  onDuplicateRow,
-  onDeleteRow,
-}: Props) {
-  return (
-    <>
-      {/* Rich Text Editing toolbar */}
-      {rteVisible && (
-        <div
-          className="wb-floating-toolbar"
-          style={{ top: rtePos.top, left: rtePos.left }}
-        >
-          <button onClick={() => onFormat("bold")} title="Bold">
-            <i className="fas fa-bold" />
-          </button>
-          <button onClick={() => onFormat("italic")} title="Italic">
-            <i className="fas fa-italic" />
-          </button>
-          <button onClick={() => onFormat("underline")} title="Underline">
-            <i className="fas fa-underline" />
-          </button>
-          <button
-            onClick={() => onFormat("strikeThrough")}
-            title="Strikethrough"
-          >
-            <i className="fas fa-strikethrough" />
-          </button>
-          <div className="wb-toolbar-sep" />
-          <button onClick={() => onFormat("justifyLeft")} title="Align Left">
-            <i className="fas fa-align-left" />
-          </button>
-          <button
-            onClick={() => onFormat("justifyCenter")}
-            title="Align Center"
-          >
-            <i className="fas fa-align-center" />
-          </button>
-          <button
-            onClick={() => onFormat("justifyRight")}
-            title="Align Right"
-          >
-            <i className="fas fa-align-right" />
-          </button>
-          <div className="wb-toolbar-sep" />
-          <button onClick={onLink} title="Insert Link">
-            <i className="fas fa-link" />
-          </button>
-          <button
-            onClick={() => onFormat("removeFormat")}
-            title="Clear Formatting"
-          >
-            <i className="fas fa-eraser" />
-          </button>
-        </div>
-      )}
+    const updatePosition = () => {
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+      const targetEl = canvasEl.querySelector(`[data-builder-id="${state.selection!.id}"]`);
+      if (!targetEl) { setPosition(null); return; }
 
-      {/* Element toolbar */}
-      {hoverBarVisible && (
-        <div
-          className="wb-floating-toolbar"
-          style={{ top: hoverBarPos.top, left: hoverBarPos.left }}
-        >
-          <button onClick={onMoveUp} title="Move Up">
-            <i className="fas fa-arrow-up" />
-          </button>
-          <button onClick={onMoveDown} title="Move Down">
-            <i className="fas fa-arrow-down" />
-          </button>
-          <div className="wb-toolbar-sep" />
-          <button onClick={onDuplicate} title="Duplicate (Ctrl+D)">
-            <i className="fas fa-clone" />
-          </button>
-          <button
-            onClick={onDelete}
-            title="Delete (Del)"
-            style={{ color: "var(--wb-danger)" }}
-          >
-            <i className="fas fa-trash-alt" />
-          </button>
-        </div>
-      )}
+      const canvasRect = canvasEl.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
 
-      {/* Row/Section toolbar */}
-      {rowBarVisible && (
-        <div
-          className="wb-floating-toolbar wb-row-toolbar"
-          style={{ top: rowBarPos.top, left: rowBarPos.left }}
-        >
-          <span className="wb-tb-label">Section</span>
-          <button onClick={onAddColumn} title="Add Column">
-            <i className="fas fa-plus" />
-          </button>
-          <button onClick={onRemoveColumn} title="Remove Column">
-            <i className="fas fa-minus" />
-          </button>
-          <div className="wb-toolbar-sep" />
-          <button onClick={onToggleFullBleed} title="Toggle Full Width">
-            <i className="fas fa-expand-arrows-alt" />
-          </button>
-          <div className="wb-toolbar-sep" />
-          <button onClick={onDuplicateRow} title="Duplicate">
-            <i className="fas fa-clone" />
-          </button>
-          <button
-            onClick={onDeleteRow}
-            title="Delete"
-            style={{ color: "var(--wb-danger)" }}
-          >
-            <i className="fas fa-trash-alt" />
-          </button>
-        </div>
-      )}
-    </>
-  );
+      setPosition({
+        top: targetRect.top - canvasRect.top - 40,
+        left: targetRect.right - canvasRect.left - (toolbarRef.current?.offsetWidth ?? 200),
+      });
+    };
+
+    updatePosition();
+    const observer = new MutationObserver(updatePosition);
+    observer.observe(canvasRef.current, { childList: true, subtree: true, attributes: true });
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [state.selection, canvasRef]);
+
+  if (!state.selection || !position || state.editingElementId) return null;
+
+  // Element actions toolbar
+  if (selectedElement) {
+    return (
+      <div
+        ref={toolbarRef}
+        className="wb-floating-toolbar"
+        style={{ top: Math.max(0, position.top), left: Math.max(0, position.left) }}
+      >
+        <button onClick={() => dispatch({ type: 'MOVE_ELEMENT', payload: { elementId: selectedElement.id, direction: 'up' } })} title="Move Up">
+          <ArrowUp size={14} />
+        </button>
+        <button onClick={() => dispatch({ type: 'MOVE_ELEMENT', payload: { elementId: selectedElement.id, direction: 'down' } })} title="Move Down">
+          <ArrowDown size={14} />
+        </button>
+        <div className="wb-ft-divider" />
+        <button onClick={() => { dispatch({ type: 'DUPLICATE_ELEMENT', payload: { elementId: selectedElement.id } }); dispatch({ type: 'SAVE_HISTORY' }); }} title="Duplicate">
+          <CopyPlus size={14} />
+        </button>
+        <button onClick={() => { dispatch({ type: 'COPY_ELEMENT', payload: { element: selectedElement } }); }} title="Copy">
+          <ClipboardCopy size={14} />
+        </button>
+        <div className="wb-ft-divider" />
+        <button className="danger" onClick={() => { dispatch({ type: 'DELETE_ELEMENT', payload: { elementId: selectedElement.id } }); dispatch({ type: 'SAVE_HISTORY' }); }} title="Delete">
+          <Trash2 size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  // Section actions toolbar
+  if (selectedSection) {
+    return (
+      <div
+        ref={toolbarRef}
+        className="wb-floating-toolbar"
+        style={{ top: Math.max(0, position.top), left: Math.max(0, position.left) }}
+      >
+        <button onClick={() => dispatch({ type: 'MOVE_SECTION', payload: { sectionId: selectedSection.id, direction: 'up' } })} title="Move Up">
+          <ArrowUp size={14} />
+        </button>
+        <button onClick={() => dispatch({ type: 'MOVE_SECTION', payload: { sectionId: selectedSection.id, direction: 'down' } })} title="Move Down">
+          <ArrowDown size={14} />
+        </button>
+        <div className="wb-ft-divider" />
+        <button onClick={() => dispatch({ type: 'ADD_ROW', payload: { sectionId: selectedSection.id, columns: 2 } })} title="Add Row (2 cols)">
+          <MoveVertical size={14} />
+        </button>
+        <button onClick={() => {
+          dispatch({ type: 'UPDATE_SECTION', payload: { sectionId: selectedSection.id, updates: { fullBleed: !state.project.pages[state.currentPageId]?.sections.find(s => s.id === selectedSection.id)?.fullBleed } } });
+        }} title="Toggle Full Bleed">
+          <Maximize2 size={14} />
+        </button>
+        <button onClick={() => { dispatch({ type: 'DUPLICATE_SECTION', payload: { sectionId: selectedSection.id } }); dispatch({ type: 'SAVE_HISTORY' }); }} title="Duplicate Section">
+          <CopyPlus size={14} />
+        </button>
+        <div className="wb-ft-divider" />
+        <button className="danger" onClick={() => { dispatch({ type: 'DELETE_SECTION', payload: { sectionId: selectedSection.id } }); dispatch({ type: 'SAVE_HISTORY' }); }} title="Delete Section">
+          <Trash2 size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return null;
 }

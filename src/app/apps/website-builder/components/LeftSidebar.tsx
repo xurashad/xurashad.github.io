@@ -1,406 +1,402 @@
-"use client";
+'use client';
+// ============================================================
+// Website Builder Pro — Left Sidebar
+// ============================================================
 
-import { useState, useCallback } from "react";
-import type {
-  BuilderState,
-  BuilderAction,
-  SectionLayout,
-  ElementType,
-  ComponentType,
-} from "../lib/types";
-import { toast } from "../lib/reducer";
-import { TEMPLATES } from "../lib/templates";
+import React, { useState, useCallback } from 'react';
+import { LayoutGrid, Layers, FileText, Component, Plus, Trash2, Eye, EyeOff, ChevronRight, ChevronDown, GripVertical, Search, Settings as SettingsIcon } from 'lucide-react';
+import type { BuilderState, BuilderAction, LeftSidebarTab, ElementType, SectionNode } from '../lib/types';
+import { ELEMENT_CATEGORIES, createElement, createSection, createPage } from '../lib/defaults';
+import { SECTION_TEMPLATES } from '../lib/templates';
 
-interface Props {
+interface LeftSidebarProps {
   state: BuilderState;
   dispatch: React.Dispatch<BuilderAction>;
-  onAddSection: (layout: SectionLayout) => void;
-  onAddRow: (layout: SectionLayout) => void;
-  onAddElement: (type: ElementType) => void;
-  onAddSpacer: () => void;
-  onInsertComponent: (type: ComponentType) => void;
-  onSavePage: () => void;
 }
 
-/* ─── Collapsible panel ─── */
-function Panel({
-  title,
-  defaultOpen = true,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
+export default function LeftSidebar({ state, dispatch }: LeftSidebarProps) {
+  if (!state.leftSidebarOpen) return null;
+
+  const tabs: { key: LeftSidebarTab; icon: React.ReactNode; label: string }[] = [
+    { key: 'elements', icon: <LayoutGrid size={18} />, label: 'Elements' },
+    { key: 'sections', icon: <Component size={18} />, label: 'Sections' },
+    { key: 'pages', icon: <FileText size={18} />, label: 'Pages' },
+    { key: 'layers', icon: <Layers size={18} />, label: 'Layers' },
+  ];
+
   return (
-    <div className="panel-section">
-      <div
-        className={`panel-title ${open ? "" : "collapsed"}`}
-        onClick={() => setOpen(!open)}
-      >
-        {title}
+    <div className="wb-left-sidebar">
+      {/* Tab Navigation */}
+      <div className="wb-sidebar-tabs">
+        {tabs.map(({ key, icon, label }) => (
+          <button
+            key={key}
+            className={`wb-sidebar-tab ${state.leftSidebarTab === key ? 'active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_LEFT_TAB', payload: { tab: key } })}
+            title={label}
+          >
+            {icon}
+          </button>
+        ))}
       </div>
-      <div className={`collapsible-body ${open ? "" : "collapsed"}`}>
-        {children}
+
+      {/* Tab Content */}
+      <div className="wb-sidebar-content">
+        {state.leftSidebarTab === 'elements' && <ElementsTab state={state} dispatch={dispatch} />}
+        {state.leftSidebarTab === 'sections' && <SectionsTab state={state} dispatch={dispatch} />}
+        {state.leftSidebarTab === 'pages' && <PagesTab state={state} dispatch={dispatch} />}
+        {state.leftSidebarTab === 'layers' && <LayersTab state={state} dispatch={dispatch} />}
       </div>
     </div>
   );
 }
 
-export function LeftSidebar({
-  state,
-  dispatch,
-  onAddSection,
-  onAddRow,
-  onAddElement,
-  onAddSpacer,
-  onInsertComponent,
-  onSavePage,
-}: Props) {
-  /* ── Theme colours ── */
-  const [lightBg, setLightBg] = useState(state.theme.light.bg);
-  const [lightTxt, setLightTxt] = useState(state.theme.light.txt);
-  const [darkBg, setDarkBg] = useState(state.theme.dark.bg);
-  const [darkTxt, setDarkTxt] = useState(state.theme.dark.txt);
-  const [accent, setAccent] = useState(state.theme.accent);
+/* ========== Elements Tab ========== */
 
-  function applyTheme() {
-    dispatch({
-      type: "SET_THEME",
-      theme: {
-        light: { bg: lightBg, txt: lightTxt },
-        dark: { bg: darkBg, txt: darkTxt },
-        accent,
-      },
-    });
-    toast(dispatch, "Theme applied!", "success", 1200);
-  }
+function ElementsTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>(
+    Object.fromEntries(ELEMENT_CATEGORIES.map(c => [c.name, true]))
+  );
 
-  function toggleDarkMode() {
-    dispatch({ type: "TOGGLE_CANVAS_THEME" });
-    toast(
-      dispatch,
-      `Preview: ${state.canvasThemeMode === "light" ? "dark" : "light"} mode`,
-      "info",
-      1200
-    );
-  }
+  const toggleCat = (name: string) => {
+    setExpandedCats(prev => ({ ...prev, [name]: !prev[name] }));
+  };
 
-  /* ── Pages ── */
-  function addPage() {
-    const title = prompt("New page title:");
-    if (!title?.trim()) return;
-    const id = title
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-");
-    if (state.pages[id]) {
-      toast(dispatch, "Page already exists!", "error");
-      return;
+  const handleDragStart = (e: React.DragEvent, type: ElementType) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ source: 'sidebar-element', elementType: type }));
+    dispatch({ type: 'SET_DRAGGING', payload: { isDragging: true, data: { source: 'sidebar-element', elementType: type } } });
+  };
+
+  const handleDragEnd = () => {
+    dispatch({ type: 'SET_DRAGGING', payload: { isDragging: false, data: null } });
+  };
+
+  const handleClick = (type: ElementType) => {
+    // Add to current page's last section/column
+    const page = state.project.pages[state.currentPageId];
+    if (!page) return;
+    let columnId: string | null = null;
+    if (page.sections.length > 0) {
+      const lastSec = page.sections[page.sections.length - 1];
+      if (lastSec.rows.length > 0) {
+        const lastRow = lastSec.rows[lastSec.rows.length - 1];
+        if (lastRow.columns.length > 0) {
+          columnId = lastRow.columns[0].id;
+        }
+      }
     }
-    onSavePage();
-    dispatch({
-      type: "ADD_PAGE",
-      id,
-      title: title.trim(),
-      html: TEMPLATES.defaultPage.replace("%%TITLE%%", title.trim()),
-    });
-    dispatch({ type: "SAVE_HISTORY" });
-    toast(dispatch, `Page "${title.trim()}" created!`, "success");
-  }
-
-  function loadPage(id: string) {
-    onSavePage();
-    dispatch({ type: "LOAD_PAGE", id });
-  }
-
-  function deletePage(id: string) {
-    if (id === "index") {
-      toast(dispatch, "Cannot delete home page.", "warning");
-      return;
+    if (!columnId) {
+      // Create a new section first
+      const sec = createSection('Section');
+      dispatch({ type: 'ADD_SECTION', payload: { section: sec } });
+      columnId = sec.rows[0].columns[0].id;
     }
-    if (confirm(`Delete page "${state.pages[id]?.title}"?`)) {
-      dispatch({ type: "DELETE_PAGE", id });
-      dispatch({ type: "SAVE_HISTORY" });
-      toast(dispatch, "Page deleted", "info");
-    }
-  }
-
-  /* ── Drag component ── */
-  function handleDragStart(
-    e: React.DragEvent,
-    type: ComponentType
-  ) {
-    e.dataTransfer.setData("text/plain", `component:${type}`);
-  }
-
-  const pageIds = Object.keys(state.pages);
-
-  /* component list */
-  const COMPONENTS: { type: ComponentType; icon: string; label: string }[] = [
-    { type: "hero", icon: "fa-bolt", label: "Hero Section" },
-    { type: "features", icon: "fa-cubes", label: "Features Grid" },
-    { type: "testimonial", icon: "fa-comment-dots", label: "Testimonial" },
-    { type: "contact", icon: "fa-envelope", label: "Contact Form" },
-    { type: "gallery", icon: "fa-images", label: "Image Gallery" },
-    { type: "cta", icon: "fa-bullhorn", label: "CTA Banner" },
-    { type: "pricing", icon: "fa-tag", label: "Pricing Cards" },
-    { type: "stats", icon: "fa-chart-bar", label: "Stats Row" },
-    { type: "team", icon: "fa-users", label: "Team Cards" },
-    { type: "faq", icon: "fa-question-circle", label: "FAQ Section" },
-  ];
-
-  const ELEMENTS: { type: ElementType; icon: string; label: string }[] = [
-    { type: "h1", icon: "fa-heading", label: "Heading 1" },
-    { type: "h2", icon: "fa-h", label: "Heading 2" },
-    { type: "h3", icon: "fa-h", label: "Heading 3" },
-    { type: "p", icon: "fa-paragraph", label: "Paragraph" },
-    { type: "btn", icon: "fa-hand-pointer", label: "Button" },
-    { type: "img", icon: "fa-image", label: "Image" },
-    { type: "video", icon: "fa-video", label: "Video/YouTube" },
-    { type: "icon", icon: "fa-star", label: "Icon" },
-    { type: "list", icon: "fa-list", label: "List" },
-    { type: "blockquote", icon: "fa-quote-left", label: "Quote" },
-    { type: "map", icon: "fa-map-marker-alt", label: "Map" },
-    { type: "form", icon: "fa-envelope", label: "Form" },
-  ];
+    const el = createElement(type);
+    dispatch({ type: 'ADD_ELEMENT', payload: { columnId, element: el } });
+    dispatch({ type: 'SELECT', payload: { id: el.id, target: 'element' } });
+    dispatch({ type: 'SAVE_HISTORY' });
+  };
 
   return (
-    <div className="wb-sidebar">
-      <div className="wb-sidebar-scroll">
-        {/* ── Theme Colors ── */}
-        <Panel title="🎨 Theme Colors" defaultOpen={false}>
-          <div className="grid-2" style={{ marginBottom: 7 }}>
-            <div className="color-row" title="Light BG">
-              <input
-                type="color"
-                value={lightBg}
-                onChange={(e) => setLightBg(e.target.value)}
-              />
-              <span>Light BG</span>
-            </div>
-            <div className="color-row" title="Light Text">
-              <input
-                type="color"
-                value={lightTxt}
-                onChange={(e) => setLightTxt(e.target.value)}
-              />
-              <span>Light Text</span>
-            </div>
-            <div className="color-row" title="Dark BG">
-              <input
-                type="color"
-                value={darkBg}
-                onChange={(e) => setDarkBg(e.target.value)}
-              />
-              <span>Dark BG</span>
-            </div>
-            <div className="color-row" title="Dark Text">
-              <input
-                type="color"
-                value={darkTxt}
-                onChange={(e) => setDarkTxt(e.target.value)}
-              />
-              <span>Dark Text</span>
-            </div>
-          </div>
-          <label>Accent / Brand Color</label>
-          <div className="color-row">
-            <input
-              type="color"
-              value={accent}
-              onChange={(e) => setAccent(e.target.value)}
-              style={{ width: "100%" }}
-            />
-            <span>{accent}</span>
-          </div>
-          <div className="grid-2" style={{ marginTop: 8 }}>
-            <button className="btn-primary btn-sm" onClick={applyTheme}>
-              <i className="fas fa-sync-alt" /> Apply
-            </button>
-            <button className="btn-sm" onClick={toggleDarkMode}>
-              <i className="fas fa-adjust" /> Dark Mode
-            </button>
-          </div>
-        </Panel>
-
-        {/* ── Pages ── */}
-        <div className="panel-section">
-          <div className="section-header">
-            <span className="section-label">📄 Pages</span>
-            <button className="btn-sm btn-primary" onClick={addPage}>
-              <i className="fas fa-plus" /> Add
-            </button>
-          </div>
-          <div>
-            {pageIds.map((id) => {
-              const page = state.pages[id];
-              const isChild = !!page.parentId;
-              return (
-                <div
-                  key={id}
-                  className={`page-item ${id === state.currentPage ? "active" : ""}`}
-                  style={{
-                    paddingLeft: isChild ? 24 : 10,
-                    borderLeft: isChild
-                      ? "2px solid var(--wb-border)"
-                      : undefined,
-                  }}
-                  onClick={() => loadPage(id)}
+    <div className="wb-elements-tab">
+      <div className="wb-sidebar-title">Elements</div>
+      {ELEMENT_CATEGORIES.map(cat => (
+        <div key={cat.name} className="wb-element-category">
+          <button className="wb-category-header" onClick={() => toggleCat(cat.name)}>
+            {expandedCats[cat.name] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <i className={cat.icon} style={{ fontSize: '0.75rem', marginRight: '0.5rem', opacity: 0.5 }} />
+            <span>{cat.name}</span>
+          </button>
+          {expandedCats[cat.name] && (
+            <div className="wb-element-grid">
+              {cat.items.map(item => (
+                <button
+                  key={item.type}
+                  className="wb-element-item"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item.type)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => handleClick(item.type)}
+                  title={item.label}
                 >
-                  <i className="fas fa-file-code" />
+                  <i className={item.icon} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ========== Sections Tab ========== */
+
+function SectionsTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const [search, setSearch] = useState('');
+  const templates = Object.entries(SECTION_TEMPLATES).filter(([, t]) =>
+    t.name.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleAdd = (key: string) => {
+    const template = SECTION_TEMPLATES[key];
+    if (!template) return;
+    const section = template.create();
+    dispatch({ type: 'ADD_SECTION', payload: { section } });
+    dispatch({ type: 'SAVE_HISTORY' });
+  };
+
+  const handleDragStart = (e: React.DragEvent, key: string) => {
+    const template = SECTION_TEMPLATES[key];
+    if (!template) return;
+    const section = template.create();
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+      source: 'sidebar-section',
+      sectionTemplateId: key,
+      sectionData: JSON.stringify(section),
+    }));
+    dispatch({ type: 'SET_DRAGGING', payload: { isDragging: true, data: { source: 'sidebar-section', sectionTemplateId: key } } });
+  };
+
+  const handleDragEnd = () => {
+    dispatch({ type: 'SET_DRAGGING', payload: { isDragging: false, data: null } });
+  };
+
+  return (
+    <div className="wb-sections-tab">
+      <div className="wb-sidebar-title">Sections</div>
+      <div className="wb-search-bar">
+        <Search size={14} />
+        <input placeholder="Search sections..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+      <div className="wb-sections-list">
+        {templates.map(([key, template]) => (
+          <button
+            key={key}
+            className="wb-section-card"
+            onClick={() => handleAdd(key)}
+            draggable
+            onDragStart={(e) => handleDragStart(e, key)}
+            onDragEnd={handleDragEnd}
+          >
+            <i className={template.icon} />
+            <div>
+              <div className="wb-section-card-name">{template.name}</div>
+              <div className="wb-section-card-desc">{template.description}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ========== Pages Tab ========== */
+
+function PagesTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [seoPageId, setSeoPageId] = useState<string | null>(null);
+
+  const pages = state.project.pageOrder.map(id => state.project.pages[id]).filter(Boolean);
+
+  const handleAddPage = () => {
+    const count = pages.length + 1;
+    const page = createPage(`Page ${count}`, `page-${count}`);
+    dispatch({ type: 'ADD_PAGE', payload: { page } });
+    dispatch({ type: 'SAVE_HISTORY' });
+  };
+
+  const handleDeletePage = (pageId: string) => {
+    if (state.project.pageOrder.length <= 1) return;
+    if (confirm('Delete this page? This cannot be undone.')) {
+      dispatch({ type: 'DELETE_PAGE', payload: { pageId } });
+      dispatch({ type: 'SAVE_HISTORY' });
+    }
+  };
+
+  const handleRename = (pageId: string) => {
+    setEditingPageId(null);
+    if (editValue.trim()) {
+      dispatch({ type: 'UPDATE_PAGE', payload: { pageId, updates: { title: editValue.trim(), slug: editValue.trim().toLowerCase().replace(/\s+/g, '-') } } });
+      dispatch({ type: 'SAVE_HISTORY' });
+    }
+  };
+
+  const handleIndent = (pageId: string) => {
+    const idx = state.project.pageOrder.indexOf(pageId);
+    if (idx <= 0) return;
+    const prevPageId = state.project.pageOrder[idx - 1];
+    dispatch({ type: 'UPDATE_PAGE', payload: { pageId, updates: { parentId: prevPageId } } });
+    dispatch({ type: 'SAVE_HISTORY' });
+  };
+
+  const handleOutdent = (pageId: string) => {
+    dispatch({ type: 'UPDATE_PAGE', payload: { pageId, updates: { parentId: null } } });
+    dispatch({ type: 'SAVE_HISTORY' });
+  };
+
+  const getIndentLevel = (page: { parentId: string | null }): number => {
+    let level = 0;
+    let current = page;
+    while (current.parentId) {
+      level++;
+      const parent = state.project.pages[current.parentId];
+      if (!parent) break;
+      current = parent;
+    }
+    return level;
+  };
+
+  return (
+    <div className="wb-pages-tab">
+      <div className="wb-sidebar-title">
+        Pages
+        <button className="wb-add-btn" onClick={handleAddPage} title="Add page">
+          <Plus size={16} />
+        </button>
+      </div>
+      <div className="wb-pages-list">
+        {pages.map(page => {
+          const indent = getIndentLevel(page);
+          const isActive = page.id === state.currentPageId;
+          const isEditing = editingPageId === page.id;
+
+          return (
+            <div key={page.id}>
+              <div
+                className={`wb-page-item ${isActive ? 'active' : ''}`}
+                style={{ paddingLeft: `${12 + indent * 16}px` }}
+                onClick={() => dispatch({ type: 'SET_CURRENT_PAGE', payload: { pageId: page.id } })}
+              >
+                <FileText size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
+                {isEditing ? (
+                  <input
+                    className="wb-page-name-input"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={() => handleRename(page.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleRename(page.id); }}
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
                   <span
-                    style={{
-                      flex: 1,
-                      textDecoration: page.hidden
-                        ? "line-through"
-                        : undefined,
-                      opacity: page.hidden ? 0.5 : 1,
-                    }}
+                    className="wb-page-name"
+                    onDoubleClick={(e) => { e.stopPropagation(); setEditingPageId(page.id); setEditValue(page.title); }}
                   >
                     {page.title}
                   </span>
-                  {id !== "index" && (
-                    <div
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <i
-                        className={`fas ${page.hidden ? "fa-eye-slash" : "fa-eye"}`}
-                        title="Toggle Visibility"
-                        style={{
-                          opacity: 0.5,
-                          cursor: "pointer",
-                          fontSize: "0.8em",
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dispatch({
-                            type: "TOGGLE_PAGE_VISIBILITY",
-                            id,
-                          });
-                        }}
-                      />
-                      <i
-                        className={`fas ${isChild ? "fa-outdent" : "fa-indent"}`}
-                        title={isChild ? "Unnest" : "Make Subpage"}
-                        style={{
-                          opacity: 0.5,
-                          cursor: "pointer",
-                          fontSize: "0.8em",
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dispatch({
-                            type: isChild ? "OUTDENT_PAGE" : "INDENT_PAGE",
-                            id,
-                          });
-                        }}
-                      />
-                      <i
-                        className="fas fa-times"
-                        style={{
-                          opacity: 0.4,
-                          cursor: "pointer",
-                          marginLeft: 4,
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePage(id);
-                        }}
-                      />
-                    </div>
+                )}
+                <div className="wb-page-actions" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => dispatch({ type: 'UPDATE_PAGE', payload: { pageId: page.id, updates: { hidden: !page.hidden } } })} title={page.hidden ? 'Show' : 'Hide'}>
+                    {page.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                  </button>
+                  <button onClick={() => setSeoPageId(seoPageId === page.id ? null : page.id)} title="SEO Settings">
+                    <SettingsIcon size={12} />
+                  </button>
+                  {page.parentId && (
+                    <button onClick={() => handleOutdent(page.id)} title="Outdent">←</button>
+                  )}
+                  {!page.parentId && state.project.pageOrder.indexOf(page.id) > 0 && (
+                    <button onClick={() => handleIndent(page.id)} title="Indent">→</button>
+                  )}
+                  {state.project.pageOrder.length > 1 && (
+                    <button onClick={() => handleDeletePage(page.id)} title="Delete" className="danger">
+                      <Trash2 size={12} />
+                    </button>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </div>
 
-        {/* ── Layout Sections & Rows ── */}
-        <Panel title="🧱 Layout Sections & Rows">
-          <div className="info-box">
-            Sections wrap the page. Rows go inside Sections.
-          </div>
-          <label>Add New Section</label>
-          <div className="el-btn-grid" style={{ marginBottom: 8 }}>
-            {(["col-1", "col-2", "col-3", "col-4"] as SectionLayout[]).map(
-              (layout) => {
-                const n = layout.split("-")[1];
-                const icons = ["fa-square-full", "fa-columns", "fa-table-columns", "fa-border-all"];
-                return (
-                  <button
-                    key={layout}
-                    className="el-btn"
-                    onClick={() => onAddSection(layout)}
-                  >
-                    <i className={`fas ${icons[Number(n) - 1]}`} /> {n} Col
-                  </button>
-                );
-              }
-            )}
-          </div>
-          <label>Add Row (To Selected Section)</label>
-          <div className="el-btn-grid" style={{ marginBottom: 8 }}>
-            {(["col-1", "col-2", "col-3", "col-4"] as SectionLayout[]).map(
-              (layout) => {
-                const n = layout.split("-")[1];
-                const icons = ["fa-square-full", "fa-columns", "fa-table-columns", "fa-border-all"];
-                return (
-                  <button
-                    key={layout}
-                    className="el-btn"
-                    onClick={() => onAddRow(layout)}
-                  >
-                    <i className={`fas ${icons[Number(n) - 1]}`} /> {n} Col Row
-                  </button>
-                );
-              }
-            )}
-          </div>
-          <div className="el-btn-grid">
-            <button className="el-btn" onClick={onAddSpacer}>
-              <i className="fas fa-arrows-alt-v" /> Spacer
-            </button>
-            <button
-              className="el-btn"
-              onClick={() => onAddElement("divider")}
-            >
-              <i className="fas fa-minus" /> Divider
-            </button>
-          </div>
-        </Panel>
-
-        {/* ── Elements ── */}
-        <Panel title="✨ Elements">
-          <div className="el-btn-grid">
-            {ELEMENTS.map((el) => (
-              <button
-                key={el.type}
-                className="el-btn"
-                onClick={() => onAddElement(el.type)}
-              >
-                <i className={`fas ${el.icon}`} /> {el.label}
-              </button>
-            ))}
-          </div>
-        </Panel>
-
-        {/* ── Pre-built Sections ── */}
-        <Panel title="📦 Pre-built Sections" defaultOpen={false}>
-          {COMPONENTS.map((c) => (
-            <div
-              key={c.type}
-              className="component-item"
-              draggable
-              onDragStart={(e) => handleDragStart(e, c.type)}
-              onClick={() => onInsertComponent(c.type)}
-            >
-              <i className={`fas ${c.icon}`} /> {c.label}
+              {/* SEO Panel */}
+              {seoPageId === page.id && (
+                <div className="wb-seo-panel">
+                  <label>SEO Title</label>
+                  <input value={page.seo.title} onChange={(e) => dispatch({ type: 'UPDATE_PAGE', payload: { pageId: page.id, updates: { seo: { ...page.seo, title: e.target.value } } } })} placeholder="Page title" />
+                  <label>Meta Description</label>
+                  <textarea value={page.seo.description} onChange={(e) => dispatch({ type: 'UPDATE_PAGE', payload: { pageId: page.id, updates: { seo: { ...page.seo, description: e.target.value } } } })} placeholder="Page description" rows={2} />
+                  <label>OG Image URL</label>
+                  <input value={page.seo.ogImage} onChange={(e) => dispatch({ type: 'UPDATE_PAGE', payload: { pageId: page.id, updates: { seo: { ...page.seo, ogImage: e.target.value } } } })} placeholder="https://..." />
+                </div>
+              )}
             </div>
-          ))}
-        </Panel>
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+/* ========== Layers Tab ========== */
+
+function LayersTab({ state, dispatch }: { state: BuilderState; dispatch: React.Dispatch<BuilderAction> }) {
+  const page = state.project.pages[state.currentPageId];
+  if (!page) return null;
+
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const getIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      heading: 'H', paragraph: '¶', button: '▣', link: '🔗',
+      image: '🖼', video: '▶', icon: '★', list: '≡',
+      blockquote: '"', code: '<>', divider: '—', spacer: '↕',
+      form: '📝', map: '📍', embed: '⬡', 'social-links': '🔗',
+      container: '☐',
+    };
+    return icons[type] || '◻';
+  };
+
+  const renderSectionLayers = (section: SectionNode, label?: string) => {
+    const isCollapsed = collapsed[section.id];
+    const isSelected = state.selection?.id === section.id;
+
+    return (
+      <div key={section.id} className="wb-layer-group">
+        <div
+          className={`wb-layer-item section ${isSelected ? 'selected' : ''}`}
+          onClick={() => dispatch({ type: 'SELECT', payload: { id: section.id, target: 'section' } })}
+        >
+          <button className="wb-layer-toggle" onClick={(e) => { e.stopPropagation(); toggle(section.id); }}>
+            {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+          </button>
+          <span className="wb-layer-icon">§</span>
+          <span className="wb-layer-name">{label || section.name}</span>
+        </div>
+        {!isCollapsed && section.rows.map(row =>
+          row.columns.map(col =>
+            col.elements.map(el => {
+              const isElSelected = state.selection?.id === el.id;
+              return (
+                <div
+                  key={el.id}
+                  className={`wb-layer-item element ${isElSelected ? 'selected' : ''}`}
+                  style={{ paddingLeft: '2rem' }}
+                  onClick={() => dispatch({ type: 'SELECT', payload: { id: el.id, target: 'element' } })}
+                >
+                  <span className="wb-layer-icon">{getIcon(el.type)}</span>
+                  <span className="wb-layer-name">{el.type}{el.type === 'heading' ? ` (h${el.headingLevel ?? 2})` : ''}</span>
+                  {el.hidden && <EyeOff size={10} style={{ opacity: 0.4 }} />}
+                </div>
+              );
+            })
+          )
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="wb-layers-tab">
+      <div className="wb-sidebar-title">Layers</div>
+      {state.project.settings.headerEnabled && renderSectionLayers(state.project.header, '🔒 Header')}
+      {page.sections.map(sec => renderSectionLayers(sec))}
+      {state.project.settings.footerEnabled && renderSectionLayers(state.project.footer, '🔒 Footer')}
+      {page.sections.length === 0 && (
+        <div className="wb-layers-empty">No sections on this page</div>
+      )}
     </div>
   );
 }
