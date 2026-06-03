@@ -27,9 +27,10 @@ export function Footer() {
   return (
     <footer className="relative border-t border-white/5 dark:border-white/5">
       {/* Keffiyeh pattern strip */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-quantum/40 to-transparent" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-nebula/40 to-transparent" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-quantum/20 to-transparent" />
 
-      <div className="keffiyeh-bg">
+      <div className="celestial-bg">
         <div className="section-container py-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
@@ -43,7 +44,7 @@ export function Footer() {
                 >
                   <Image src="/favicon.ico" alt="Logo" width={32} height={32} className="object-contain" />
                 </motion.div>
-                <span className="font-serif font-bold gradient-text-quantum">Rashad Hamidi</span>
+                <span className="font-serif font-bold gradient-text-celestial">Rashad Hamidi</span>
               </Link>
               <p className="text-sm text-foreground/50 leading-relaxed max-w-xs">
                 Exploring the relams of science, logic, and thoughts.
@@ -68,7 +69,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-foreground/60 hover:text-quantum transition-colors duration-200"
+                      className="text-sm text-foreground/60 hover:text-nebula-300 transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -89,9 +90,9 @@ export function Footer() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm text-foreground/60 hover:text-quantum transition-all duration-200 group"
+                    className="flex items-center gap-3 text-sm text-foreground/60 hover:text-nebula-300 transition-all duration-200 group"
                   >
-                    <span className="w-8 h-8 rounded-lg glass flex items-center justify-center group-hover:border-quantum/40 transition-all">
+                    <span className="w-8 h-8 rounded-lg glass flex items-center justify-center group-hover:border-nebula/40 transition-all">
                       <Icon size={14} />
                     </span>
                     {label}
@@ -107,9 +108,9 @@ export function Footer() {
               © {new Date().getFullYear()} Rashad Hamidi. Built with ⚛️ & 🌿
             </p>
             <p className="text-xs text-foreground/30 font-mono">
-              <span className="text-crimson">Theoretical</span>
+              <span className="text-nebula-300">Theoretical</span>
               {" · "}
-              <span className="text-olive-400">Physics</span>
+              <span className="text-quantum">Physics</span>
             </p>
           </div>
         </div>

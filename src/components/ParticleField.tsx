@@ -15,8 +15,11 @@ interface Particle {
   maxLife: number;
 }
 
-const COLORS_DARK  = ["#00c3f5", "#6b8f27", "#dc143c", "#7f8dcc", "#ffffff"];
-const COLORS_LIGHT = ["#0088b3", "#3e541a", "#991b1b", "#5467bb", "#0a0a0f"];
+const COLORS_DARK  = [
+  "#00c3f5", "#6b8f27", "#dc143c", "#7f8dcc", "#ffffff",
+  "#9333ea", "#7b2ff7", "#c084fc", "#6366f1", "#a5b4fc",
+];
+const COLORS_LIGHT = ["#0088b3", "#3e541a", "#991b1b", "#5467bb", "#6d28d9", "#0a0a0f"];
 
 export function ParticleField({ count = 60 }: { count?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,7 +33,8 @@ export function ParticleField({ count = 60 }: { count?: number }) {
 
     let animId: number;
     const particles: Particle[] = [];
-    const colors = theme === "dark" ? COLORS_DARK : COLORS_LIGHT;
+    const isDark = theme === "dark";
+    const colors = isDark ? COLORS_DARK : COLORS_LIGHT;
 
     const resize = () => {
       canvas.width  = canvas.offsetWidth;
@@ -79,23 +83,36 @@ export function ParticleField({ count = 60 }: { count?: number }) {
         else if (progress > 0.80) p.alpha = (1 - progress) / 0.20;
         else                      p.alpha = 1;
 
+        // Add glow for particles in dark mode
+        if (isDark && p.radius > 1.2) {
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = p.color;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color + Math.floor(p.alpha * 180).toString(16).padStart(2, "0");
         ctx.fill();
+        ctx.shadowBlur = 0;
 
-        // Draw faint connecting lines to nearby particles
+        // Draw faint connecting lines to nearby particles (constellation effect)
         for (let j = i + 1; j < particles.length; j++) {
           const q = particles[j];
           const dx = q.x - p.x;
           const dy = q.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
+          if (dist < 150) {
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(q.x, q.y);
-            const lineAlpha = (1 - dist / 120) * 0.08 * Math.min(p.alpha, q.alpha);
-            ctx.strokeStyle = `rgba(0,195,245,${lineAlpha})`;
+            const lineAlpha = (1 - dist / 150) * 0.1 * Math.min(p.alpha, q.alpha);
+            // Alternate between quantum and nebula for line colors
+            const lineColor = Math.random() > 0.5
+              ? `rgba(0,195,245,${lineAlpha})`
+              : `rgba(147,51,234,${lineAlpha * 0.7})`;
+            ctx.strokeStyle = lineColor;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

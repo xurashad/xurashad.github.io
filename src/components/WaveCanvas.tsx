@@ -13,11 +13,14 @@ interface WaveConfig {
 }
 
 const WAVE_CONFIGS: WaveConfig[] = [
-  { amplitude: 22,  frequency: 0.012, phase: 0,          speed: 0.015, color: "rgba(0,195,245,0.5)",    lineWidth: 1.5, yOffset: 0.50 },
-  { amplitude: 14,  frequency: 0.018, phase: Math.PI,    speed: 0.020, color: "rgba(107,143,39,0.4)",   lineWidth: 1,   yOffset: 0.55 },
-  { amplitude: 30,  frequency: 0.008, phase: Math.PI/2,  speed: 0.010, color: "rgba(220,20,60,0.25)",   lineWidth: 0.8, yOffset: 0.48 },
-  { amplitude: 10,  frequency: 0.025, phase: Math.PI*1.5,speed: 0.030, color: "rgba(127,141,204,0.35)", lineWidth: 0.6, yOffset: 0.52 },
-  { amplitude: 18,  frequency: 0.015, phase: Math.PI*0.7,speed: 0.012, color: "rgba(0,195,245,0.2)",    lineWidth: 2,   yOffset: 0.46 },
+  { amplitude: 22,  frequency: 0.012, phase: 0,           speed: 0.015, color: "rgba(0,195,245,0.5)",    lineWidth: 1.5, yOffset: 0.50 },
+  { amplitude: 14,  frequency: 0.018, phase: Math.PI,     speed: 0.020, color: "rgba(107,143,39,0.4)",   lineWidth: 1,   yOffset: 0.55 },
+  { amplitude: 30,  frequency: 0.008, phase: Math.PI/2,   speed: 0.010, color: "rgba(220,20,60,0.25)",   lineWidth: 0.8, yOffset: 0.48 },
+  { amplitude: 10,  frequency: 0.025, phase: Math.PI*1.5, speed: 0.030, color: "rgba(127,141,204,0.35)", lineWidth: 0.6, yOffset: 0.52 },
+  { amplitude: 18,  frequency: 0.015, phase: Math.PI*0.7, speed: 0.012, color: "rgba(0,195,245,0.2)",    lineWidth: 2,   yOffset: 0.46 },
+  // CELESTIAL MIRAGE — new nebula/aurora waves
+  { amplitude: 16,  frequency: 0.014, phase: Math.PI*0.3, speed: 0.018, color: "rgba(147,51,234,0.3)",   lineWidth: 1.2, yOffset: 0.53 },
+  { amplitude: 12,  frequency: 0.022, phase: Math.PI*1.2, speed: 0.025, color: "rgba(99,102,241,0.25)",  lineWidth: 0.8, yOffset: 0.47 },
 ];
 
 export function WaveCanvas() {
@@ -47,7 +50,7 @@ export function WaveCanvas() {
         ctx.beginPath();
         ctx.strokeStyle = wave.color;
         ctx.lineWidth = wave.lineWidth;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 12;
         ctx.shadowColor = wave.color;
 
         for (let x = 0; x <= canvas.width; x += 2) {
@@ -57,7 +60,9 @@ export function WaveCanvas() {
         ctx.stroke();
       });
 
-      // Ψ probability density envelope (shaded region between two waves)
+      ctx.shadowBlur = 0;
+
+      // Ψ probability density envelope (quantum cyan)
       const baseY = canvas.height * 0.50;
       ctx.beginPath();
       for (let x = 0; x <= canvas.width; x += 2) {
@@ -70,6 +75,21 @@ export function WaveCanvas() {
       }
       ctx.closePath();
       ctx.fillStyle = "rgba(0,195,245,0.03)";
+      ctx.fill();
+
+      // Nebula probability density envelope (purple)
+      const nebulaBaseY = canvas.height * 0.52;
+      ctx.beginPath();
+      for (let x = 0; x <= canvas.width; x += 2) {
+        const y = nebulaBaseY + 16 * Math.sin(x * 0.014 + t * 0.018 + Math.PI * 0.3);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      for (let x = canvas.width; x >= 0; x -= 2) {
+        const y = nebulaBaseY - 16 * Math.sin(x * 0.014 + t * 0.018 + Math.PI * 0.3);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(147,51,234,0.02)";
       ctx.fill();
 
       t++;

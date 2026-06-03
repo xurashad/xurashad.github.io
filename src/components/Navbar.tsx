@@ -81,13 +81,13 @@ export function Navbar() {
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
             >
               <Image src="/favicon.ico" alt="Logo" width={36} height={36} className="object-contain" />
-              <span className="absolute inset-0 rounded-lg bg-gradient-to-br from-quantum to-olive opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
+              <span className="absolute inset-0 rounded-lg bg-gradient-to-br from-quantum via-nebula to-olive opacity-0 group-hover:opacity-25 blur-md transition-opacity duration-300" />
             </motion.div>
             <div className="flex flex-col leading-none">
-              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum to-olive bg-clip-text text-transparent">
+              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula to-olive bg-clip-text text-transparent">
                 Rashad Hamidi
               </span>
-              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum to-olive bg-clip-text text-transparent"
+              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula-300 to-olive bg-clip-text text-transparent"
                 style={{
                   fontFamily: '"DecoTypeThuluth", serif',
                   lineHeight: 1.6,
@@ -111,7 +111,7 @@ export function Navbar() {
                   className={`
                     nav-link relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
-                      ? "text-quantum bg-quantum/10"
+                      ? "text-quantum bg-nebula/8"
                       : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
                     }
                     ${link.href === "/palestine" ? "text-olive-400 hover:text-olive-300" : ""}
@@ -122,7 +122,7 @@ export function Navbar() {
                   {isActive && (
                     <motion.div
                       layoutId="nav-indicator"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-gradient-to-r from-quantum to-olive rounded-full"
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-gradient-to-r from-quantum via-nebula to-olive rounded-full"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -191,7 +191,7 @@ export function Navbar() {
                         className={`
                           flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
                           ${isActive
-                            ? "bg-quantum/10 text-quantum border border-quantum/20"
+                            ? "bg-nebula/8 text-quantum border border-nebula/20"
                             : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
                           }
                           ${link.href === "/palestine" ? "hover:border-l-2 hover:border-olive-500" : ""}
@@ -212,10 +212,10 @@ export function Navbar() {
               </div>
               {/* Palestinian colors strip */}
               <div className="flex h-0.5 mt-2 rounded-full overflow-hidden mx-4">
-                <div className="flex-1 bg-black dark:bg-white" />
-                <div className="flex-1 bg-flag-white dark:bg-photon-muted" />
-                <div className="flex-1 bg-flag-green" />
-                <div className="flex-1 bg-flag-red" />
+                <div className="flex-1 bg-quantum" />
+                <div className="flex-1 bg-nebula" />
+                <div className="flex-1 bg-aurora" />
+                <div className="flex-1 bg-olive" />
               </div>
             </motion.div>
           )}

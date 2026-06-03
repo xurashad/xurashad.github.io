@@ -57,8 +57,38 @@
   --color-crimson-900: #450a0a;
   --color-crimson:     #dc143c;
 
+  /* Nebula purple palette — CELESTIAL MIRAGE */
+  --color-nebula-50:  #f3e8ff;
+  --color-nebula-100: #e9d5ff;
+  --color-nebula-200: #d8b4fe;
+  --color-nebula-300: #c084fc;
+  --color-nebula-400: #a855f7;
+  --color-nebula-500: #9333ea;
+  --color-nebula-600: #7b2ff7;
+  --color-nebula-700: #6d28d9;
+  --color-nebula-800: #5b21b6;
+  --color-nebula-900: #3b0764;
+  --color-nebula:     #9333ea;
+
+  /* Aurora indigo palette — CELESTIAL MIRAGE */
+  --color-aurora-50:  #eef2ff;
+  --color-aurora-100: #e0e7ff;
+  --color-aurora-200: #c7d2fe;
+  --color-aurora-300: #a5b4fc;
+  --color-aurora-400: #818cf8;
+  --color-aurora-500: #6366f1;
+  --color-aurora-600: #4f46e5;
+  --color-aurora-700: #4338ca;
+  --color-aurora-800: #3730a3;
+  --color-aurora-900: #312e81;
+  --color-aurora:     #6366f1;
+
+  /* Stardust warm shimmer */
+  --color-stardust:     #e0c3fc;
+  --color-stardust-warm: #fbc2eb;
+
   /* Dark matter void */
-  --color-void:     #0a0a0f;
+  --color-void:     #050510;
   --color-void-50:  #1a1a2e;
   --color-void-100: #16213e;
   --color-void-200: #0f3460;
@@ -82,16 +112,20 @@
   --color-quantum:     #00c3f5;
 
   /* Custom animations */
-  --animate-float:       float 6s ease-in-out infinite;
-  --animate-float-slow:  float 10s ease-in-out infinite;
-  --animate-float-fast:  float 4s ease-in-out infinite;
-  --animate-orbit:       orbit 12s linear infinite;
-  --animate-orbit-slow:  orbit 20s linear infinite;
-  --animate-shimmer:     shimmer 2.5s linear infinite;
-  --animate-pulse-ring:  pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  --animate-float:          float 6s ease-in-out infinite;
+  --animate-float-slow:     float 10s ease-in-out infinite;
+  --animate-float-fast:     float 4s ease-in-out infinite;
+  --animate-orbit:          orbit 12s linear infinite;
+  --animate-orbit-slow:     orbit 20s linear infinite;
+  --animate-shimmer:        shimmer 2.5s linear infinite;
+  --animate-pulse-ring:     pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
   --animate-gradient-shift: gradientShift 8s ease infinite;
-  --animate-glow-pulse:  glowPulse 3s ease-in-out infinite;
-  --animate-drift:       drift 8s ease-in infinite;
+  --animate-glow-pulse:     glowPulse 3s ease-in-out infinite;
+  --animate-drift:          drift 8s ease-in infinite;
+  --animate-twinkle:        twinkle 3s ease-in-out infinite;
+  --animate-nebula-pulse:   nebulaPulse 8s ease-in-out infinite;
+  --animate-aurora-shift:   auroraShift 12s ease infinite;
+  --animate-cosmic-drift:   cosmicDrift 20s ease-in-out infinite;
 
   /* Keyframes */
   @keyframes float {
@@ -131,6 +165,44 @@
     90%  { opacity: 0.8; }
     100% { transform: translate(var(--dx, 0px), var(--dy, -200px)); opacity: 0; }
   }
+
+  /* ── CELESTIAL MIRAGE KEYFRAMES ── */
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.3); }
+  }
+
+  @keyframes nebulaPulse {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(1.08); }
+  }
+
+  @keyframes auroraShift {
+    0%   { background-position: 0% 50%; filter: hue-rotate(0deg); }
+    33%  { background-position: 50% 100%; filter: hue-rotate(15deg); }
+    66%  { background-position: 100% 50%; filter: hue-rotate(-10deg); }
+    100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+  }
+
+  @keyframes cosmicDrift {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    25%  { transform: translate(30px, -20px) rotate(2deg); }
+    50%  { transform: translate(-10px, 15px) rotate(-1deg); }
+    75%  { transform: translate(-25px, -10px) rotate(1.5deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  @keyframes shootingStar {
+    0%   { transform: translateX(0) translateY(0); opacity: 1; }
+    70%  { opacity: 1; }
+    100% { transform: translateX(300px) translateY(300px); opacity: 0; }
+  }
+
+  @keyframes nebulaGlowPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(147,51,234,0.3), 0 0 16px rgba(147,51,234,0.1); }
+    50%      { box-shadow: 0 0 25px rgba(147,51,234,0.6), 0 0 50px rgba(147,51,234,0.25); }
+  }
 }
 
 /* ── Design Tokens (CSS vars) ────────────────────────────────────────────────── */
@@ -143,15 +215,17 @@
   --quantum:          #00c3f5;
   --olive:            #6b8f27;
   --crimson:          #dc143c;
-  --void:             #0a0a0f;
+  --nebula:           #9333ea;
+  --aurora:           #6366f1;
+  --void:             #050510;
 }
 
 .dark {
-  --background:       #0a0a0f;
+  --background:       #050510;
   --foreground:       #f8f9fa;
-  --surface:          rgba(16, 26, 68, 0.5);
-  --surface-border:   rgba(0, 195, 245, 0.12);
-  --nav-bg:           rgba(10, 10, 15, 0.85);
+  --surface:          rgba(15, 10, 40, 0.55);
+  --surface-border:   rgba(123, 47, 247, 0.12);
+  --nav-bg:           rgba(5, 5, 16, 0.88);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────────── */
@@ -193,9 +267,14 @@ code, pre {
 /* ── Scrollbar ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,195,245,0.3); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,195,245,0.6); }
-::selection { background: rgba(0,195,245,0.3); color: inherit; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,195,245,0.4), rgba(147,51,234,0.4));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0,195,245,0.7), rgba(147,51,234,0.7));
+}
+::selection { background: rgba(147,51,234,0.3); color: inherit; }
 
 /* ── Glassmorphism ──────────────────────────────────────────────────────────── */
 .glass {
@@ -230,8 +309,11 @@ code, pre {
 }
 
 .dark .glass-card:hover {
-  border-color: rgba(0,195,245,0.3);
-  box-shadow: 0 0 30px rgba(0,195,245,0.15);
+  border-color: rgba(147,51,234,0.3);
+  box-shadow:
+    0 0 30px rgba(0,195,245,0.1),
+    0 0 40px rgba(147,51,234,0.15),
+    0 0 60px rgba(99,102,241,0.08);
 }
 
 /* ── Keffiyeh Grid Background ───────────────────────────────────────────────── */
@@ -244,13 +326,29 @@ code, pre {
   background-size: 40px 40px, 40px 40px, 10px 10px, 10px 10px;
 }
 
+/* ── Celestial Background — MIRAGE THEME ─────────────────────────────────── */
+.celestial-bg {
+  background-image:
+    linear-gradient(rgba(147,51,234,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147,51,234,0.04) 1px, transparent 1px),
+    linear-gradient(rgba(0,195,245,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,195,245,0.03) 1px, transparent 1px),
+    radial-gradient(ellipse at 20% 50%, rgba(147,51,234,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(0,195,245,0.04) 0%, transparent 45%);
+  background-size:
+    60px 60px, 60px 60px,
+    40px 40px, 40px 40px,
+    100% 100%, 100% 100%, 100% 100%;
+}
+
 /* ── Gradient Text ──────────────────────────────────────────────────────────── */
 .gradient-text-quantum {
-  background: linear-gradient(135deg, #00c3f5 0%, #6b8f27 50%, #dc143c 100%);
+  background: linear-gradient(135deg, #00c3f5 0%, #9333ea 40%, #6b8f27 70%, #dc143c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  background-size: 200% auto;
+  background-size: 300% auto;
   animation: gradientShift 6s ease infinite;
 }
 
@@ -268,10 +366,41 @@ code, pre {
   background-clip: text;
 }
 
+.gradient-text-celestial {
+  background: linear-gradient(135deg, #9333ea 0%, #6366f1 30%, #00c3f5 60%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 300% auto;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* ── Aurora gradient ─────────────────────────────────────────────────────────── */
+.aurora-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(147,51,234,0.15) 0%,
+    rgba(99,102,241,0.1) 25%,
+    rgba(0,195,245,0.12) 50%,
+    rgba(192,132,252,0.1) 75%,
+    rgba(147,51,234,0.15) 100%
+  );
+  background-size: 400% 400%;
+  animation: auroraShift 12s ease infinite;
+}
+
 /* ── Glow helpers ───────────────────────────────────────────────────────────── */
 .quantum-glow  { box-shadow: 0 0 20px rgba(0,195,245,0.4), 0 0 60px rgba(0,195,245,0.15); }
 .olive-glow    { box-shadow: 0 0 20px rgba(107,143,39,0.4), 0 0 60px rgba(107,143,39,0.15); }
 .crimson-glow  { box-shadow: 0 0 20px rgba(220,20,60,0.4), 0 0 60px rgba(220,20,60,0.15); }
+.nebula-glow   { box-shadow: 0 0 20px rgba(147,51,234,0.4), 0 0 60px rgba(147,51,234,0.15); }
+.aurora-glow   { box-shadow: 0 0 20px rgba(99,102,241,0.4), 0 0 60px rgba(99,102,241,0.15); }
+.celestial-glow {
+  box-shadow:
+    0 0 15px rgba(0,195,245,0.3),
+    0 0 30px rgba(147,51,234,0.2),
+    0 0 50px rgba(99,102,241,0.1);
+}
 
 /* ── Nav link underline ─────────────────────────────────────────────────────── */
 .nav-link { position: relative; }
@@ -282,7 +411,7 @@ code, pre {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--quantum), var(--olive));
+  background: linear-gradient(90deg, var(--quantum), var(--nebula), var(--olive));
   border-radius: 2px;
   transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -315,6 +444,10 @@ code, pre {
 .animate-drift       { animation: drift 8s ease-in infinite; }
 .animate-glow-pulse  { animation: glowPulse 3s ease-in-out infinite; }
 .animate-blink       { animation: blink 1s step-start infinite; }
+.animate-twinkle     { animation: twinkle 3s ease-in-out infinite; }
+.animate-nebula-pulse { animation: nebulaPulse 8s ease-in-out infinite; }
+.animate-aurora-shift { animation: auroraShift 12s ease infinite; }
+.animate-cosmic-drift { animation: cosmicDrift 20s ease-in-out infinite; }
 
 /* ── Blink cursor keyframe ────────────────────────────────────────────────── */
 @keyframes blink {
@@ -333,9 +466,11 @@ code, pre {
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(0,195,245,0.4) 10%,
+    rgba(147,51,234,0.3) 5%,
+    rgba(0,195,245,0.4) 20%,
     rgba(107,143,39,0.3) 50%,
-    rgba(220,20,60,0.2) 90%,
+    rgba(220,20,60,0.2) 80%,
+    rgba(99,102,241,0.3) 95%,
     transparent
   );
 }
