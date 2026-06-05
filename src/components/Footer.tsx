@@ -11,6 +11,7 @@ const FOOTER_LINKS = [
   { href: "/datasets", label: "Datasets" },
   // { href: "/blog", label: "Blog" },
   { href: "/documents", label: "Documents" },
+  { href: "/art", label: "Art" },
   { href: "/cv", label: "CV" },
   // { href: "/palestine", label: "Palestine" },
   { href: "/contact", label: "Contact" },

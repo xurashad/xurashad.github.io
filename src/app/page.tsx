@@ -268,6 +268,7 @@ const QUICK_LINKS = [
   { href: "/datasets", icon: Database, label: "Datasets", color: "text-nebula-300", bg: "bg-nebula/10", border: "hover:border-nebula/40", desc: "Research data nodes" },
   //  { href: "/blog", icon: BookOpen, label: "Blog", color: "text-quantum", bg: "bg-quantum/10", border: "hover:border-quantum/40", desc: "Thoughts & theory" },
   { href: "/documents", icon: FileText, label: "Documents", color: "text-aurora-400", bg: "bg-aurora/10", border: "hover:border-aurora/40", desc: "Papers & whitepapers" },
+  { href: "/art", icon: Star, label: "Art", color: "text-aurora-400", bg: "bg-aurora/10", border: "hover:border-aurora/40", desc: "Artsy stuff" },
   { href: "/cv", icon: User, label: "CV", color: "text-olive-400", bg: "bg-olive/10", border: "hover:border-olive/40", desc: "Orbital career path" },
   //  { href: "/palestine", icon: Globe, label: "Palestine", color: "text-olive-300", bg: "bg-olive/10", border: "hover:border-olive/50", desc: "Cultural tribute 🇵🇸" },
   { href: "/contact", icon: Mail, label: "Contact", color: "text-stardust", bg: "bg-nebula/10", border: "hover:border-nebula/40", desc: "Quantum entanglement" },
