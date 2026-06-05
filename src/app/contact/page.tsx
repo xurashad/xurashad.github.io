@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { useRef, useState, useCallback, type FormEvent } from "react";
+import Image from "next/image";
 import {
   Mail, MessageSquare, User, Send, Atom,
   GitFork, X as XIcon, Link2, CheckCircle2,
@@ -160,6 +161,17 @@ const PEOPLE = [
     role: "Twin Brother",
     href: "https://muathhamidi.github.io/muath.hamidi/",
     accent: "crimson" as const,
+  },
+];
+
+/* ─── Connections ──────────────────────────────────────── */
+const CONNECTIONS = [
+  {
+    name: "Frame Craft",
+    role: "Animation & motion graphics studio",
+    href: "https://www.instagram.com/framecraft_studio/",
+    logo: "/imges/frame_craft_logo.jpg",
+    accent: "quantum" as const,
   },
 ];
 
@@ -504,6 +516,54 @@ export default function ContactPage() {
                         {p.name}
                       </div>
                       <div className="text-xs font-mono text-foreground/35">{p.role}</div>
+                    </div>
+                    <ExternalLink size={12} className="text-foreground/20 group-hover:text-foreground/50 transition-colors flex-shrink-0" />
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Connections */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+            >
+              <div className="text-xs font-mono text-foreground/30 uppercase tracking-widest mb-4">
+                // Connections
+              </div>
+              <div className="space-y-2">
+                {CONNECTIONS.map((c, i) => (
+                  <motion.a
+                    key={c.name}
+                    href={c.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.55 + i * 0.07 }}
+                    whileHover={{ x: 4 }}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl glass border border-white/6 transition-all duration-300 group ${c.accent === "quantum"
+                      ? "hover:border-quantum/35 hover:shadow-[0_0_16px_rgba(0,195,245,0.08)]"
+                      : c.accent === "crimson"
+                        ? "hover:border-crimson/35 hover:shadow-[0_0_16px_rgba(220,20,60,0.08)]"
+                        : "hover:border-olive/35"
+                      }`}
+                  >
+                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-white/10 group-hover:ring-quantum/30 transition-all duration-300">
+                      <Image
+                        src={c.logo}
+                        alt={c.name}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-foreground/75 group-hover:text-foreground/95 transition-colors">
+                        {c.name}
+                      </div>
+                      <div className="text-xs font-mono text-foreground/35">{c.role}</div>
                     </div>
                     <ExternalLink size={12} className="text-foreground/20 group-hover:text-foreground/50 transition-colors flex-shrink-0" />
                   </motion.a>
