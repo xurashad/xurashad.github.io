@@ -90,6 +90,18 @@ const APPS: App[] = [
     mine: true,
     links: [{ label: "Open App", href: "/apps/feynman-diagram" }],
   },
+  {
+    id: "earth-explorer",
+    title: "Earth Explorer",
+    desc: "Interactive 3D globe powered by CesiumJS and OpenStreetMap. Explore Earth with satellite imagery, location search, fly-to animations, day/night lighting, and bookmarked landmarks — a Google Earth-like experience in your browser.",
+    icon: Globe,
+    category: "Scientific",
+    accent: "quantum",
+    featured: true,
+    tags: ["3D Globe", "Maps", "Geography", "CesiumJS", "OpenStreetMap"],
+    mine: true,
+    links: [{ label: "Open App", href: "/apps/earth-explorer" }],
+  },
 
 
   /* ── Generators ──────────────────────────────────── */
