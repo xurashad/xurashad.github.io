@@ -8,12 +8,12 @@ import ControlPanel from "./ControlPanel";
 import type { CameraInfo, MapStyle } from "./CesiumGlobe";
 import "./earth-explorer.css";
 
-/* ── Dynamically import CesiumGlobe (client-only, no SSR) ──────────── */
+/* ------ Dynamically import CesiumGlobe (client-only, no SSR) ------------------------------------ */
 const CesiumGlobe = dynamic(() => import("./CesiumGlobe"), { ssr: false });
 
-/* ─── Component ─────────────────────────────────────────────────────────── */
+/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 export default function EarthExplorer() {
-  /* ── State ───────────────────────────────────────────────────────── */
+  /* ------ State --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
   const [ready, setReady] = useState(false);
   const [camera, setCamera] = useState<CameraInfo>({
     lat: 31.9,
@@ -32,9 +32,9 @@ export default function EarthExplorer() {
   const [toast, setToast] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ── Handlers ────────────────────────────────────────────────────── */
+  /* ------ Handlers ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
   const handleCameraChange = useCallback((info: CameraInfo) => {
     setCamera(info);
   }, []);
@@ -62,7 +62,7 @@ export default function EarthExplorer() {
     (lat: number, lon: number) => {
       const text = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
       navigator.clipboard.writeText(text).catch(() => {});
-      showToast(`📋 Copied: ${text}`);
+      showToast(`---- Copied: ${text}`);
     },
     []
   );
@@ -88,10 +88,10 @@ export default function EarthExplorer() {
     }
   }, []);
 
-  /* ── Render ──────────────────────────────────────────────────────── */
+  /* ------ Render ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
   return (
     <div ref={rootRef} className="earth-explorer-root">
-      {/* ── Loading Screen ────────────────────────────────────────── */}
+      {/* ------ Loading Screen ------------------------------------------------------------------------------------------------------------------------------ */}
       <AnimatePresence>
         {!ready && (
           <motion.div
@@ -112,13 +112,13 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.2)",
               }}
             >
-              Loading CesiumJS + OpenStreetMap tiles…
+              Loading CesiumJS + OpenStreetMap tiles---
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Globe ─────────────────────────────────────────────────── */}
+      {/* ------ Globe --------------------------------------------------------------------------------------------------------------------------------------------------------- */}
       <CesiumGlobe
         onCameraChange={handleCameraChange}
         onReady={handleReady}
@@ -129,10 +129,10 @@ export default function EarthExplorer() {
         mapStyle={mapStyle}
       />
 
-      {/* ── Overlay Panels ────────────────────────────────────────── */}
+      {/* ------ Overlay Panels ------------------------------------------------------------------------------------------------------------------------------ */}
       {ready && (
         <>
-          {/* Search Panel — top left */}
+          {/* Search Panel --- top left */}
           <div
             style={{
               position: "absolute",
@@ -144,7 +144,7 @@ export default function EarthExplorer() {
             <SearchPanel onSelect={handleSearchSelect} />
           </div>
 
-          {/* Control Panel — top right */}
+          {/* Control Panel --- top right */}
           <div
             style={{
               position: "absolute",
@@ -196,7 +196,7 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.2)",
               }}
             >
-              🌍 Earth Explorer
+              ---- Earth Explorer
             </span>
             <span
               style={{
@@ -204,7 +204,7 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.12)",
               }}
             >
-              •
+              ---
             </span>
             <span
               style={{
@@ -219,7 +219,7 @@ export default function EarthExplorer() {
         </>
       )}
 
-      {/* ── Coordinate Toast ──────────────────────────────────────── */}
+      {/* ------ Coordinate Toast ------------------------------------------------------------------------------------------------------------------------ */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -236,3 +236,4 @@ export default function EarthExplorer() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import {
@@ -7,9 +7,9 @@ import {
 } from "lucide-react";
 import type { CameraInfo, MapStyle } from "./CesiumGlobe";
 
-/* ─── Bookmarks ─────────────────────────────────────────────────────────── */
+/* --------- Bookmarks --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 const BOOKMARKS = [
-  { name: "Palestine 🇵🇸",  lat: 31.9,   lon: 35.2,   alt: 80000  },
+  { name: "Palestine --------",  lat: 31.9,   lon: 35.2,   alt: 80000  },
   { name: "Birzeit",        lat: 31.95,  lon: 35.19,  alt: 15000  },
   { name: "Mecca",          lat: 21.4225,lon: 39.8262,alt: 25000  },
   { name: "Durham",         lat: 54.776, lon: -1.574, alt: 30000  },
@@ -21,10 +21,10 @@ const BOOKMARKS = [
   { name: "Sydney",         lat: -33.868,lon: 151.207,alt: 80000  },
 ];
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
+/* --------- Helpers --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 function formatCoord(val: number, pos: string, neg: string) {
   const dir = val >= 0 ? pos : neg;
-  return `${Math.abs(val).toFixed(4)}°${dir}`;
+  return `${Math.abs(val).toFixed(4)}--${dir}`;
 }
 
 function formatAlt(meters: number) {
@@ -33,7 +33,7 @@ function formatAlt(meters: number) {
   return `${meters.toFixed(0)} m`;
 }
 
-/* ─── Props ──────────────────────────────────────────────────────────────── */
+/* --------- Props ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 interface ControlPanelProps {
   camera: CameraInfo;
   enableLighting: boolean;
@@ -48,7 +48,7 @@ interface ControlPanelProps {
   isFullscreen: boolean;
 }
 
-/* ─── Component ─────────────────────────────────────────────────────────── */
+/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 export default function ControlPanel({
   camera,
   enableLighting,
@@ -70,7 +70,7 @@ export default function ControlPanel({
       className="ee-panel p-3"
       style={{ width: 260 }}
     >
-      {/* ── Camera Info ──────────────────────────────────────────────── */}
+      {/* ------ Camera Info ------------------------------------------------------------------------------------------------------------------------------------------------ */}
       <div
         style={{
           display: "flex",
@@ -112,13 +112,13 @@ export default function ControlPanel({
         </div>
         <div className="ee-info-item">
           <span className="ee-info-label">Heading</span>
-          <span className="ee-info-value">{camera.heading.toFixed(1)}°</span>
+          <span className="ee-info-value">{camera.heading.toFixed(1)}--</span>
         </div>
       </div>
 
       <div className="ee-divider" />
 
-      {/* ── Quick Actions ────────────────────────────────────────────── */}
+      {/* ------ Quick Actions ------------------------------------------------------------------------------------------------------------------------------------------ */}
       <div
         style={{
           display: "flex",
@@ -152,7 +152,7 @@ export default function ControlPanel({
         </button>
       </div>
 
-      {/* ── Map Style ────────────────────────────────────────────────── */}
+      {/* ------ Map Style ------------------------------------------------------------------------------------------------------------------------------------------------------ */}
       <div
         style={{
           display: "flex",
@@ -188,7 +188,7 @@ export default function ControlPanel({
 
       <div className="ee-divider" />
 
-      {/* ── Bookmarks ────────────────────────────────────────────────── */}
+      {/* ------ Bookmarks ------------------------------------------------------------------------------------------------------------------------------------------------------ */}
       <div
         style={{
           display: "flex",
@@ -230,3 +230,4 @@ export default function ControlPanel({
     </motion.div>
   );
 }
+
