@@ -68,8 +68,8 @@ function createImageryProvider(Cesium: any, style: MapStyle) {
       });
     case "dark":
       return new Cesium.UrlTemplateImageryProvider({
-        url: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png",
-        credit: "Stadia Maps, OpenStreetMap",
+        url: "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        credit: "Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
         maximumLevel: 18,
       });
     case "satellite":
