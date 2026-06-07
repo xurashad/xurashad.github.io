@@ -363,7 +363,7 @@ export default function CVPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            <a href="https://xurashad.github.io/" target="_blank" rel="noopener noreferrer">
+            <a href="https://xurashad.github.io/documents/cv.pdf" target="_blank" rel="noopener noreferrer">
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(0,195,245,0.3)" }}
                 whileTap={{ scale: 0.95 }}
