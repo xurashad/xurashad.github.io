@@ -1,19 +1,35 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import {
+  Settings, X, Home, Maximize, Minimize, Sun, Moon, Cloud,
+  Layers, Navigation, Search as SearchIcon,
+} from "lucide-react";
 import SearchPanel from "./SearchPanel";
 import ControlPanel from "./ControlPanel";
 import type { CameraInfo, MapStyle } from "./CesiumGlobe";
 import "./earth-explorer.css";
 
-/* ------ Dynamically import CesiumGlobe (client-only, no SSR) ------------------------------------ */
+/* Dynamically import CesiumGlobe (client-only, no SSR) */
 const CesiumGlobe = dynamic(() => import("./CesiumGlobe"), { ssr: false });
 
-/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Detect mobile via matchMedia */
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return mobile;
+}
+
 export default function EarthExplorer() {
-  /* ------ State --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* State */
   const [ready, setReady] = useState(false);
   const [camera, setCamera] = useState<CameraInfo>({
     lat: 31.9,
@@ -31,10 +47,13 @@ export default function EarthExplorer() {
   const [mapStyle, setMapStyle] = useState<MapStyle>("osm");
   const [toast, setToast] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mobileSheet, setMobileSheet] = useState(false);
+  const [mobileSearch, setMobileSearch] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMobile = useIsMobile();
 
-  /* ------ Handlers ------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+  /* Handlers */
   const handleCameraChange = useCallback((info: CameraInfo) => {
     setCamera(info);
   }, []);
@@ -45,8 +64,8 @@ export default function EarthExplorer() {
 
   const handleFlyTo = useCallback(
     (lat: number, lon: number, alt?: number) => {
-      // Change reference to trigger useEffect in CesiumGlobe
       setFlyTarget({ lat, lon, alt: alt ?? 150000 });
+      setMobileSheet(false);
     },
     []
   );
@@ -54,6 +73,7 @@ export default function EarthExplorer() {
   const handleSearchSelect = useCallback(
     (lat: number, lon: number, _name: string) => {
       handleFlyTo(lat, lon);
+      setMobileSearch(false);
     },
     [handleFlyTo]
   );
@@ -62,7 +82,7 @@ export default function EarthExplorer() {
     (lat: number, lon: number) => {
       const text = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
       navigator.clipboard.writeText(text).catch(() => {});
-      showToast(`---- Copied: ${text}`);
+      showToast(`Copied: ${text}`);
     },
     []
   );
@@ -88,10 +108,10 @@ export default function EarthExplorer() {
     }
   }, []);
 
-  /* ------ Render ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+  /* Render */
   return (
     <div ref={rootRef} className="earth-explorer-root">
-      {/* ------ Loading Screen ------------------------------------------------------------------------------------------------------------------------------ */}
+      {/* Loading Screen */}
       <AnimatePresence>
         {!ready && (
           <motion.div
@@ -112,13 +132,13 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.2)",
               }}
             >
-              Loading CesiumJS + OpenStreetMap tiles---
+              Loading CesiumJS + OpenStreetMap tiles...
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ------ Globe --------------------------------------------------------------------------------------------------------------------------------------------------------- */}
+      {/* Globe */}
       <CesiumGlobe
         onCameraChange={handleCameraChange}
         onReady={handleReady}
@@ -129,30 +149,18 @@ export default function EarthExplorer() {
         mapStyle={mapStyle}
       />
 
-      {/* ------ Overlay Panels ------------------------------------------------------------------------------------------------------------------------------ */}
+      {/* Desktop Overlay Panels */}
       {ready && (
         <>
-          {/* Search Panel --- top left */}
-          <div
-            style={{
-              position: "absolute",
-              top: 16,
-              left: 16,
-              zIndex: 30,
-            }}
-          >
-            <SearchPanel onSelect={handleSearchSelect} />
-          </div>
+          {/* Search Panel - top left (desktop always visible, mobile toggled) */}
+          {(!isMobile || mobileSearch) && (
+            <div className="ee-search-wrapper">
+              <SearchPanel onSelect={handleSearchSelect} />
+            </div>
+          )}
 
-          {/* Control Panel --- top right */}
-          <div
-            style={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              zIndex: 30,
-            }}
-          >
+          {/* Control Panel - top right (desktop only) */}
+          <div className="ee-control-wrapper">
             <ControlPanel
               camera={camera}
               enableLighting={enableLighting}
@@ -168,26 +176,12 @@ export default function EarthExplorer() {
             />
           </div>
 
-          {/* Bottom-center branding */}
+          {/* Bottom branding (desktop) */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            style={{
-              position: "absolute",
-              bottom: 12,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 20,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "5px 12px",
-              borderRadius: 8,
-              background: "rgba(8,6,20,0.6)",
-              backdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.04)",
-            }}
+            className="ee-branding"
           >
             <span
               style={{
@@ -196,7 +190,7 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.2)",
               }}
             >
-              ---- Earth Explorer
+              Earth Explorer
             </span>
             <span
               style={{
@@ -204,7 +198,7 @@ export default function EarthExplorer() {
                 color: "rgba(248,249,250,0.12)",
               }}
             >
-              ---
+              |
             </span>
             <span
               style={{
@@ -216,10 +210,168 @@ export default function EarthExplorer() {
               Click globe to copy coordinates
             </span>
           </motion.div>
+
+          {/* ---- Mobile UI ---- */}
+
+          {/* Mobile bottom toolbar */}
+          <div className="ee-mobile-toolbar">
+            <button
+              className="ee-ctrl-btn"
+              onClick={() => { setMobileSearch((v) => !v); setMobileSheet(false); }}
+              title="Search"
+            >
+              <SearchIcon size={16} />
+            </button>
+            <button className="ee-ctrl-btn" onClick={handleResetView} title="Home">
+              <Home size={16} />
+            </button>
+            <button
+              className={`ee-ctrl-btn ${enableLighting ? "active" : ""}`}
+              onClick={() => setEnableLighting((v) => !v)}
+              title="Day/Night"
+            >
+              {enableLighting ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+            <button
+              className={`ee-ctrl-btn ${enableAtmosphere ? "active" : ""}`}
+              onClick={() => setEnableAtmosphere((v) => !v)}
+              title="Atmosphere"
+            >
+              <Cloud size={16} />
+            </button>
+            <button
+              className="ee-ctrl-btn"
+              onClick={handleToggleFullscreen}
+              title="Fullscreen"
+            >
+              {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+            </button>
+            <button
+              className="ee-ctrl-btn"
+              onClick={() => { setMobileSheet((v) => !v); setMobileSearch(false); }}
+              title="Settings"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
+
+          {/* Mobile overlay backdrop */}
+          <div
+            className={`ee-mobile-overlay ${mobileSheet ? "open" : ""}`}
+            onClick={() => setMobileSheet(false)}
+          />
+
+          {/* Mobile slide-up sheet */}
+          <AnimatePresence>
+            {mobileSheet && isMobile && (
+              <motion.div
+                className="ee-mobile-sheet open"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              >
+                <div className="ee-mobile-sheet-handle" />
+
+                {/* Close button */}
+                <button
+                  onClick={() => setMobileSheet(false)}
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                    background: "none",
+                    border: "none",
+                    color: "rgba(248,249,250,0.4)",
+                    cursor: "pointer",
+                    padding: 4,
+                  }}
+                >
+                  <X size={18} />
+                </button>
+
+                {/* Map Style */}
+                <div className="ee-section-label" style={{ marginTop: 4 }}>
+                  <Layers size={12} />
+                  <span>Map Style</span>
+                </div>
+                <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+                  {(["osm", "satellite", "dark"] as MapStyle[]).map((s) => (
+                    <button
+                      key={s}
+                      className={`ee-style-btn ${mapStyle === s ? "active" : ""}`}
+                      onClick={() => setMapStyle(s)}
+                      style={{ flex: 1 }}
+                    >
+                      {s === "osm" ? "Street" : s === "satellite" ? "Satellite" : "Dark"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Bookmarks */}
+                <div className="ee-section-label">
+                  <Navigation size={12} />
+                  <span>Bookmarks</span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+                  {[
+                    { name: "Palestine",  emoji: "\uD83C\uDDF5\uD83C\uDDF8", lat: 31.9,   lon: 35.2,   alt: 80000  },
+                    { name: "Birzeit",    emoji: "\uD83C\uDFEB",             lat: 31.95,  lon: 35.19,  alt: 15000  },
+                    { name: "Mecca",      emoji: "\uD83D\uDD4B",             lat: 21.4225,lon: 39.8262,alt: 25000  },
+                    { name: "Durham",     emoji: "\uD83C\uDFF0",             lat: 54.776, lon: -1.574, alt: 30000  },
+                    { name: "London",     emoji: "\uD83C\uDDEC\uD83C\uDDE7", lat: 51.507, lon: -0.128, alt: 60000  },
+                    { name: "New York",   emoji: "\uD83C\uDDFA\uD83C\uDDF8", lat: 40.713, lon: -74.006,alt: 80000  },
+                    { name: "Tokyo",      emoji: "\uD83C\uDDEF\uD83C\uDDF5", lat: 35.682, lon: 139.692,alt: 80000  },
+                    { name: "Cairo",      emoji: "\uD83C\uDDEA\uD83C\uDDEC", lat: 30.044, lon: 31.236, alt: 60000  },
+                    { name: "Paris",      emoji: "\uD83C\uDDEB\uD83C\uDDF7", lat: 48.857, lon: 2.352,  alt: 50000  },
+                    { name: "Sydney",     emoji: "\uD83C\uDDE6\uD83C\uDDFA", lat: -33.868,lon: 151.207,alt: 80000  },
+                  ].map((b) => (
+                    <button
+                      key={b.name}
+                      className="ee-bookmark-btn"
+                      onClick={() => handleFlyTo(b.lat, b.lon, b.alt)}
+                    >
+                      <span>{b.emoji}</span> {b.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Camera Info */}
+                <div className="ee-section-label">
+                  <span style={{ color: "rgba(0,195,245,0.5)" }}>&#x1F4CD;</span>
+                  <span>Camera</span>
+                </div>
+                <div className="ee-info-grid" style={{ marginBottom: 8 }}>
+                  <div className="ee-info-item">
+                    <span className="ee-info-label">Lat</span>
+                    <span className="ee-info-value">
+                      {Math.abs(camera.lat).toFixed(4)}&deg;{camera.lat >= 0 ? "N" : "S"}
+                    </span>
+                  </div>
+                  <div className="ee-info-item">
+                    <span className="ee-info-label">Lon</span>
+                    <span className="ee-info-value">
+                      {Math.abs(camera.lon).toFixed(4)}&deg;{camera.lon >= 0 ? "E" : "W"}
+                    </span>
+                  </div>
+                  <div className="ee-info-item">
+                    <span className="ee-info-label">Altitude</span>
+                    <span className="ee-info-value">
+                      {camera.alt > 1e6 ? `${(camera.alt / 1e6).toFixed(1)}M m` : camera.alt > 1000 ? `${(camera.alt / 1000).toFixed(1)} km` : `${camera.alt.toFixed(0)} m`}
+                    </span>
+                  </div>
+                  <div className="ee-info-item">
+                    <span className="ee-info-label">Heading</span>
+                    <span className="ee-info-value">{camera.heading.toFixed(1)}&deg;</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
 
-      {/* ------ Coordinate Toast ------------------------------------------------------------------------------------------------------------------------ */}
+      {/* Coordinate Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -236,4 +388,3 @@ export default function EarthExplorer() {
     </div>
   );
 }
-

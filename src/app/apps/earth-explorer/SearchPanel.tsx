@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Clock, X } from "lucide-react";
 
-/* --------- Types --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Types */
 interface SearchResult {
   place_id: number;
   display_name: string;
@@ -18,7 +18,7 @@ interface SearchPanelProps {
   onSelect: (lat: number, lon: number, name: string) => void;
 }
 
-/* --------- Debounce hook --------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Debounce hook */
 function useDebounce(value: string, delay: number) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -28,7 +28,7 @@ function useDebounce(value: string, delay: number) {
   return debounced;
 }
 
-/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Component */
 export default function SearchPanel({ onSelect }: SearchPanelProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -40,7 +40,7 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 400);
 
-  /* ------ Fetch from Nominatim ------------------------------------------------------------------------------------------------------------------------------ */
+  /* Fetch from Nominatim */
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) {
       setResults([]);
@@ -77,7 +77,7 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
     };
   }, [debouncedQuery]);
 
-  /* ------ Handle selection ------------------------------------------------------------------------------------------------------------------------------------------ */
+  /* Handle selection */
   const handleSelect = useCallback(
     (result: SearchResult) => {
       const lat = parseFloat(result.lat);
@@ -99,7 +99,7 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
     [onSelect]
   );
 
-  /* ------ Render ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+  /* Render */
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -147,7 +147,7 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
           onFocus={() => {
             if (results.length > 0) setOpen(true);
           }}
-          placeholder="Search any place---"
+          placeholder="Search any place..."
           className="ee-search-input"
         />
         {query && (
@@ -167,7 +167,7 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
               cursor: "pointer",
               background: "none",
               border: "none",
-              padding: 2,
+              padding: 4,
             }}
           >
             <X size={12} />
@@ -235,21 +235,9 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
       {/* Recent searches */}
       {!open && recentSearches.length > 0 && (
         <div style={{ marginTop: 8 }}>
-          <div
-            style={{
-              fontSize: "0.55rem",
-              fontFamily: '"JetBrains Mono", monospace',
-              color: "rgba(248,249,250,0.2)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
+          <div className="ee-section-label" style={{ marginBottom: 4 }}>
             <Clock size={9} />
-            Recent
+            <span>Recent</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {recentSearches.map((r, i) => (
@@ -267,4 +255,3 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
     </motion.div>
   );
 }
-

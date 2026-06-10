@@ -1,30 +1,30 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import {
-  Home, Maximize, Sun, Moon, Cloud, Navigation,
-  Compass, Copy, Layers,
+  Home, Maximize, Minimize, Sun, Moon, Cloud, Navigation,
+  Compass, Layers,
 } from "lucide-react";
 import type { CameraInfo, MapStyle } from "./CesiumGlobe";
 
-/* --------- Bookmarks --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Bookmarks */
 const BOOKMARKS = [
-  { name: "Palestine --------",  lat: 31.9,   lon: 35.2,   alt: 80000  },
-  { name: "Birzeit",        lat: 31.95,  lon: 35.19,  alt: 15000  },
-  { name: "Mecca",          lat: 21.4225,lon: 39.8262,alt: 25000  },
-  { name: "Durham",         lat: 54.776, lon: -1.574, alt: 30000  },
-  { name: "London",         lat: 51.507, lon: -0.128, alt: 60000  },
-  { name: "New York",       lat: 40.713, lon: -74.006,alt: 80000  },
-  { name: "Tokyo",          lat: 35.682, lon: 139.692,alt: 80000  },
-  { name: "Cairo",          lat: 30.044, lon: 31.236, alt: 60000  },
-  { name: "Paris",          lat: 48.857, lon: 2.352,  alt: 50000  },
-  { name: "Sydney",         lat: -33.868,lon: 151.207,alt: 80000  },
+  { name: "Palestine",  emoji: "\uD83C\uDDF5\uD83C\uDDF8", lat: 31.9,   lon: 35.2,   alt: 80000  },
+  { name: "Birzeit",    emoji: "\uD83C\uDFEB",             lat: 31.95,  lon: 35.19,  alt: 15000  },
+  { name: "Mecca",      emoji: "\uD83D\uDD4B",             lat: 21.4225,lon: 39.8262,alt: 25000  },
+  { name: "Durham",     emoji: "\uD83C\uDFF0",             lat: 54.776, lon: -1.574, alt: 30000  },
+  { name: "London",     emoji: "\uD83C\uDDEC\uD83C\uDDE7", lat: 51.507, lon: -0.128, alt: 60000  },
+  { name: "New York",   emoji: "\uD83C\uDDFA\uD83C\uDDF8", lat: 40.713, lon: -74.006,alt: 80000  },
+  { name: "Tokyo",      emoji: "\uD83C\uDDEF\uD83C\uDDF5", lat: 35.682, lon: 139.692,alt: 80000  },
+  { name: "Cairo",      emoji: "\uD83C\uDDEA\uD83C\uDDEC", lat: 30.044, lon: 31.236, alt: 60000  },
+  { name: "Paris",      emoji: "\uD83C\uDDEB\uD83C\uDDF7", lat: 48.857, lon: 2.352,  alt: 50000  },
+  { name: "Sydney",     emoji: "\uD83C\uDDE6\uD83C\uDDFA", lat: -33.868,lon: 151.207,alt: 80000  },
 ];
 
-/* --------- Helpers --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Helpers */
 function formatCoord(val: number, pos: string, neg: string) {
   const dir = val >= 0 ? pos : neg;
-  return `${Math.abs(val).toFixed(4)}--${dir}`;
+  return `${Math.abs(val).toFixed(4)}\u00B0${dir}`;
 }
 
 function formatAlt(meters: number) {
@@ -33,7 +33,7 @@ function formatAlt(meters: number) {
   return `${meters.toFixed(0)} m`;
 }
 
-/* --------- Props ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+/* Props */
 interface ControlPanelProps {
   camera: CameraInfo;
   enableLighting: boolean;
@@ -48,7 +48,7 @@ interface ControlPanelProps {
   isFullscreen: boolean;
 }
 
-/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Component */
 export default function ControlPanel({
   camera,
   enableLighting,
@@ -70,7 +70,7 @@ export default function ControlPanel({
       className="ee-panel p-3"
       style={{ width: 260 }}
     >
-      {/* ------ Camera Info ------------------------------------------------------------------------------------------------------------------------------------------------ */}
+      {/* Camera Info */}
       <div
         style={{
           display: "flex",
@@ -112,13 +112,13 @@ export default function ControlPanel({
         </div>
         <div className="ee-info-item">
           <span className="ee-info-label">Heading</span>
-          <span className="ee-info-value">{camera.heading.toFixed(1)}--</span>
+          <span className="ee-info-value">{camera.heading.toFixed(1)}&deg;</span>
         </div>
       </div>
 
       <div className="ee-divider" />
 
-      {/* ------ Quick Actions ------------------------------------------------------------------------------------------------------------------------------------------ */}
+      {/* Quick Actions */}
       <div
         style={{
           display: "flex",
@@ -127,52 +127,35 @@ export default function ControlPanel({
         }}
       >
         <button className="ee-ctrl-btn" onClick={onResetView} title="Reset view">
-          <Home size={13} />
+          <Home size={14} />
         </button>
         <button
           className="ee-ctrl-btn"
           onClick={onToggleFullscreen}
-          title="Fullscreen"
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         >
-          <Maximize size={13} />
+          {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
         </button>
         <button
           className={`ee-ctrl-btn ${enableLighting ? "active" : ""}`}
           onClick={onToggleLighting}
           title="Day/Night lighting"
         >
-          {enableLighting ? <Moon size={13} /> : <Sun size={13} />}
+          {enableLighting ? <Moon size={14} /> : <Sun size={14} />}
         </button>
         <button
           className={`ee-ctrl-btn ${enableAtmosphere ? "active" : ""}`}
           onClick={onToggleAtmosphere}
           title="Atmosphere"
         >
-          <Cloud size={13} />
+          <Cloud size={14} />
         </button>
       </div>
 
-      {/* ------ Map Style ------------------------------------------------------------------------------------------------------------------------------------------------------ */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 6,
-        }}
-      >
-        <Layers size={11} style={{ color: "rgba(248,249,250,0.3)" }} />
-        <span
-          style={{
-            fontSize: "0.55rem",
-            fontFamily: '"JetBrains Mono", monospace',
-            color: "rgba(248,249,250,0.25)",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-          }}
-        >
-          Map Style
-        </span>
+      {/* Map Style */}
+      <div className="ee-section-label">
+        <Layers size={11} />
+        <span>Map Style</span>
       </div>
       <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
         {(["osm", "satellite", "dark"] as MapStyle[]).map((s) => (
@@ -188,27 +171,10 @@ export default function ControlPanel({
 
       <div className="ee-divider" />
 
-      {/* ------ Bookmarks ------------------------------------------------------------------------------------------------------------------------------------------------------ */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 6,
-        }}
-      >
-        <Navigation size={11} style={{ color: "rgba(248,249,250,0.3)" }} />
-        <span
-          style={{
-            fontSize: "0.55rem",
-            fontFamily: '"JetBrains Mono", monospace',
-            color: "rgba(248,249,250,0.25)",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-          }}
-        >
-          Quick Bookmarks
-        </span>
+      {/* Bookmarks */}
+      <div className="ee-section-label">
+        <Navigation size={11} />
+        <span>Quick Bookmarks</span>
       </div>
       <div
         style={{
@@ -223,11 +189,10 @@ export default function ControlPanel({
             className="ee-bookmark-btn"
             onClick={() => onFlyTo(b.lat, b.lon, b.alt)}
           >
-            {b.name}
+            <span>{b.emoji}</span> {b.name}
           </button>
         ))}
       </div>
     </motion.div>
   );
 }
-

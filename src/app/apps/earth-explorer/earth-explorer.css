@@ -1,11 +1,11 @@
-/* ── Earth Explorer — Scoped Styles ──────────────────────────────────── */
+/* Earth Explorer - Scoped Styles */
 
-/* ── Globe Container ────────────────────────────────────────────────── */
+/* Globe Container */
 .earth-explorer-root {
   position: relative;
   width: 100%;
   height: calc(100vh - 5rem);
-  min-height: 500px;
+  min-height: 400px;
   overflow: hidden;
   background: #050510;
 }
@@ -15,7 +15,7 @@
   height: 100%;
 }
 
-/* ── Override Cesium Default Widgets ─────────────────────────────────── */
+/* Override Cesium Default Widgets */
 .cesium-container .cesium-viewer-toolbar,
 .cesium-container .cesium-viewer-animationContainer,
 .cesium-container .cesium-viewer-timelineContainer,
@@ -31,11 +31,11 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
-/* ── Glassmorphism Floating Panels ──────────────────────────────────── */
+/* Glassmorphism Floating Panels */
 .ee-panel {
-  background: rgba(8, 6, 20, 0.75);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(8, 6, 20, 0.78);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(147, 51, 234, 0.15);
   border-radius: 1rem;
   color: #f8f9fa;
@@ -54,7 +54,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* ── Search Input ───────────────────────────────────────────────────── */
+/* Search Input */
 .ee-search-input {
   width: 100%;
   padding: 0.6rem 0.75rem 0.6rem 2.25rem;
@@ -66,6 +66,7 @@
   font-family: "Inter", system-ui, sans-serif;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
 }
 
 .ee-search-input::placeholder {
@@ -77,7 +78,7 @@
   box-shadow: 0 0 12px rgba(0, 195, 245, 0.1);
 }
 
-/* ── Search Results ─────────────────────────────────────────────────── */
+/* Search Results */
 .ee-search-result {
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
@@ -104,12 +105,12 @@
   margin-top: 2px;
 }
 
-/* ── Bookmark Buttons ───────────────────────────────────────────────── */
+/* Bookmark Buttons */
 .ee-bookmark-btn {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.65rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
@@ -119,6 +120,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ee-bookmark-btn:hover {
@@ -128,7 +130,11 @@
   transform: translateY(-1px);
 }
 
-/* ── Control Buttons ────────────────────────────────────────────────── */
+.ee-bookmark-btn:active {
+  transform: scale(0.96);
+}
+
+/* Control Buttons */
 .ee-ctrl-btn {
   display: flex;
   align-items: center;
@@ -143,12 +149,19 @@
   font-family: "Inter", system-ui, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .ee-ctrl-btn:hover {
   background: rgba(0, 195, 245, 0.12);
   border-color: rgba(0, 195, 245, 0.3);
   color: #00c3f5;
+}
+
+.ee-ctrl-btn:active {
+  transform: scale(0.92);
 }
 
 .ee-ctrl-btn.active {
@@ -158,42 +171,7 @@
   box-shadow: 0 0 10px rgba(0, 195, 245, 0.12);
 }
 
-/* ── Toggle Switch ──────────────────────────────────────────────────── */
-.ee-toggle {
-  position: relative;
-  width: 32px;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  flex-shrink: 0;
-}
-
-.ee-toggle.on {
-  background: rgba(0, 195, 245, 0.25);
-  border-color: rgba(0, 195, 245, 0.4);
-}
-
-.ee-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(248, 249, 250, 0.5);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.ee-toggle.on .ee-toggle-thumb {
-  left: 16px;
-  background: #00c3f5;
-  box-shadow: 0 0 6px rgba(0, 195, 245, 0.4);
-}
-
-/* ── Camera Info Grid ───────────────────────────────────────────────── */
+/* Camera Info Grid */
 .ee-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -224,7 +202,7 @@
   color: rgba(0, 195, 245, 0.8);
 }
 
-/* ── Loading Screen ─────────────────────────────────────────────────── */
+/* Loading Screen */
 .ee-loading {
   position: absolute;
   inset: 0;
@@ -287,7 +265,7 @@
   100% { transform: translateX(350%); }
 }
 
-/* ── Coordinate Toast ───────────────────────────────────────────────── */
+/* Coordinate Toast */
 .ee-toast {
   position: absolute;
   bottom: 1.5rem;
@@ -306,10 +284,10 @@
   white-space: nowrap;
 }
 
-/* ── Map Style Buttons ──────────────────────────────────────────────── */
+/* Map Style Buttons */
 .ee-style-btn {
   flex: 1;
-  padding: 0.35rem 0.5rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 0.4rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
@@ -319,6 +297,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 32px;
 }
 
 .ee-style-btn:hover {
@@ -332,7 +312,7 @@
   color: #00c3f5;
 }
 
-/* ── Section Divider ────────────────────────────────────────────────── */
+/* Section Divider */
 .ee-divider {
   width: 100%;
   height: 1px;
@@ -340,9 +320,201 @@
   margin: 0.5rem 0;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
+/* Section label */
+.ee-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 0.55rem;
+  font-family: "JetBrains Mono", monospace;
+  color: rgba(248, 249, 250, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ee-section-label svg {
+  color: rgba(248, 249, 250, 0.3);
+}
+
+/* Mobile toggle button (hamburger for control panel) */
+.ee-mobile-toggle {
+  position: absolute;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  background: rgba(8, 6, 20, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: rgba(248, 249, 250, 0.6);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.ee-mobile-toggle:active {
+  transform: scale(0.9);
+}
+
+/* Desktop panel wrappers */
+.ee-search-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 30;
+}
+
+.ee-control-wrapper {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+}
+
+/* Bottom branding */
+.ee-branding {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: rgba(8, 6, 20, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+
+/* Mobile bottom toolbar */
+.ee-mobile-toolbar {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 35;
+  padding: 8px 16px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  background: rgba(8, 6, 20, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(147, 51, 234, 0.15);
+  gap: 8px;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: nowrap;
+}
+
+/* Mobile overlay backdrop */
+.ee-mobile-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 39;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile panel (slide-up sheet) */
+.ee-mobile-sheet {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  max-height: 70vh;
+  overflow-y: auto;
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: rgba(8, 6, 20, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(147, 51, 234, 0.2);
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.ee-mobile-sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(248, 249, 250, 0.15);
+  margin: 0 auto 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .earth-explorer-root {
-    height: calc(100vh - 4rem);
+    height: calc(100dvh - 4rem);
+    min-height: 300px;
+  }
+
+  .ee-search-wrapper {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .ee-search-wrapper .ee-panel {
+    width: 100% !important;
+  }
+
+  .ee-control-wrapper {
+    display: none;
+  }
+
+  .ee-mobile-toggle {
+    display: flex;
+  }
+
+  .ee-mobile-toolbar {
+    display: flex;
+  }
+
+  .ee-mobile-overlay.open {
+    display: block;
+  }
+
+  .ee-mobile-sheet.open {
+    display: block;
+  }
+
+  .ee-branding {
+    bottom: 60px;
+    font-size: 0.5rem;
+    padding: 3px 10px;
+  }
+
+  .ee-toast {
+    bottom: 4.5rem;
+    font-size: 0.6rem;
+    max-width: 90vw;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .earth-explorer-root {
+    height: calc(100dvh - 3.5rem);
+  }
+
+  .ee-search-wrapper {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .ee-branding {
+    display: none;
   }
 }

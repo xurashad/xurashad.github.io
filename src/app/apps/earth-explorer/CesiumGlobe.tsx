@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/* --------- Types --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Types */
 export interface CameraInfo {
   lat: number;
   lon: number;
@@ -26,10 +26,9 @@ interface CesiumGlobeProps {
 const CESIUM_VERSION = "1.122";
 const CESIUM_BASE = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM_VERSION}/Build/Cesium`;
 
-/* --------- Load Cesium via CDN --------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Load Cesium via CDN */
 function loadCesium(): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Already loaded
     if ((window as any).Cesium) {
       resolve();
       return;
@@ -59,7 +58,7 @@ function loadCesium(): Promise<void> {
   });
 }
 
-/* --------- Imagery Providers --------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Imagery Providers */
 function createImageryProvider(Cesium: any, style: MapStyle) {
   switch (style) {
     case "osm":
@@ -85,7 +84,7 @@ function createImageryProvider(Cesium: any, style: MapStyle) {
   }
 }
 
-/* --------- Component --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* Component */
 export default function CesiumGlobe({
   onCameraChange,
   onReady,
@@ -101,7 +100,7 @@ export default function CesiumGlobe({
   const cameraTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  /* ------ Initialize Cesium --------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* Initialize Cesium */
   useEffect(() => {
     let destroyed = false;
 
@@ -128,7 +127,7 @@ export default function CesiumGlobe({
           vrButton: false,
           navigationHelpButton: false,
           infoBox: false,
-          creditContainer: document.createElement("div"), // hide credits container
+          creditContainer: document.createElement("div"),
           terrainProvider: new Cesium.EllipsoidTerrainProvider(),
           skyBox: new Cesium.SkyBox({
             sources: {
@@ -153,12 +152,12 @@ export default function CesiumGlobe({
         // Enable lighting
         viewer.scene.globe.enableLighting = enableLighting;
 
-        // Set initial camera --- looking at full Earth
+        // Set initial camera - looking at full Earth
         viewer.camera.setView({
           destination: Cesium.Cartesian3.fromDegrees(35.2, 31.9, 15000000),
         });
 
-        // Handle click --- copy coordinates
+        // Handle click - copy coordinates
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction((click: any) => {
           const cartesian = viewer.camera.pickEllipsoid(
@@ -173,7 +172,7 @@ export default function CesiumGlobe({
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        // ------ Override "Israel" label with correct name ------------------------------------------------------
+        // Override "Israel" label with correct name
         labelEntityRef.current = viewer.entities.add({
           show: mapStyle !== "satellite",
           position: Cesium.Cartesian3.fromDegrees(34.85, 30.8),
@@ -234,7 +233,7 @@ export default function CesiumGlobe({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ------ Fly-to target --------------------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* Fly-to target */
   useEffect(() => {
     if (!flyToTarget || !viewerRef.current) return;
     const Cesium = (window as any).Cesium;
@@ -252,14 +251,14 @@ export default function CesiumGlobe({
     });
   }, [flyToTarget]);
 
-  /* ------ Lighting toggle --------------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* Lighting toggle */
   useEffect(() => {
     if (!viewerRef.current) return;
     viewerRef.current.scene.globe.enableLighting = enableLighting;
     viewerRef.current.scene.requestRender();
   }, [enableLighting]);
 
-  /* ------ Atmosphere toggle --------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* Atmosphere toggle */
   useEffect(() => {
     if (!viewerRef.current) return;
     if (viewerRef.current.scene.skyAtmosphere) {
@@ -268,7 +267,7 @@ export default function CesiumGlobe({
     }
   }, [enableAtmosphere]);
 
-  /* ------ Map style change ------------------------------------------------------------------------------------------------------------------------------------------------ */
+  /* Map style change */
   useEffect(() => {
     if (!viewerRef.current) return;
     const Cesium = (window as any).Cesium;
@@ -284,7 +283,7 @@ export default function CesiumGlobe({
     }
   }, [mapStyle]);
 
-  /* ------ Error state --------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+  /* Error state */
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-cosmos-950 text-foreground/50">
@@ -298,4 +297,3 @@ export default function CesiumGlobe({
 
   return <div ref={containerRef} className="cesium-container" />;
 }
-
