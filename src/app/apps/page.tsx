@@ -158,7 +158,7 @@ const APPS: App[] = [
   {
     id: "ai-chatbot",
     title: "AI Chatbot",
-    desc: "Multi-model AI chatbot with 25+ LLMs: reasoning, coding, vision, and Pixazo AI image generation. Full chat history, markdown rendering, and HTML export.",
+    desc: "Multi-model AI chatbot with 20+ LLMs: reasoning, coding, vision, and Pixazo AI image generation. Full chat history, markdown rendering, and HTML export.",
     icon: Bot,
     category: "AI",
     accent: "crimson",

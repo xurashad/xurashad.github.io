@@ -4,7 +4,7 @@ import ChatbotClient from "./ChatbotClient";
 export const metadata: Metadata = {
   title: "AI Chatbot | Rashad Hamidi",
   description:
-    "Multi-model AI chatbot supporting 25+ LLMs for reasoning, coding, and writing, plus vision models for image understanding and Pixazo AI for image generation. Free and open-source.",
+    "Multi-model AI chatbot supporting 20+ LLMs for reasoning, coding, and writing, plus vision models for image understanding and Pixazo AI for image generation. Free and open-source.",
   keywords: [
     "AI",
     "chatbot",

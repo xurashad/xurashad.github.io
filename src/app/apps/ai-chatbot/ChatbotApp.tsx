@@ -74,7 +74,7 @@ export default function ChatbotApp() {
     const loaded = loadChats();
     return loaded.length > 0 ? loaded[0].id : Date.now().toString();
   });
-  const [selectedModel, setSelectedModel] = useState("trinity-large");
+  const [selectedModel, setSelectedModel] = useState("gemma-4-31b");
   const [isWaiting, setIsWaiting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
