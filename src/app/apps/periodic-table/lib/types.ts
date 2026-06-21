@@ -20,7 +20,33 @@ export interface Element {
   electronegativity_pauling: number | null;
   ionization_energies: number[];
   bohr_model_image: string;
+  /** CPK hex color for 3D atom rendering */
+  cpk_hex: string;
+  /** Block classification: s, p, d, or f */
+  block: "s" | "p" | "d" | "f";
+  /** Physical appearance description */
+  appearance: string | null;
 }
+
+/** Properties available for heatmap visualization */
+export type HeatmapProperty =
+  | "category"
+  | "atomic_mass"
+  | "density"
+  | "melt"
+  | "boil"
+  | "electronegativity_pauling"
+  | "electron_affinity";
+
+export const HEATMAP_PROPERTIES: { key: HeatmapProperty; label: string; unit: string }[] = [
+  { key: "category", label: "Category", unit: "" },
+  { key: "atomic_mass", label: "Atomic Mass", unit: "u" },
+  { key: "density", label: "Density", unit: "g/cm³" },
+  { key: "melt", label: "Melting Point", unit: "K" },
+  { key: "boil", label: "Boiling Point", unit: "K" },
+  { key: "electronegativity_pauling", label: "Electronegativity", unit: "" },
+  { key: "electron_affinity", label: "Electron Affinity", unit: "kJ/mol" },
+];
 
 export type CategoryKey =
   | "diatomic nonmetal"

@@ -221,6 +221,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background:       #050510;
   --foreground:       #f8f9fa;
   --surface:          rgba(15, 10, 40, 0.55);

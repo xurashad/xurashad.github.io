@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { PeriodicTableApp } from "./PeriodicTableApp";
 
 export const metadata: Metadata = {
-  title: "Interactive Periodic Table | Rashad Hamidi",
+  title: "Interactive Periodic Table with 3D Atom Models | Rashad Hamidi",
   description:
-    "Explore all 118 elements of the periodic table. Click any element to see detailed properties including electron configuration, Bohr model, ionization energies, and more.",
+    "Explore all 118 elements with interactive 3D atom models, property heatmaps, element comparison, and detailed electron configurations. A premium chemistry visualization tool.",
   keywords: [
-    "periodic table", "chemistry", "elements", "atomic", "electron configuration",
-    "Bohr model", "interactive", "science",
+    "periodic table", "chemistry", "elements", "3D atom model", "atomic",
+    "electron configuration", "Bohr model", "interactive", "science",
+    "element comparison", "heatmap", "electronegativity", "melting point",
   ],
 };
 
@@ -24,26 +25,27 @@ export default function PeriodicTablePage() {
         {/* Header */}
         <div className="mb-10">
           <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-3">
-            // Science · Chemistry
+            // Science · Chemistry · 3D Visualization
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold mb-4">
             <span className="gradient-text-quantum">Interactive</span>{" "}
             <span className="text-foreground/60">Periodic Table</span>
           </h1>
           <p className="text-foreground/50 max-w-2xl leading-relaxed">
-            All 118 elements at your fingertips. Search, filter by category, and click any
-            element to explore its physical properties, electron configuration, Bohr model,
-            and ionization energies.
+            All 118 elements at your fingertips. Explore 3D atom models with orbiting electrons,
+            visualize property heatmaps, compare elements side-by-side, and dive deep into
+            electron configurations and ionization energies.
           </p>
 
           {/* Feature chips */}
           <div className="flex flex-wrap gap-2 mt-6">
             {[
               "118 Elements",
-              "Bohr Models",
+              "3D Atom Models",
+              "Property Heatmaps",
+              "Element Comparison",
               "Electron Configurations",
-              "Search & Filter",
-              "Category Legend",
+              "Interactive Search",
               "Ionization Energies",
             ].map((f) => (
               <span
