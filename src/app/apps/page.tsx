@@ -9,7 +9,7 @@ import {
   Search, BookOpen, Download, Shuffle, Type,
   QrCode, Gamepad2, Crown, ExternalLink,
   LayoutList, Filter, Sparkles, Braces, Infinity,
-  ImagePlus,
+  ImagePlus, Paintbrush,
 } from "lucide-react";
 import { WaveDivider } from "@/components/ui";
 
@@ -140,6 +140,18 @@ const APPS: App[] = [
     tags: ["Web Dev", "No-Code", "Professional", "Builder", "WYSIWYG"],
     mine: true,
     links: [{ label: "Open App", href: "/apps/website-builder" }],
+  },
+  {
+    id: "image-editor",
+    title: "Image Editor",
+    desc: "Professional-grade image editor with crop, resize, rotate, flip, 12 filters, 10 adjustment sliders, freehand drawing, text overlays, undo/redo history, and multi-format export. 100% client-side.",
+    icon: Paintbrush,
+    category: "Professional",
+    accent: "quantum",
+    featured: true,
+    tags: ["Image Editing", "Filters", "Crop", "Photo", "Canvas"],
+    mine: true,
+    links: [{ label: "Open App", href: "/apps/image-editor" }],
   },
 
   /* ── AI ──────────────────────────────────────────── */
