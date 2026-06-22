@@ -423,7 +423,7 @@ export function useImageEditor() {
       const cropScreenH = crop.height * scaleY;
 
       // Dark overlay outside crop
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
       // Top
       ctx.fillRect(drawX, drawY, drawW, crop.y * scaleY);
       // Bottom
@@ -443,14 +443,24 @@ export function useImageEditor() {
         cropScreenH
       );
 
-      // Crop border
+      // Glow border
+      ctx.save();
+      ctx.shadowColor = "rgba(0,195,245,0.4)";
+      ctx.shadowBlur = 8;
       ctx.strokeStyle = "#00c3f5";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(cropScreenX, cropScreenY, cropScreenW, cropScreenH);
+      ctx.restore();
+
+      // Secondary inner border (white subtle)
+      ctx.strokeStyle = "rgba(255,255,255,0.15)";
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(cropScreenX + 1, cropScreenY + 1, cropScreenW - 2, cropScreenH - 2);
 
       // Rule of thirds lines
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
       ctx.lineWidth = 0.5;
+      ctx.setLineDash([4, 4]);
       for (let i = 1; i <= 2; i++) {
         ctx.beginPath();
         ctx.moveTo(cropScreenX + (cropScreenW * i) / 3, cropScreenY);
@@ -461,30 +471,67 @@ export function useImageEditor() {
         ctx.lineTo(cropScreenX + cropScreenW, cropScreenY + (cropScreenH * i) / 3);
         ctx.stroke();
       }
+      ctx.setLineDash([]);
 
-      // Corner handles
-      const hSize = 8;
+      // L-shaped corner brackets (professional look)
+      const bracketLen = Math.min(20, cropScreenW * 0.15, cropScreenH * 0.15);
+      const bracketW = 3;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,195,245,0.5)";
+      ctx.shadowBlur = 6;
       ctx.fillStyle = "#00c3f5";
-      const corners = [
-        [cropScreenX, cropScreenY],
-        [cropScreenX + cropScreenW, cropScreenY],
-        [cropScreenX, cropScreenY + cropScreenH],
-        [cropScreenX + cropScreenW, cropScreenY + cropScreenH],
-      ];
-      for (const [hx, hy] of corners) {
-        ctx.fillRect(hx - hSize / 2, hy - hSize / 2, hSize, hSize);
-      }
 
-      // Midpoint handles
-      ctx.fillStyle = "rgba(0,195,245,0.7)";
-      const midpoints = [
-        [cropScreenX + cropScreenW / 2, cropScreenY],
-        [cropScreenX + cropScreenW / 2, cropScreenY + cropScreenH],
-        [cropScreenX, cropScreenY + cropScreenH / 2],
-        [cropScreenX + cropScreenW, cropScreenY + cropScreenH / 2],
-      ];
-      for (const [mx, my] of midpoints) {
-        ctx.fillRect(mx - 3, my - 3, 6, 6);
+      // Top-left
+      ctx.fillRect(cropScreenX - 1, cropScreenY - 1, bracketLen, bracketW);
+      ctx.fillRect(cropScreenX - 1, cropScreenY - 1, bracketW, bracketLen);
+      // Top-right
+      ctx.fillRect(cropScreenX + cropScreenW - bracketLen + 1, cropScreenY - 1, bracketLen, bracketW);
+      ctx.fillRect(cropScreenX + cropScreenW - bracketW + 1, cropScreenY - 1, bracketW, bracketLen);
+      // Bottom-left
+      ctx.fillRect(cropScreenX - 1, cropScreenY + cropScreenH - bracketW + 1, bracketLen, bracketW);
+      ctx.fillRect(cropScreenX - 1, cropScreenY + cropScreenH - bracketLen + 1, bracketW, bracketLen);
+      // Bottom-right
+      ctx.fillRect(cropScreenX + cropScreenW - bracketLen + 1, cropScreenY + cropScreenH - bracketW + 1, bracketLen, bracketW);
+      ctx.fillRect(cropScreenX + cropScreenW - bracketW + 1, cropScreenY + cropScreenH - bracketLen + 1, bracketW, bracketLen);
+      ctx.restore();
+
+      // Edge midpoint handles (small bars)
+      ctx.fillStyle = "rgba(0,195,245,0.8)";
+      const midW = 16, midH = 4;
+      // Top mid
+      ctx.fillRect(cropScreenX + cropScreenW / 2 - midW / 2, cropScreenY - midH / 2, midW, midH);
+      // Bottom mid
+      ctx.fillRect(cropScreenX + cropScreenW / 2 - midW / 2, cropScreenY + cropScreenH - midH / 2, midW, midH);
+      // Left mid
+      ctx.fillRect(cropScreenX - midH / 2, cropScreenY + cropScreenH / 2 - midW / 2, midH, midW);
+      // Right mid
+      ctx.fillRect(cropScreenX + cropScreenW - midH / 2, cropScreenY + cropScreenH / 2 - midW / 2, midH, midW);
+
+      // Dimension label inside crop area
+      const cropW = Math.round(crop.width);
+      const cropH = Math.round(crop.height);
+      const dimLabel = `${cropW} × ${cropH}`;
+      ctx.font = "11px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const labelMetrics = ctx.measureText(dimLabel);
+      const labelPadX = 8, labelPadY = 4;
+      const labelX = cropScreenX + cropScreenW / 2;
+      const labelY = cropScreenY + cropScreenH + 16;
+      // Only draw if there's room below the crop
+      if (labelY + 10 < drawY + drawH) {
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.beginPath();
+        ctx.roundRect(
+          labelX - labelMetrics.width / 2 - labelPadX,
+          labelY - 8 - labelPadY,
+          labelMetrics.width + labelPadX * 2,
+          16 + labelPadY * 2,
+          4
+        );
+        ctx.fill();
+        ctx.fillStyle = "rgba(0,195,245,0.9)";
+        ctx.fillText(dimLabel, labelX, labelY);
       }
     }
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   Upload, Undo2, Redo2, ZoomIn, ZoomOut, Maximize, Download, Image as ImageIcon,
   RotateCw, RotateCcw, FlipHorizontal2, FlipVertical2, Check, X,
-  ChevronDown, FileImage, Clipboard,
+  ChevronDown, FileImage, Clipboard, RefreshCw, ImagePlus, Info,
 } from "lucide-react";
 import { useImageEditor } from "./useImageEditor";
 import { EditorToolbar } from "./EditorToolbar";
@@ -64,6 +64,38 @@ export function ImageEditorApp() {
   const [isDrawing, setIsDrawing] = useState(false);
   const currentStrokeRef = useRef<{ x: number; y: number }[]>([]);
   const cropDragRef = useRef<CropDragState | null>(null);
+  const [cropHoverZone, setCropHoverZone] = useState<CropDragType | null>(null);
+
+  // Map crop zones to CSS cursor values
+  const CROP_CURSORS: Record<CropDragType, string> = {
+    nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
+    w: 'w-resize', move: 'move', e: 'e-resize',
+    sw: 'sw-resize', s: 's-resize', se: 'se-resize',
+  };
+
+  // Dynamic cursor based on tool + hover zone
+  const canvasCursor = useMemo(() => {
+    if (state.activeTool === 'select') return 'grab';
+    if (state.activeTool === 'draw') return 'crosshair';
+    if (state.activeTool === 'crop') {
+      if (cropDragRef.current) return CROP_CURSORS[cropDragRef.current.type];
+      if (cropHoverZone) return CROP_CURSORS[cropHoverZone];
+      return 'crosshair';
+    }
+    return 'default';
+  }, [state.activeTool, cropHoverZone]);
+
+  // Status bar tips
+  const STATUS_TIPS: Record<string, string> = {
+    select: 'Drag to pan · Scroll to zoom · Press 0 to reset view',
+    crop: 'Drag inside to move · Drag handles to resize · Click Apply when done',
+    resize: 'Enter dimensions or pick a preset · Click Apply to resize',
+    rotate: 'Click a rotation or flip button to transform the image',
+    filters: 'Click a filter to preview · Click Apply to commit',
+    adjust: 'Drag sliders for real-time preview · Click Apply to commit',
+    draw: 'Click and drag on the canvas to draw · Click Apply when done',
+    text: 'Add text overlays · Set font, size, colour, and position',
+  };
 
   // ── File handling ──────────────────────────────────────────────────────────
   const handleFiles = useCallback(
@@ -156,13 +188,34 @@ export function ImageEditorApp() {
   }, [state.originalImage, state.zoom, editor]);
 
   // Canvas mouse interactions (pan, zoom, draw)
+  // Zoom toward mouse position
   const handleCanvasWheel = useCallback(
     (e: React.WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      editor.setZoom(state.zoom + delta);
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const newZoom = Math.max(0.1, Math.min(5, state.zoom + delta));
+      if (newZoom === state.zoom) return;
+
+      // Zoom toward mouse position
+      const canvas = editor.canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        // Adjust pan so the point under the mouse stays fixed
+        const zoomRatio = newZoom / state.zoom;
+        const newPanX = cx - zoomRatio * (cx - state.panOffset.x) + (mx - cx) * (1 - zoomRatio);
+        const newPanY = cy - zoomRatio * (cy - state.panOffset.y) + (my - cy) * (1 - zoomRatio);
+        editor.setPan(
+          state.panOffset.x + (newPanX - (cx - zoomRatio * (cx - state.panOffset.x))),
+          state.panOffset.y + (newPanY - (cy - zoomRatio * (cy - state.panOffset.y)))
+        );
+      }
+      editor.setZoom(newZoom);
     },
-    [state.zoom, editor]
+    [state.zoom, state.panOffset, editor]
   );
 
   const isPanningRef = useRef(false);
@@ -307,6 +360,18 @@ export function ImageEditorApp() {
         return;
       }
 
+      // Crop hover detection (for dynamic cursor)
+      if (state.activeTool === "crop" && state.currentCrop && !cropDragRef.current) {
+        const coords = getCanvasImageCoords(e.clientX, e.clientY);
+        if (coords) {
+          const tolerance = getCropTolerance();
+          const zone = getCropHitZone(coords.x, coords.y, state.currentCrop, tolerance);
+          setCropHoverZone(zone);
+        } else {
+          setCropHoverZone(null);
+        }
+      }
+
       if (isDrawing && state.activeTool === "draw") {
         const coords = getCanvasImageCoords(e.clientX, e.clientY);
         if (coords) {
@@ -330,7 +395,7 @@ export function ImageEditorApp() {
         lastPanRef.current = { x: e.clientX, y: e.clientY };
       }
     },
-    [isDrawing, state.activeTool, state.currentCrop, state.panOffset, editor, getCanvasImageCoords]
+    [isDrawing, state.activeTool, state.currentCrop, state.panOffset, editor, getCanvasImageCoords, getCropTolerance]
   );
 
   const handleCanvasMouseUp = useCallback(() => {
@@ -396,6 +461,20 @@ export function ImageEditorApp() {
       {/* ── TOP BAR ── */}
       <div className="flex items-center justify-between px-4 py-2.5 glass-card rounded-2xl mb-3">
         <div className="flex items-center gap-3">
+          {/* New Image */}
+          {state.originalImage && (
+            <>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title="Open new image"
+                className="p-2 rounded-lg text-foreground/40 hover:text-quantum hover:bg-quantum/5 transition-all"
+              >
+                <ImagePlus size={16} />
+              </button>
+              <div className="w-px h-5 bg-white/8" />
+            </>
+          )}
+
           {/* Undo/Redo */}
           <div className="flex items-center gap-1">
             <button
@@ -418,6 +497,21 @@ export function ImageEditorApp() {
             </button>
           </div>
 
+          {canUndo && (
+            <>
+              <div className="w-px h-5 bg-white/8" />
+              <button
+                onClick={() => { for (let i = state.historyIndex; i >= 0; i--) editor.undo(); }}
+                title="Reset all edits"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-mono text-foreground/30
+                  hover:text-crimson hover:bg-crimson/5 border border-transparent hover:border-crimson/20 transition-all"
+              >
+                <RefreshCw size={11} />
+                Reset
+              </button>
+            </>
+          )}
+
           <div className="w-px h-5 bg-white/8" />
 
           {/* File info */}
@@ -430,6 +524,11 @@ export function ImageEditorApp() {
               <span className="text-[10px] text-foreground/20 font-mono">
                 {dims.width} × {dims.height}
               </span>
+              {state.editHistory.length > 0 && (
+                <span className="text-[9px] font-mono text-quantum/50 px-1.5 py-0.5 bg-quantum/8 rounded-full">
+                  {state.historyIndex + 1} edit{state.historyIndex !== 0 ? 's' : ''}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -642,21 +741,28 @@ export function ImageEditorApp() {
             /* Canvas */
             <canvas
               ref={editor.canvasRef}
-              className={`w-full h-full ${
-                state.activeTool === "select"
-                  ? "cursor-grab active:cursor-grabbing"
-                  : state.activeTool === "draw"
-                  ? "cursor-crosshair"
-                  : state.activeTool === "crop"
-                  ? "cursor-move"
-                  : "cursor-default"
-              }`}
+              className="w-full h-full"
+              style={{ cursor: canvasCursor }}
               onWheel={handleCanvasWheel}
               onMouseDown={handleCanvasMouseDown}
               onMouseMove={handleCanvasMouseMove}
               onMouseUp={handleCanvasMouseUp}
-              onMouseLeave={handleCanvasMouseUp}
+              onMouseLeave={() => { handleCanvasMouseUp(); setCropHoverZone(null); }}
             />
+          )}
+
+          {/* Status bar */}
+          {state.originalImage && (
+            <div className="absolute bottom-0 left-0 right-0 px-4 py-1.5 bg-black/40 backdrop-blur-sm
+              flex items-center justify-between border-t border-white/5 z-10">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono text-foreground/30">
+                <Info size={10} className="text-quantum/40" />
+                {STATUS_TIPS[state.activeTool] || ''}
+              </div>
+              <div className="text-[10px] font-mono text-foreground/20">
+                {Math.round(state.zoom * 100)}% · {dims.width}×{dims.height}
+              </div>
+            </div>
           )}
 
           {/* Drag overlay */}
