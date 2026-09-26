@@ -103,7 +103,7 @@ export default function CVPage() {
                   Curriculum Vitae · Theoretical Physics
                 </span>
                 <span className="text-xs font-mono text-foreground/40">
-                  Updated: March 2026
+                  Updated: September 2026
                 </span>
               </div>
 
