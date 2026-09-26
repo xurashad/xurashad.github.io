@@ -30,12 +30,12 @@ export const metadata: Metadata = {
     template: "%s | Rashad Hamidi",
   },
   description:
-    "Personal website and research portfolio of Rashad Hamidi — PhD researcher in Mathematical and Theoretical Physics at Durham University, specialising in integrable sigma models, string theory, and supersymmetry. From Palestine.",
+    "Personal website and research portfolio of Rashad Hamidi — PhD researcher in Mathematical and Theoretical Physics at Durham University, specialising in integrable sigma models, string theory, and quantum field theories.",
   keywords: [
     "Rashad Hamidi",
     "integrable models",
     "string theory",
-    "supersymmetry",
+    "quantum field theories",
     "Durham University",
     "theoretical physics",
     "Palestine",
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
     url: "https://xurashad.github.io/",
     title: "Rashad Hamidi",
     description:
-      "PhD researcher at Durham University specialising in integrable sigma models, string theory, and supersymmetry. From Birzeit, Palestine.",
+      "PhD researcher at Durham University specialising in integrable sigma models, string theory, and quantum field theories.",
     siteName: "Rashad Hamidi",
   },
   twitter: {
     card: "summary_large_image",
     title: "Rashad Hamidi",
-    description: "Integrable models, string theory, supersymmetry. From Palestine.",
+    description: "Integrable models, string theory, quantum field theories.",
   },
 };
 
