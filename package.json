@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "generate:cv": "node scripts/generate-cv-pdf.mjs",
+    "build": "npm run generate:cv && next build",
     "start": "next start",
     "lint": "eslint"
   },

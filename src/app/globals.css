@@ -506,3 +506,33 @@ code, pre {
   0%   { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-32px); }
 }
+
+/* ── Print Optimization for Academic CV ─────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  nav, footer, .sticky, button, input, .fixed {
+    display: none !important;
+  }
+  .glass-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5 {
+    color: #111827 !important;
+  }
+  p, span, li {
+    color: #374151 !important;
+  }
+  .gradient-text-quantum, .gradient-text-olive, .gradient-text-crimson {
+    background: none !important;
+    -webkit-text-fill-color: #1e3a8a !important;
+    color: #1e3a8a !important;
+  }
+}
+

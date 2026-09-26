@@ -1,0 +1,1400 @@
+{
+    "personal_info": {
+        "name": "Rashad Hamidi",
+        "name_ar": "رشاد حميدي",
+        "title": "PhD Researcher in Mathematical and Theoretical Physics",
+        "institution": "Durham University",
+        "department": "Department of Mathematical Sciences",
+        "location": "Gateshead, UK",
+        "email": "xurashad@gmail.com",
+        "website": "https://xurashad.github.io/",
+        "orcid": "0000-0002-0719-3269",
+        "inspirehep": "2915639"
+    },
+    "links": {
+        "website": "https://xurashad.github.io/",
+        "email": "xurashad@gmail.com",
+        "orcid": "0000-0002-0719-3269",
+        "inspirehep": "2915639",
+        "location": "Gateshead, UK"
+    },
+    "research_interests": {
+        "topics": [
+            "Integrable Field Theory",
+            "String Theory",
+            "Quantum Field Theory"
+        ],
+        "description": "My primary research interests lie in the areas of integrable systems, string theory and quantum field theory. I am particularly focused on exploring integrable sigma models, their deformations, and their connections to higher-dimensional gauge theories, such as 4d Chern-Simons theory. My work involves studying the mathematical structures underlying these models, including quantum groups and Yang-Baxter equations, as well as investigating their physical applications.",
+        "vision": "My long-term research vision is to implement new technologies such as artificial intelligence, machine learning and quantum computing in theoretical physics research, and use them to discover new integrable field theories."
+    },
+    "publications": [
+        {
+            "article": "Hamidi:2025sgg",
+            "authors": [
+                "Rashad Hamidi",
+                "Ben Hoare"
+            ],
+            "title": "Twists of trigonometric sigma models",
+            "eprint": "2504.18492",
+            "archivePrefix": "arXiv",
+            "primaryClass": "hep-th",
+            "doi": "10.1007/JHEP08(2025)090",
+            "journal": "JHEP",
+            "volume": "08",
+            "pages": "090",
+            "year": "2025"
+        }
+    ],
+    "work_experience": [
+        {
+            "position": "AI Physics and Mathematics Trainer",
+            "institutions": [
+                "Mercor"
+            ],
+            "location": "Online",
+            "tasks": [
+                "Author advanced physics and mathematics problems with step-by-step solutions for model fine-tuning (SFT).",
+                "Evaluate and rank model reasoning outputs, isolating mathematical fallacies and hallucinations.",
+                "Design adversarial edge cases and evaluation rubrics to benchmark complex multi-step reasoning."
+            ],
+            "working_time": "part time",
+            "start_year": "2026",
+            "start_month": "06",
+            "end_year": null,
+            "end_month": null,
+            "current": true
+        },
+        {
+            "position": "Teaching Assistant",
+            "institutions": [
+                "Durham University"
+            ],
+            "location": "Durham, UK",
+            "courses": [
+                "Discrete Mathematics",
+                "Maths for Engineers and Scientists",
+                "Analysis I",
+                "Single Math A",
+                "Single Math B",
+                "Mathematical Physics II",
+                "Special Relativity & Electromagnetism II"
+            ],
+            "working_time": "part time",
+            "start_year": "2023",
+            "start_month": "01",
+            "end_year": "2026",
+            "end_month": "05",
+            "current": false
+        },
+        {
+            "position": "Astronomical Observatory Tour Guide",
+            "institutions": [
+                "Birzeit University",
+                "Michel and Sanieh Hakim Observatory"
+            ],
+            "location": "Birzeit, Palestine",
+            "tasks": [
+                "Led engaging and educational guided tours of the observatory facilities for diverse audiences.",
+                "Developed and delivered accessible presentations on astronomical concepts and celestial objects.",
+                "Operated the main telescope to showcase planets, stars, nebulae, and galaxies during public nights.",
+                "Assisted in planning, promotion, and execution of public outreach events (eclipse viewings, meteor showers)."
+            ],
+            "working_time": "part time",
+            "start_year": "2018",
+            "start_month": "01",
+            "end_year": "2021",
+            "end_month": "06",
+            "current": false
+        }
+    ],
+    "awards_and_grants": [
+        {
+            "id": "stfc",
+            "title": "UKRI STFC PhD Studentship",
+            "organization": "Durham University · UKRI / STFC",
+            "period": "2022 – 2026",
+            "type": "grant",
+            "description": "Full doctoral research studentship funded by the Science and Technology Facilities Council (STFC) and UKRI.",
+            "accent": "quantum",
+            "sponsors": [
+                "UK Research and Innovation (UKRI)",
+                "Science and Technology Facilities Council (STFC)",
+                "Durham University"
+            ]
+        },
+        {
+            "id": "msc-distinction",
+            "title": "MSc Degree with Distinction",
+            "organization": "Durham University",
+            "period": "2022",
+            "type": "distinction",
+            "description": "Awarded Distinction in MSc in Particles, Strings and Cosmology.",
+            "accent": "quantum"
+        },
+        {
+            "id": "global-masters",
+            "title": "Global Masters Scholarship",
+            "organization": "Durham University",
+            "period": "2021 – 2022",
+            "type": "scholarship",
+            "description": "Competitive international merit scholarship covering tuition and stipend.",
+            "accent": "quantum",
+            "sponsors": [
+                "Durham University",
+                "Scott Logic",
+                "Trevelyan College"
+            ]
+        },
+        {
+            "id": "bsc-distinction",
+            "title": "BSc Degree with Distinction",
+            "organization": "Birzeit University",
+            "period": "2021",
+            "type": "distinction",
+            "description": "Graduated with Distinction in Physics (Major) and Mathematics (Minor).",
+            "accent": "olive"
+        },
+        {
+            "id": "mosa-naser",
+            "title": "Mosa Naser Scholarship for Physics (×3)",
+            "organization": "Birzeit University · Dept. of Physics",
+            "period": "2018 – 2021",
+            "type": "scholarship",
+            "description": "Awarded 3 consecutive academic years for top ranking academic performance in the physics department.",
+            "accent": "olive",
+            "sponsors": [
+                "Birzeit University",
+                "Department of Physics"
+            ]
+        },
+        {
+            "id": "science-faculty",
+            "title": "Science Faculty Scholarship",
+            "organization": "Birzeit University · Faculty of Science",
+            "period": "2018 – 2019",
+            "type": "scholarship",
+            "description": "Academic merit scholarship awarded by the Faculty of Science.",
+            "accent": "olive",
+            "sponsors": [
+                "Birzeit University",
+                "Faculty of Science"
+            ]
+        },
+        {
+            "id": "paltel",
+            "title": "Paltel Group Scholarship",
+            "organization": "Paltel Group · Birzeit University",
+            "period": "2017 – 2021",
+            "type": "grant",
+            "description": "Four-year university scholarship awarded for outstanding pre-university academic excellence.",
+            "accent": "olive",
+            "sponsors": [
+                "Birzeit University",
+                "Paltel Group"
+            ]
+        },
+        {
+            "id": "honor-scholarships",
+            "title": "University Honor Scholarship (7 Semesters)",
+            "organization": "Birzeit University",
+            "period": "2018 – 2021",
+            "type": "honor",
+            "description": "Awarded for 7 semesters for holding top cumulative and semester GPA.",
+            "accent": "crimson",
+            "sponsors": [
+                "Birzeit University"
+            ]
+        },
+        {
+            "id": "honor-roll",
+            "title": "Dean's Honor Roll (8 Consecutive Semesters)",
+            "organization": "Birzeit University",
+            "period": "2017 – 2021",
+            "type": "honor",
+            "description": "Maintained Honor Roll distinction every single semester of undergraduate studies.",
+            "accent": "crimson"
+        }
+    ],
+    "groups": [
+        {
+            "name": "Ben Hoare Integrability Group",
+            "institution": "Durham University",
+            "start_year": "2022",
+            "start_month": "11",
+            "end_year": "2026",
+            "end_month": "11",
+            "current": false
+        },
+        {
+            "name": "Mathematical and Theoretical Physics Group",
+            "institution": "Durham University",
+            "start_year": "2022",
+            "start_month": "11",
+            "end_year": "2026",
+            "end_month": "11",
+            "current": false
+        },
+        {
+            "name": "High Energy Physics for Palestine Group (HEP4P)",
+            "institution": "(remote collaboration)",
+            "start_year": "2022",
+            "start_month": "11",
+            "end_year": null,
+            "end_month": null,
+            "current": true
+        },
+        {
+            "name": "Centre for Particle Theory",
+            "institution": "Durham University",
+            "start_year": "2021",
+            "start_month": "10",
+            "end_year": "2026",
+            "end_month": "11",
+            "current": false
+        },
+        {
+            "name": "Physics Club",
+            "institution": "Birzeit University",
+            "start_year": "2017",
+            "start_month": "09",
+            "end_year": "2021",
+            "end_month": "06",
+            "current": false
+        },
+        {
+            "name": "Astronomy Club",
+            "institution": "Birzeit University",
+            "start_year": "2017",
+            "start_month": "09",
+            "end_year": "2021",
+            "end_month": "06",
+            "current": false
+        }
+    ],
+    "education": [
+        {
+            "degree": "PhD in Mathematical and Theoretical Physics",
+            "institution": "Durham University",
+            "department": "Department of Mathematical Sciences",
+            "location": "Durham, UK",
+            "start_year": "2022",
+            "start_month": "11",
+            "end_year": "2026",
+            "end_month": "08",
+            "thesis_title": "Integrable Sigma Models with Twisted Quantum Affine Symmetry",
+            "supervisor": "Prof. Ben Hoare",
+            "grants": [
+                {
+                    "name": "UKRI STFC PhD Studentship",
+                    "sponsors": [
+                        "UK Research and Innovation (UKRI)",
+                        "Science and Technology Facilities Council (STFC)",
+                        "Durham University"
+                    ],
+                    "start_year": "2022",
+                    "start_month": "11",
+                    "end_year": "2026",
+                    "end_month": "08",
+                    "number_of_awards": "1 time"
+                }
+            ],
+            "research_topics": [
+                "Integrable Field Theory",
+                "String Theory",
+                "Classical Integrability",
+                "Sigma Models",
+                "R-Matrix",
+                "Quantum Affine Symmetry",
+                "Yang-Baxter Equation",
+                "Integrable Deformations"
+            ]
+        },
+        {
+            "degree": "MSc in Particles, Strings and Cosmology",
+            "institution": "Durham University",
+            "department": "Department of Mathematical Sciences",
+            "location": "Durham, UK",
+            "start_year": "2021",
+            "start_month": "10",
+            "end_year": "2022",
+            "end_month": "09",
+            "thesis_title": "BTZ Black Hole: Holographic Duality, Entropy, and AdS$_3$/CFT$_2$",
+            "supervisor": "Prof. Nabil Iqbal",
+            "grants": [
+                {
+                    "name": "Global Masters Scholarship",
+                    "sponsors": [
+                        "Durham University",
+                        "Scott Logic",
+                        "Trevelyan College"
+                    ],
+                    "start_year": "2021",
+                    "start_month": "10",
+                    "end_year": "2022",
+                    "end_month": "09",
+                    "number_of_awards": "1 time"
+                }
+            ],
+            "degree_achievement": "Distinction",
+            "coursework": [
+                {
+                    "category": "Quantum Field Theory",
+                    "courses": [
+                        "Introductory Field Theory",
+                        "Quantum Field Theory I",
+                        "Quantum Field Theory II",
+                        "Quantum Electrodynamics",
+                        "Supersymmetry"
+                    ]
+                },
+                {
+                    "category": "General Relativity and Cosmology",
+                    "courses": [
+                        "General Relativity",
+                        "Cosmology I",
+                        "Cosmology II",
+                        "Neutrino Physics",
+                        "Astroparticle Physics"
+                    ]
+                },
+                {
+                    "category": "Gauge Field Theory",
+                    "courses": [
+                        "Group Theory",
+                        "Standard Model",
+                        "Renormalisation Group",
+                        "Scattering Amplitudes",
+                        "Non-Perturbative Physics"
+                    ]
+                },
+                {
+                    "category": "Superstring Theory",
+                    "courses": [
+                        "Conformal Field Theory",
+                        "String Theory"
+                    ]
+                },
+                {
+                    "category": "Phenomenology",
+                    "courses": [
+                        "Quantum Chromodynamics",
+                        "Flavour Physics and Effective Field Theories",
+                        "Higgs Physics"
+                    ]
+                },
+                {
+                    "category": "Extra",
+                    "courses": [
+                        "Introduction to AdS/CFT",
+                        "Analytic loop integration"
+                    ]
+                }
+            ]
+        },
+        {
+            "degree": "BSc in Physics",
+            "institution": "Birzeit University",
+            "department": "Department of Physics",
+            "location": "Birzeit, Palestine",
+            "start_year": "2017",
+            "start_month": "09",
+            "end_year": "2021",
+            "end_month": "06",
+            "thesis_title": "Fractional Quantum Mechanics",
+            "supervisor": "Prof. Abdallah Sayyed-Ahmad",
+            "grants": [
+                {
+                    "name": "Mosa Naser Scholarship for Physics",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Department of Physics"
+                    ],
+                    "start_year": "2018",
+                    "start_month": "09",
+                    "end_year": "2021",
+                    "end_month": "05",
+                    "number_of_awards": "3 times"
+                },
+                {
+                    "name": "Science Faculty Scholarship",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Faculty of Science"
+                    ],
+                    "start_year": "2018",
+                    "start_month": "09",
+                    "end_year": "2019",
+                    "end_month": "01",
+                    "number_of_awards": "1 time"
+                },
+                {
+                    "name": "Paltel Scholarship",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Paltel Group"
+                    ],
+                    "start_year": "2017",
+                    "start_month": "09",
+                    "end_year": "2021",
+                    "end_month": "05",
+                    "number_of_awards": "1 time"
+                },
+                {
+                    "name": "Honor Scholarship",
+                    "sponsors": [
+                        "Birzeit University"
+                    ],
+                    "start_year": "2018",
+                    "start_month": "01",
+                    "end_year": "2021",
+                    "end_month": "05",
+                    "number_of_awards": "7 times"
+                }
+            ],
+            "degree_achievement": "Distinction",
+            "coursework": [
+                {
+                    "category": "Physics",
+                    "courses": [
+                        "General Physics I--III",
+                        "Modern Physics",
+                        "Medical Physics",
+                        "Astronomy",
+                        "Vibrations and Waves",
+                        "Optics",
+                        "Analog Electronics",
+                        "Mathematical Physics",
+                        "Classical Mechanics I--III",
+                        "Electromagnetic Theory I--II",
+                        "Quantum Mechanics I--II",
+                        "Thermal Physics & Statistical Mechanics",
+                        "Computational Physics"
+                    ]
+                },
+                {
+                    "category": "Physics Labs",
+                    "courses": [
+                        "General Physics Lab I--III",
+                        "Modern Physics Lab",
+                        "Analogue Electronics Lab",
+                        "Advanced Physics Lab"
+                    ]
+                },
+                {
+                    "category": "Mathematics",
+                    "courses": [
+                        "Calculus I--III",
+                        "Foundations of Mathematics (Logic)",
+                        "Linear Algebra I--II",
+                        "Ordinary Differential Equations",
+                        "Partial Differential Equations",
+                        "Numerical Methods",
+                        "Abstract Algebra I",
+                        "Mathematical Analysis I"
+                    ]
+                },
+                {
+                    "category": "Statistics and Computer Science",
+                    "courses": [
+                        "Statistics I",
+                        "Probability Theory",
+                        "C Programming"
+                    ]
+                },
+                {
+                    "category": "Extra Scientific Courses",
+                    "courses": [
+                        "General Chemistry I",
+                        "General Biology I"
+                    ]
+                },
+                {
+                    "category": "Extra Scientific Labs",
+                    "courses": [
+                        "General Chemistry Lab I",
+                        "General Biology Lab I"
+                    ]
+                },
+                {
+                    "category": "Philosophy",
+                    "courses": [
+                        "Modern and Contemporary European Civilisation",
+                        "Modern and Contemporary Arab Thought"
+                    ]
+                }
+            ],
+            "projects": [
+                {
+                    "title": "Fractional Quantum Mechanics",
+                    "course": "Quantum Mechanics",
+                    "semester": "Spring",
+                    "year": "2021"
+                },
+                {
+                    "title": "Computational Planetary Motion",
+                    "course": "Computational Physics",
+                    "semester": "Fall",
+                    "year": "2020"
+                },
+                {
+                    "title": "Many Body Problem",
+                    "course": "Computational Physics",
+                    "semester": "Fall",
+                    "year": "2020"
+                },
+                {
+                    "title": "Cellular Automata",
+                    "course": "Computational Physics",
+                    "semester": "Fall",
+                    "year": "2020"
+                },
+                {
+                    "title": "Interactive Visualization of the Logistic Map",
+                    "course": "Computational Physics",
+                    "semester": "Fall",
+                    "year": "2020"
+                },
+                {
+                    "title": "Stellar Spectroscopy of Rigil, Betelgeuse and Sirius",
+                    "course": "Astronomy",
+                    "semester": "Spring",
+                    "year": "2020"
+                },
+                {
+                    "title": "Magnetic Fluids",
+                    "course": "Nanophysics",
+                    "semester": "Fall",
+                    "year": "2019"
+                },
+                {
+                    "title": "Vantablack: Optical Coating and 3D Light Microscopy",
+                    "course": "Medical Physics",
+                    "semester": "Spring",
+                    "year": "2019"
+                }
+            ]
+        }
+    ],
+    "pre_university_education": [
+        {
+            "degree": "High School",
+            "institution": "Al-Fadiliyyeh Scientific High School",
+            "location": "Tulkarm, Palestine",
+            "school_type": "Govornment school",
+            "start_year": "2014",
+            "start_month": "09",
+            "end_year": "2017",
+            "end_month": "06",
+            "grades": "10th-12th"
+        },
+        {
+            "degree": "Elementray and Secondary School",
+            "institution": "Nur Shams Elementary School for Boys",
+            "location": "Nur Shams Refugee Camp, Tulkarm, Palestine",
+            "school_type": "UNRWA school",
+            "start_year": "2006",
+            "start_month": "09",
+            "end_year": "2014",
+            "end_month": "06",
+            "grades": "1st-9th"
+        }
+    ],
+    "skills": [
+        {
+            "category": "Programming (main)",
+            "skills": [
+                "Python",
+                "Mathematica"
+            ]
+        },
+        {
+            "category": "Programming (familiar)",
+            "skills": [
+                "C",
+                "R",
+                "Matlab",
+                "Octave"
+            ]
+        },
+        {
+            "category": "Scientific Writing",
+            "skills": [
+                "LaTeX",
+                "Jupyter Notebook",
+                "Mathematica Notebook",
+                "Markdown"
+            ]
+        },
+        {
+            "category": "Scientific Computing Skills",
+            "skills": [
+                "Numerical Methods",
+                "Statistical Analysis"
+            ]
+        },
+        {
+            "category": "Electronics",
+            "skills": [
+                "Arduino",
+                "Raspberry Pi",
+                "LabVIEW",
+                "NXT Robotics",
+                "SEEK Electronic Bag",
+                "Syscolab Electronic Bag",
+                "Sophene Electronic Bag"
+            ]
+        },
+        {
+            "category": "Astronomy",
+            "skills": [
+                "Celestia",
+                "Stellarium",
+                "RSpec"
+            ]
+        },
+        {
+            "category": "Web Design",
+            "skills": [
+                "HTML",
+                "CSS",
+                "JavaScript",
+                "TypeScript"
+            ]
+        },
+        {
+            "category": "Modeling",
+            "skills": [
+                "Unity",
+                "Blender",
+                "Unreal Engine",
+                "AutoCAD"
+            ]
+        },
+        {
+            "category": "Languages",
+            "skills": [
+                "Arabic: Native",
+                "English: Fluent"
+            ]
+        }
+    ],
+    "conferences": [
+        {
+            "title": "Integrability, Dualities and Deformations Conference",
+            "editions": [
+                {
+                    "edition": "Wrocław 2026",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "National Science Centre of Poland (Narodowe Centrum Nauki)",
+                        "University of Wrocław"
+                    ],
+                    "location": "Wrocław, Poland",
+                    "year": "2026",
+                    "month": "07"
+                },
+                {
+                    "edition": "Stockholm 2025",
+                    "presentation_type": "Poster",
+                    "sponsors": [
+                        "Nordita",
+                        "Stockholm University",
+                        "UK Research and Innovation (UKRI)",
+                        "Isaac Newton Institute for Mathematical Sciences"
+                    ],
+                    "location": "Stockholm, Sweden",
+                    "year": "2025",
+                    "month": "09"
+                },
+                {
+                    "edition": "Swansea 2024",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Swansea University",
+                        "The Royal Society",
+                        "UK Research and Innovation (UKRI)",
+                        "Isaac Newton Institute for Mathematical Sciences"
+                    ],
+                    "location": "Swansea, UK",
+                    "year": "2024",
+                    "month": "07"
+                },
+                {
+                    "edition": "Durham 2023",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "UK Research and Innovation (UKRI)"
+                    ],
+                    "location": "Durham, UK",
+                    "year": "2023",
+                    "month": "07"
+                }
+            ]
+        },
+        {
+            "title": "Integrability in Gauge and String Theory",
+            "editions": [
+                {
+                    "edition": "DESY Hamburg 2026",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "DESY Hamburg"
+                    ],
+                    "location": "Hamburg, Germany",
+                    "year": "2026",
+                    "month": "06"
+                },
+                {
+                    "edition": "King's College London 2025",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "King's College London"
+                    ],
+                    "location": "London, UK",
+                    "year": "2025",
+                    "month": "07"
+                },
+                {
+                    "edition": "ETH Zurich 2026",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "ETH Zurich"
+                    ],
+                    "location": "Zürich, Switzerland",
+                    "year": "2023",
+                    "month": "06"
+                }
+            ]
+        },
+        {
+            "title": "Integrability in Quantum Field Theory",
+            "editions": [
+                {
+                    "edition": "Durham 2026",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "London Mathematical Society",
+                        "UK Research and Innovation (UKRI)",
+                        "Engineering and Physical Sciences Research Council (EPSRC)",
+                        "Isaac Newton Institute for Mathematical Sciences",
+                        "Heilbronn Institute for Mathematical Research"
+                    ],
+                    "year": "2026",
+                    "month": "05"
+                }
+            ]
+        }
+    ],
+    "seminars": [
+        {
+            "title": "North British Mathematical Physics Seminars (NBMPS)",
+            "editions": [
+                {
+                    "edition": "75th",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "London Mathematical Society"
+                    ],
+                    "location": "Durham University",
+                    "year": "2025",
+                    "month": "11"
+                },
+                {
+                    "edition": "74th",
+                    "presentation_type": "Speaker",
+                    "sponsors": [
+                        "University of York",
+                        "London Mathematical Society"
+                    ],
+                    "location": "University of York",
+                    "year": "2025",
+                    "month": "06"
+                },
+                {
+                    "edition": "72nd",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "London Mathematical Society"
+                    ],
+                    "location": "Durham University",
+                    "year": "2024",
+                    "month": "11"
+                },
+                {
+                    "edition": "71st",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "University of York",
+                        "London Mathematical Society"
+                    ],
+                    "location": "University of York",
+                    "year": "2024",
+                    "month": "06"
+                },
+                {
+                    "edition": "69th",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "London Mathematical Society"
+                    ],
+                    "location": "Durham University",
+                    "year": "2023",
+                    "month": "11"
+                },
+                {
+                    "edition": "66th",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Durham University",
+                        "London Mathematical Society"
+                    ],
+                    "location": "Durham University",
+                    "year": "2022",
+                    "month": "11"
+                }
+            ]
+        },
+        {
+            "title": "Physics Department Siminars",
+            "editions": [
+                {
+                    "edition": "Meteorology",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Birzeit University",
+                        "The University of Chicago"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2020",
+                    "month": "06"
+                },
+                {
+                    "edition": "Computational Multiphysics in Condensed Matter",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Miami University"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2019",
+                    "month": "04"
+                },
+                {
+                    "edition": "Black Holes",
+                    "presentation_type": "Attendee",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Harvard-Smithsonian Center for Astrophysics"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2017",
+                    "month": "11"
+                }
+            ]
+        }
+    ],
+    "schools_and_workshops": [
+        {
+            "title": "Paths to Quantum Field Theory Workshop",
+            "editions": [
+                {
+                    "edition": "Durham 2023",
+                    "sponsors": [
+                        "Durham University",
+                        "The Royal Society"
+                    ],
+                    "location": "Durham, UK",
+                    "year": "2023",
+                    "month": "08"
+                },
+                {
+                    "edition": "Durham 2022",
+                    "sponsors": [
+                        "Durham University",
+                        "The Royal Society"
+                    ],
+                    "location": "Durham, UK",
+                    "year": "2022",
+                    "month": "08"
+                }
+            ]
+        },
+        {
+            "title": "Young Researchers Integrability School and Workshop",
+            "editions": [
+                {
+                    "edition": "Durham 2023",
+                    "sponsors": [
+                        "Durham University",
+                        "Imperial College London",
+                        "UK Research and Innovation (UKRI)",
+                        "University of Padua",
+                        "European Research Council (ERC)",
+                        "Gauge Theories as an Integrable System (GATIS+)",
+                        "Universe | An Open Access Journal from MDPI",
+                        "Physics | An Open Access Journal from MDPI"
+                    ],
+                    "location": "Durham, UK",
+                    "year": "2023",
+                    "month": "07"
+                }
+            ]
+        },
+        {
+            "title": "Hands-on Molecular Dynamics Workshop",
+            "editions": [
+                {
+                    "edition": "Birzeit 2019",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Palestinian-German Science Bridge"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2019",
+                    "month": "01"
+                }
+            ]
+        },
+        {
+            "title": "Palestinian Advanced Physics School",
+            "editions": [
+                {
+                    "edition": "Birzeit 2019",
+                    "sponsors": [
+                        "Birzeit University",
+                        "Scientists for Palestine",
+                        "The European Organization for Nuclear Research (CERN)",
+                        "Abdus Salam International Centre for Theoretical Physics (ICTP)",
+                        "German-Palestinian Science Bridge"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2019",
+                    "month": "07"
+                }
+            ]
+        },
+        {
+            "title": "Physics Without Frontiers Workshop",
+            "editions": [
+                {
+                    "edition": "Birzeit 2017",
+                    "sponsors": [
+                        "Abdus Salam International Centre for Theoretical Physics (ICTP)",
+                        "Birzeit University"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2017",
+                    "month": "11"
+                }
+            ]
+        }
+    ],
+    "competitions": [
+        {
+            "title": "Durham Hackathon (DurHack)",
+            "editions": [
+                {
+                    "sponsors": [
+                        "Durham University",
+                        "Atom Bank",
+                        "Marshall Wace",
+                        "Qube Research & Technology (QRT)",
+                        "Waterstons",
+                        "Rewriting the Code",
+                        "Accenture",
+                        "Venture Lab",
+                        "Hackathons UK",
+                        "Major League Hacking (MLH)",
+                        "Assured Data Protection",
+                        "Tekgem"
+                    ],
+                    "location": "Durham University",
+                    "year": "2024",
+                    "month": "11"
+                }
+            ]
+        },
+        {
+            "title": "Pre-University Competitions",
+            "editions": [
+                {
+                    "name": "Science Exhibition",
+                    "sponsors": [
+                        "Al-Fadilyyah Secondary School"
+                    ],
+                    "location": "Tulkarm",
+                    "year": "2015",
+                    "month": "04"
+                },
+                {
+                    "name": "Physics Olympiad",
+                    "sponsors": [
+                        "Palestinian Ministry of Education"
+                    ],
+                    "location": "Ramallah",
+                    "year": "2015",
+                    "month": "03"
+                },
+                {
+                    "name": "First Lego League (FLL) Robotics",
+                    "sponsors": [
+                        "FIRST LEGO League",
+                        "UNRWA",
+                        "Birzeit University"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2015",
+                    "month": "04"
+                },
+                {
+                    "name": "First Lego League (FLL) Robotics",
+                    "sponsors": [
+                        "FIRST LEGO League",
+                        "UNRWA",
+                        "Birzeit University"
+                    ],
+                    "location": "Birzeit University",
+                    "year": "2014",
+                    "month": "03"
+                },
+                {
+                    "name": "Intel ISEF",
+                    "sponsors": [
+                        "Intel",
+                        "UNRWA"
+                    ],
+                    "location": "Ramallah",
+                    "year": "2012",
+                    "month": "03"
+                },
+                {
+                    "name": "SyscoLab Competition",
+                    "sponsors": [
+                        "SyscoLab",
+                        "UNRWA"
+                    ],
+                    "location": "Ramallah",
+                    "year": "2012",
+                    "month": "02"
+                },
+                {
+                    "name": "SEEK Competition",
+                    "sponsors": [
+                        "Science Easy Experiment Kit (SEEK)",
+                        "UNRWA"
+                    ],
+                    "location": "Ramallah",
+                    "year": "2012",
+                    "month": "01"
+                }
+            ]
+        }
+    ],
+    "certification_programs": [
+        {
+            "title": "Access Program",
+            "editions": [
+                {
+                    "sponsors": [
+                        "America-Mideast Educational and Training Services (AMIDEAST)"
+                    ],
+                    "location": "Ramallah",
+                    "start_year": "2014",
+                    "start_month": "09",
+                    "end_year": "2016",
+                    "end_month": "08",
+                    "duration": "2 years"
+                }
+            ]
+        },
+        {
+            "title": "Science and Technology Entrepreneurship Program (STEP)",
+            "editions": [
+                {
+                    "sponsors": [
+                        "Al-Nayzak"
+                    ],
+                    "location": "Ramallah",
+                    "start_year": "2014",
+                    "start_month": "09",
+                    "end_year": "2015",
+                    "end_month": "08",
+                    "duration": "1 year"
+                }
+            ]
+        }
+    ],
+    "developed_applications": {
+        "applications_link": "https://xurashad.github.io/apps",
+        "applications": [
+            {
+                "category": "Scientific Applications",
+                "apps": [
+                    {
+                        "name": "Particle Physics Visualizer",
+                        "description": "A web app provides an interactive supersymmetric particles periodic table.",
+                        "link": "https://xurashad.github.io/apps/particle-physics"
+                    },
+                    {
+                        "name": "Interactive Periodic Table",
+                        "description": "A web app provides an interactive periodic table with detailed information about each element.",
+                        "link": null
+                    },
+                    {
+                        "name": "Fractal Explorer",
+                        "description": "A tool for generating the Mandelbrot and Julia sets with customizations.",
+                        "link": null
+                    },
+                    {
+                        "name": "Feynman Diagram Generator",
+                        "description": "A tool for creating Feynman diagrams easily and intuitively, and exporting the diagrams as TikZ LaTeX code.",
+                        "link": null
+                    },
+                    {
+                        "name": "Graphing Calculator",
+                        "description": "A tool for creating and visualizing mathematical graphs easily and intuitively.",
+                        "link": null
+                    },
+                    {
+                        "name": "Celestial Simulator",
+                        "description": "A tool for simulating the solar system and visualizing the orbits of planets, moons, and other celestial bodies. It includes features such as time control, zooming, and information display about each object.",
+                        "link": null
+                    },
+                    {
+                        "name": "Earth Explorer",
+                        "description": "An interactive 3D globe powered by CesiumJS and OpenStreetMap.",
+                        "link": null
+                    }
+                ]
+            },
+            {
+                "category": "Datasets Generators",
+                "apps": [
+                    {
+                        "name": "Fibonacci Sequence Generator",
+                        "description": "A tool for generating and downloading the Fibonacci sequence in JSON format. For fast generation, it is recommended to generate the sequence up to the first 50,000 numbers, or the nth number up to 1,000,000. Limits can be unlocked.",
+                        "link": null
+                    },
+                    {
+                        "name": "Prime Sequence Generator",
+                        "description": "A tool for generating and downloading the prime sequence in JSON format. For fast generation, it is recommended to generate the sequence up to the first 1,000,000 numbers. Limits can be unlocked.",
+                        "link": null
+                    }
+                ]
+            },
+            {
+                "category": "Professional Applications",
+                "apps": [
+                    {
+                        "name": "Website Builder Pro",
+                        "description": "A user-friendly professional app to build up websites without coding.",
+                        "link": null
+                    },
+                    {
+                        "name": "CV Builder Pro",
+                        "description": "A user-friendly professional app to build up CVs without coding.",
+                        "link": null
+                    },
+                    {
+                        "name": "LaTeX Editor Pro",
+                        "description": "A user-friendly professional app to write LaTeX documents without coding.",
+                        "link": null
+                    },
+                    {
+                        "name": "Office Suite Pro",
+                        "description": "A user-friendly professional app that includes a word processor, a spreadsheet editor, and a presentation maker. It is designed to be a free and open-source alternative to Microsoft Office and Google Docs. It supports text formatting, tables, charts, image insertion, video streaming, PDF presentation, HTML page screening, python code execution, bash scripting, and more.",
+                        "link": null
+                    }
+                ]
+            },
+            {
+                "category": "AI Applications",
+                "apps": [
+                    {
+                        "name": "AI Chatbot",
+                        "description": "A multimodal LLM-based chatbot that can understand and generate text.",
+                        "link": null
+                    },
+                    {
+                        "name": "ArtForge AI Image Generator",
+                        "description": "A multi-style AI image generator for AI-assisted art creation.",
+                        "link": null
+                    }
+                ]
+            },
+            {
+                "category": "Utilities",
+                "apps": [
+                    {
+                        "name": "Plagiarism Checker",
+                        "description": "A tool for checking the originality of the text and detecting plagiarism.",
+                        "link": null
+                    },
+                    {
+                        "name": "Unicode Explorer",
+                        "description": "A tool for searching the library of unicode characters.",
+                        "link": null
+                    },
+                    {
+                        "name": "Unicode Font Generator",
+                        "description": "A tool for generating text in various Unicode font styles.",
+                        "link": null
+                    },
+                    {
+                        "name": "PDF Tools",
+                        "description": "An all-in-one tool for PDF. It can be used for extracting pages from the PDF, convert image to PDF or PDF to image, and merge PDF documents.",
+                        "link": null
+                    },
+                    {
+                        "name": "Multimedia Base64 Converter",
+                        "description": "A tool for encoding files to base64 and decoding base64 strings back to files.",
+                        "link": null
+                    },
+                    {
+                        "name": "QR Code Generator",
+                        "description": "A tool for generating QR codes easily and quickly with customizations.",
+                        "link": null
+                    },
+                    {
+                        "name": "Image Editor",
+                        "description": "Professional-grade image editor with crop, resize, rotate, flip, 12 filters, 10 adjustment sliders, freehand drawing, text overlays, and multi-format export.",
+                        "link": null
+                    }
+                ]
+            },
+            {
+                "category": "Games",
+                "apps": [
+                    {
+                        "name": "2048 Tile",
+                        "description": "A game that requires sliding numbered tiles on the grid to combine them and create a tile with the number 2048.",
+                        "link": null
+                    },
+                    {
+                        "name": "Celestial Chess",
+                        "description": "A strategic chess game set in a celestial theme.",
+                        "link": null
+                    }
+                ]
+            }
+        ]
+    },
+    "generated_datasets": {
+        "datasets_link": "https://xurashad.github.io/datasets",
+        "datasets": [
+            {
+                "name": "Fundamental & Supersymmetric Particles",
+                "description": "A dataset containing information about fundamental particles and their supersymmetric counterparts. Covers the Standard Model particle zoo alongside their SUSY partners — squarks, sleptons, gauginos, and more.",
+                "link": null
+            },
+            {
+                "name": "First 1M Prime Numbers",
+                "description": "A dataset of the first 1,000,000 prime numbers, from 2 to 15,485,863. Generated via an optimised Sieve of Eratosthenes. Useful for number theory research, cryptography benchmarks, and machine learning experiments.",
+                "link": null
+            },
+            {
+                "name": "Chemical Elements",
+                "description": "A comprehensive dataset of all chemical elements in the periodic table. Each entry includes physical properties, thermodynamic constants, electron configuration, and a Bohr model image.",
+                "link": null
+            }
+        ]
+    },
+    "projects": [
+        {
+            "title": "BTZ Black Hole: Holographic Duality, Entropy, and AdS₃/CFT₂",
+            "course": "Particles, Strings and Cosmology (MSc Dissertation)",
+            "semester": "Summer",
+            "year": "2022"
+        },
+        {
+            "title": "Fractional Quantum Mechanics",
+            "course": "Quantum Mechanics",
+            "semester": "Spring",
+            "year": "2021"
+        },
+        {
+            "title": "Computational Planetary Motion",
+            "course": "Computational Physics",
+            "semester": "Fall",
+            "year": "2020"
+        },
+        {
+            "title": "Many Body Problem",
+            "course": "Computational Physics",
+            "semester": "Fall",
+            "year": "2020"
+        },
+        {
+            "title": "Cellular Automata",
+            "course": "Computational Physics",
+            "semester": "Fall",
+            "year": "2020"
+        },
+        {
+            "title": "Interactive Visualization of the Logistic Map",
+            "course": "Computational Physics",
+            "semester": "Fall",
+            "year": "2020"
+        },
+        {
+            "title": "Stellar Spectroscopy of Rigil, Betelgeuse and Sirius",
+            "course": "Astronomy",
+            "semester": "Spring",
+            "year": "2020"
+        },
+        {
+            "title": "Magnetic Fluids",
+            "course": "Nanophysics",
+            "semester": "Fall",
+            "year": "2019"
+        },
+        {
+            "title": "Vantablack: Optical Coating and 3D Light Microscopy",
+            "course": "Medical Physics",
+            "semester": "Spring",
+            "year": "2019"
+        }
+    ],
+    "referees": [
+        {
+            "name": "Prof. Ben Hoare",
+            "affiliation": "Durham University",
+            "relationship": "PhD supervisor",
+            "email": "ben.hoare@durham.ac.uk",
+            "webpage": "https://www.benhoare.info/"
+        },
+        {
+            "name": "Dr. Ana Retore",
+            "affiliation": "DESY",
+            "relationship": "Groupmate & Collaborator",
+            "email": "ana.retore@desy.de",
+            "webpage": null
+        },
+        {
+            "name": "Prof. Nabil Iqbal",
+            "affiliation": "Durham University",
+            "relationship": "MSc supervisor",
+            "email": "nabil.iqbal@durham.ac.uk",
+            "webpage": "https://www.nabiliqbal.com/"
+        },
+        {
+            "name": "Prof. Benoît Vicedo",
+            "affiliation": "University of York",
+            "relationship": "Colleague",
+            "email": "b.vicedo@york.ac.uk",
+            "webpage": null
+        },
+        {
+            "name": "Prof. Hazem Abusara",
+            "affiliation": "Birzeit University",
+            "relationship": "BSc professor",
+            "email": "habusara@birzeit.edu",
+            "webpage": null
+        }
+    ]
+}
