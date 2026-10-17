@@ -149,7 +149,7 @@ function DatasetCard({ dataset, index }: { dataset: Dataset; index: number }) {
       {dataset.image && (
         <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-4 border border-white/8 bg-black/40 shadow-inner">
           <img
-            src={`/imges/datasets_backgrounds/${dataset.image}`}
+            src={`/images/datasets_backgrounds/${dataset.image}`}
             alt={`${dataset.title} preview`}
             loading="lazy"
             className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -273,7 +273,7 @@ function DatasetRow({ dataset, index }: { dataset: Dataset; index: number }) {
           {dataset.image ? (
             <div className="relative w-12 sm:w-14 h-9 sm:h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/8 bg-black/40">
               <img
-                src={`/imges/datasets_backgrounds/${dataset.image}`}
+                src={`/images/datasets_backgrounds/${dataset.image}`}
                 alt={`${dataset.title} preview`}
                 loading="lazy"
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"

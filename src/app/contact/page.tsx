@@ -170,7 +170,7 @@ const CONNECTIONS = [
     name: "Frame Craft",
     role: "Animation & motion graphics studio",
     href: "https://www.instagram.com/framecraft_studio/",
-    logo: "/imges/frame_craft_logo.jpg",
+    logo: "/images/other_images/frame_craft_logo.jpg",
     accent: "quantum" as const,
   },
 ];
