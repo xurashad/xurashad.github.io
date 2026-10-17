@@ -546,7 +546,34 @@ export function useImageEditor() {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  const loadImage = useCallback((file: File) => {
+  const loadImage = useCallback((source: File | string) => {
+    if (typeof source === "string") {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const crop: CropRect = { x: 0, y: 0, width: img.naturalWidth, height: img.naturalHeight };
+        const fileName = source.split("/").pop() || "sample-image.jpg";
+        setState((prev) => ({
+          ...prev,
+          originalImage: img,
+          fileName,
+          editHistory: [],
+          historyIndex: -1,
+          currentFilter: "none",
+          currentAdjustments: { ...DEFAULT_ADJUSTMENTS },
+          currentCrop: crop,
+          cropPresetIndex: 0,
+          currentStrokes: [],
+          currentTextOverlays: [],
+          zoom: 1,
+          panOffset: { x: 0, y: 0 },
+          activeTool: "select",
+        }));
+      };
+      img.src = source;
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
@@ -556,7 +583,7 @@ export function useImageEditor() {
         setState((prev) => ({
           ...prev,
           originalImage: img,
-          fileName: file.name,
+          fileName: source.name,
           editHistory: [],
           historyIndex: -1,
           currentFilter: "none",
@@ -572,7 +599,7 @@ export function useImageEditor() {
       };
       img.src = reader.result as string;
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(source);
   }, []);
 
   const setTool = useCallback((tool: EditorTool) => {
@@ -802,8 +829,11 @@ export function useImageEditor() {
     commitOperation({ type: "text", overlays: [...state.currentTextOverlays] });
   }, [state.currentTextOverlays, commitOperation]);
 
-  const setZoom = useCallback((zoom: number) => {
-    setState((prev) => ({ ...prev, zoom: Math.max(0.1, Math.min(5, zoom)) }));
+  const setZoom = useCallback((zoom: number | ((prev: number) => number)) => {
+    setState((prev) => {
+      const val = typeof zoom === "function" ? zoom(prev.zoom) : zoom;
+      return { ...prev, zoom: Math.max(0.1, Math.min(5, val)) };
+    });
   }, []);
 
   const setPan = useCallback((x: number, y: number) => {

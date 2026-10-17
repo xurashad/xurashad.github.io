@@ -26,13 +26,15 @@ export default function ImageEditorPage() {
         <div className="absolute top-2/3 left-1/3 w-72 h-72 rounded-full bg-olive/3 blur-[100px]" />
       </div>
 
-      <div className="section-container py-8 pb-16">
-        <div className="mb-6">
-          <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-2">// Creative Tools</div>
-          <h1 className="text-4xl sm:text-5xl font-serif font-bold mb-3">
+      <div className="section-container py-4 sm:py-8 pb-10 sm:pb-16">
+        <div className="mb-3 sm:mb-6">
+          <div className="text-[10px] sm:text-xs font-mono text-quantum/60 tracking-widest uppercase mb-1 sm:mb-2">
+            // Creative Tools
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-serif font-bold mb-1.5 sm:mb-3">
             <span className="gradient-text-quantum">Image Editor</span>
           </h1>
-          <p className="text-foreground/45 max-w-2xl leading-relaxed text-sm">
+          <p className="text-foreground/45 max-w-2xl leading-relaxed text-xs sm:text-sm hidden sm:block">
             Professional-grade image editing right in your browser. Crop, resize, apply filters,
             adjust colours, draw, add text — then export in PNG, JPEG, or WebP. Everything runs
             locally — your images never leave your device.

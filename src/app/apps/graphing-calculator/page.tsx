@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { GraphingCalculator } from "./GraphingCalculator";
 
 export const metadata: Metadata = {
-  title: "Graphing Calculator",
+  title: "Graphing Calculator · Desmos-Grade Function Plotter",
   description:
-    "Plot explicit and implicit mathematical equations on an interactive SVG canvas. Pan, zoom, toggle the grid, add unlimited equations with custom colours, and export the result as PNG or SVG — all in the browser.",
+    "Desmos-grade graphing calculator for plotting explicit functions, implicit curves, inequalities, vertical lines, and points. Features interactive sliders, curve tracing, virtual math keypad, and high-resolution export.",
   keywords: [
-    "graphing calculator", "equation plotter", "implicit equations",
-    "SVG graph", "mathematics", "function plotter", "online calculator",
+    "graphing calculator", "desmos alternative", "equation plotter",
+    "implicit equations", "math calculator", "function plotter", "online calculator",
   ],
 };
 
@@ -19,34 +19,36 @@ export default function GraphingCalculatorPage() {
         <div className="absolute bottom-1/3 -right-20 w-72 h-72 rounded-full bg-olive/4 blur-[120px]" />
       </div>
 
-      <div className="section-container py-16 pb-24">
+      <div className="section-container py-12 sm:py-16 pb-24">
         {/* Header */}
-        <div className="mb-8">
-          <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-3">
-            // Utilities · Mathematics
+        <div className="mb-6 sm:mb-8">
+          <div className="text-xs font-mono text-quantum/60 tracking-widest uppercase mb-2">
+            {"// Utilities · Mathematics"}
           </div>
-          <h1 className="text-5xl sm:text-6xl font-serif font-bold mb-4">
+          <h1 className="text-4xl sm:text-6xl font-serif font-bold mb-3 sm:mb-4 tracking-tight">
             <span className="gradient-text-quantum">Graphing</span>{" "}
-            <span className="text-foreground/60">Calculator</span>
+            <span className="text-foreground/70">Calculator</span>
           </h1>
-          <p className="text-foreground/50 max-w-xl leading-relaxed">
-            Plot any explicit or implicit equation on a real-time SVG canvas.
-            Pan and zoom freely, toggle the grid, and export your graph at any resolution.
+          <p className="text-foreground/55 max-w-2xl leading-relaxed text-sm sm:text-base">
+            Desmos-style graphing calculator. Plot explicit functions, implicit relations, inequalities,
+            and points with interactive variable sliders, curve tracing, virtual math keypad, and smooth multi-touch gestures.
           </p>
 
           {/* Feature chips */}
-          <div className="flex flex-wrap gap-2 mt-5">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 sm:mt-5">
             {[
               "Explicit: y = f(x)",
               "Implicit: f(x,y) = 0",
-              "Pan & zoom (scroll + pinch)",
-              "Custom colours",
-              "12 presets",
-              "Export PNG / SVG",
+              "Inequalities: y ≤ f(x)",
+              "Sliders: a = 2 (Animated)",
+              "Implicit Multiplication: 2x, 3sin(x)",
+              "Key Points & Curve Probe",
+              "Virtual Math Keypad",
+              "Export PNG (2×) / SVG",
             ].map((f) => (
               <span
                 key={f}
-                className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-quantum/20 bg-quantum/5 text-quantum/60"
+                className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-quantum/20 bg-quantum/5 text-quantum/70 shadow-sm"
               >
                 {f}
               </span>
@@ -58,16 +60,53 @@ export default function GraphingCalculatorPage() {
         <GraphingCalculator />
 
         {/* Syntax guide */}
-        <div className="mt-6 grid sm:grid-cols-3 gap-4">
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { title: "Operators", items: ["+ − * /", "^ (power)", "( ) for grouping"] },
-            { title: "Functions", items: ["sin cos tan", "sqrt abs exp ln", "floor ceil round max min"] },
-            { title: "Constants & Implicit", items: ["pi = π, e = Euler's number", "y = 2*x+1  (explicit)", "x^2 + y^2 = 25  (implicit)"] },
+            {
+              title: "Expressions & Variables",
+              items: [
+                "2x + 1  (implicit mult)",
+                "3x^2 - 4x + 1",
+                "a = 2  (creates a slider)",
+                "y = a*sin(x)",
+              ],
+            },
+            {
+              title: "Functions & Trig",
+              items: [
+                "sin, cos, tan, sec, csc, cot",
+                "arcsin, arccos, arctan",
+                "sqrt, abs, exp, ln, log",
+                "floor, ceil, round, sign",
+              ],
+            },
+            {
+              title: "Relations & Curves",
+              items: [
+                "x^2 + y^2 = 25  (circle)",
+                "x^2/16 + y^2/9 = 1  (ellipse)",
+                "y <= sin(x)  (shaded region)",
+                "x = 3  (vertical line)",
+              ],
+            },
+            {
+              title: "Points & Constants",
+              items: [
+                "(3, 4)  (plots point)",
+                "pi = 3.14159...",
+                "e = 2.71828...",
+                "Hover curve for probe (x, y)",
+              ],
+            },
           ].map((g) => (
-            <div key={g.title} className="glass-card p-4 space-y-2">
-              <h3 className="text-[10px] font-mono text-foreground/30 uppercase tracking-widest">{g.title}</h3>
+            <div key={g.title} className="glass-card p-4 space-y-2 border border-white/5 bg-white/[0.02]">
+              <h3 className="text-[10px] font-mono text-quantum/70 uppercase tracking-widest font-semibold">
+                {g.title}
+              </h3>
               {g.items.map((item) => (
-                <p key={item} className="text-xs font-mono text-foreground/55">{item}</p>
+                <p key={item} className="text-xs font-mono text-foreground/60">
+                  {item}
+                </p>
               ))}
             </div>
           ))}

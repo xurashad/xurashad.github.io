@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Clock, X } from "lucide-react";
+import { Search, MapPin, Clock, X, Compass } from "lucide-react";
 
 /* Types */
 interface SearchResult {
@@ -10,12 +10,15 @@ interface SearchResult {
   display_name: string;
   lat: string;
   lon: string;
-  type: string;
-  class: string;
+  type?: string;
+  class?: string;
 }
 
 interface SearchPanelProps {
   onSelect: (lat: number, lon: number, name: string) => void;
+  className?: string;
+  isMobileModal?: boolean;
+  onCloseMobile?: () => void;
 }
 
 /* Debounce hook */
@@ -28,32 +31,88 @@ function useDebounce(value: string, delay: number) {
   return debounced;
 }
 
-/* Component */
-export default function SearchPanel({ onSelect }: SearchPanelProps) {
+/* Parse coordinates if entered by user */
+function parseCoordinates(query: string): { lat: number; lon: number } | null {
+  const clean = query.trim();
+  const m = clean.match(/^([+-]?\d+(?:\.\d+)?)\s*[, ]\s*([+-]?\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]);
+  const lon = parseFloat(m[2]);
+  if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+    return { lat, lon };
+  }
+  return null;
+}
+
+export default function SearchPanel({
+  onSelect,
+  className = "",
+  isMobileModal = false,
+  onCloseMobile,
+}: SearchPanelProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<
     { name: string; lat: number; lon: number }[]
-  >([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debouncedQuery = useDebounce(query, 400);
+  >([
+    { name: "Al-Quds (Jerusalem), Palestine", lat: 31.7767, lon: 35.2345 },
+    { name: "Birzeit University, Palestine", lat: 31.95, lon: 35.19 },
+    { name: "Mecca, Saudi Arabia", lat: 21.4225, lon: 39.8262 },
+    { name: "Durham, United Kingdom", lat: 54.776, lon: -1.574 },
+  ]);
 
-  /* Fetch from Nominatim */
+  const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const debouncedQuery = useDebounce(query, 350);
+
+  /* Auto-focus on mobile sheet open */
   useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 2) {
+    if (isMobileModal) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 150);
+    }
+  }, [isMobileModal]);
+
+  /* Close results dropdown when clicking outside */
+  useEffect(() => {
+    if (isMobileModal) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileModal]);
+
+  /* Detect coordinate input */
+  const parsedCoord = parseCoordinates(query);
+
+  /* Fetch geocoding results via OSM Nominatim */
+  useEffect(() => {
+    if (parsedCoord) {
       setResults([]);
+      setLoading(false);
+      setOpen(true);
       return;
     }
 
-    let cancelled = false;
+    if (!debouncedQuery || debouncedQuery.length < 2) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    let cancelled = false;
 
     fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
         debouncedQuery
-      )}`,
+      )}&limit=6&addressdetails=1`,
       {
         headers: { "Accept-Language": "en" },
       }
@@ -61,8 +120,8 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
       .then((r) => r.json())
       .then((data: SearchResult[]) => {
         if (!cancelled) {
-          setResults(data);
-          setOpen(data.length > 0);
+          setResults(Array.isArray(data) ? data : []);
+          setOpen(true);
         }
       })
       .catch(() => {
@@ -75,15 +134,11 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, parsedCoord]);
 
   /* Handle selection */
   const handleSelect = useCallback(
-    (result: SearchResult) => {
-      const lat = parseFloat(result.lat);
-      const lon = parseFloat(result.lon);
-      const name = result.display_name.split(",")[0];
-
+    (lat: number, lon: number, name: string) => {
       onSelect(lat, lon, name);
       setQuery(name);
       setOpen(false);
@@ -91,50 +146,39 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
       // Add to recent searches (max 5)
       setRecentSearches((prev) => {
         const filtered = prev.filter(
-          (r) => !(r.lat === lat && r.lon === lon)
+          (r) => !(Math.abs(r.lat - lat) < 0.001 && Math.abs(r.lon - lon) < 0.001)
         );
         return [{ name, lat, lon }, ...filtered].slice(0, 5);
       });
+
+      if (onCloseMobile) onCloseMobile();
     },
-    [onSelect]
+    [onSelect, onCloseMobile]
   );
 
-  /* Render */
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.3, duration: 0.5 }}
-      className="ee-panel p-3"
-      style={{ width: 280 }}
+    <div
+      ref={panelRef}
+      className={isMobileModal ? "w-full" : `ee-panel p-3.5 ${className}`}
+      style={isMobileModal ? { width: "100%" } : { width: 320 }}
     >
-      {/* Title */}
-      <div className="flex items-center gap-2 mb-2.5">
-        <MapPin size={13} style={{ color: "rgba(0,195,245,0.7)" }} />
-        <span
-          style={{
-            fontSize: "0.65rem",
-            fontFamily: '"JetBrains Mono", monospace',
-            color: "rgba(248,249,250,0.35)",
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-          }}
-        >
-          Search Location
-        </span>
-      </div>
+      {/* Title / Header (Only for desktop panel) */}
+      {!isMobileModal && (
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <MapPin size={13} className="text-[#00c3f5]" />
+            <span className="text-[10px] font-mono text-foreground/50 tracking-widest uppercase font-semibold">
+              Location Search
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Search input */}
-      <div style={{ position: "relative" }}>
+      <div className="relative">
         <Search
-          size={13}
-          style={{
-            position: "absolute",
-            left: 10,
-            top: "50%",
-            transform: "translateY(-50%)",
-            color: "rgba(248,249,250,0.25)",
-          }}
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/35 pointer-events-none"
         />
         <input
           ref={inputRef}
@@ -142,116 +186,145 @@ export default function SearchPanel({ onSelect }: SearchPanelProps) {
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            if (e.target.value.length >= 2) setOpen(true);
+            if (e.target.value.length >= 1) setOpen(true);
           }}
           onFocus={() => {
-            if (results.length > 0) setOpen(true);
+            setOpen(true);
           }}
-          placeholder="Search any place..."
-          className="ee-search-input"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && parsedCoord) {
+              handleSelect(
+                parsedCoord.lat,
+                parsedCoord.lon,
+                `Coord (${parsedCoord.lat.toFixed(4)}, ${parsedCoord.lon.toFixed(4)})`
+              );
+            }
+          }}
+          placeholder="Search city, landmark, or coordinates..."
+          className="ee-search-input pr-8 text-xs font-mono"
         />
         {query && (
           <button
+            type="button"
             onClick={() => {
               setQuery("");
               setResults([]);
               setOpen(false);
               inputRef.current?.focus();
             }}
-            style={{
-              position: "absolute",
-              right: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "rgba(248,249,250,0.3)",
-              cursor: "pointer",
-              background: "none",
-              border: "none",
-              padding: 4,
-            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-white transition-colors p-1"
           >
-            <X size={12} />
+            <X size={13} />
           </button>
         )}
       </div>
 
-      {/* Loading indicator */}
-      {loading && (
-        <div
-          style={{
-            height: 2,
-            marginTop: 4,
-            borderRadius: 999,
-            overflow: "hidden",
-            background: "rgba(255,255,255,0.03)",
-          }}
-        >
-          <div
-            style={{
-              width: "40%",
-              height: "100%",
-              borderRadius: 999,
-              background: "linear-gradient(90deg, #00c3f5, #9333ea)",
-              animation: "ee-loading-slide 1.2s ease-in-out infinite",
-            }}
-          />
+      {/* Direct coordinate suggestion */}
+      {parsedCoord && (
+        <div className="mt-2 p-2 rounded-lg bg-[#00c3f5]/10 border border-[#00c3f5]/30">
+          <button
+            type="button"
+            onClick={() =>
+              handleSelect(
+                parsedCoord.lat,
+                parsedCoord.lon,
+                `Coord (${parsedCoord.lat.toFixed(4)}, ${parsedCoord.lon.toFixed(4)})`
+              )
+            }
+            className="w-full flex items-center justify-between text-left text-xs font-mono text-[#00c3f5] hover:underline"
+          >
+            <span className="flex items-center gap-1.5">
+              <Compass size={13} />
+              Jump to Coords: {parsedCoord.lat.toFixed(4)}°, {parsedCoord.lon.toFixed(4)}°
+            </span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Fly ✈</span>
+          </button>
         </div>
       )}
 
-      {/* Results dropdown */}
+      {/* Search results dropdown */}
       <AnimatePresence>
-        {open && results.length > 0 && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            style={{
-              marginTop: 6,
-              maxHeight: 220,
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="ee-search-results"
           >
-            {results.map((r) => (
-              <div
-                key={r.place_id}
-                className="ee-search-result"
-                onClick={() => handleSelect(r)}
-              >
-                <div className="ee-search-result-name">
-                  {r.display_name.split(",")[0]}
-                </div>
-                <div className="ee-search-result-detail">
-                  {r.display_name.split(",").slice(1, 3).join(",")}
-                </div>
+            {loading && (
+              <div className="p-3 text-center text-xs font-mono text-foreground/40">
+                Searching OpenStreetMap...
               </div>
-            ))}
+            )}
+
+            {!loading && results.length > 0 && (
+              <div>
+                {results.map((r) => {
+                  const parts = r.display_name.split(",");
+                  const mainName = parts[0]?.trim() || r.display_name;
+                  const subtitle = parts.slice(1, 4).join(",").trim();
+
+                  return (
+                    <button
+                      key={r.place_id}
+                      type="button"
+                      onClick={() =>
+                        handleSelect(parseFloat(r.lat), parseFloat(r.lon), mainName)
+                      }
+                      className="ee-search-item"
+                    >
+                      <MapPin
+                        size={14}
+                        className="text-[#00c3f5] shrink-0 mt-0.5"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="ee-search-item-title truncate">
+                          {mainName}
+                        </div>
+                        {subtitle && (
+                          <div className="ee-search-item-sub truncate">
+                            {subtitle}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {!loading && query.length >= 2 && results.length === 0 && !parsedCoord && (
+              <div className="p-3 text-center text-xs font-mono text-foreground/40">
+                No locations found. Try city name or lat, lon
+              </div>
+            )}
+
+            {/* Recent Searches */}
+            {query.length === 0 && recentSearches.length > 0 && (
+              <div className="p-2">
+                <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono text-foreground/40 uppercase tracking-wider">
+                  <Clock size={11} />
+                  <span>Recent / Featured</span>
+                </div>
+                {recentSearches.map((rec) => (
+                  <button
+                    key={rec.name}
+                    type="button"
+                    onClick={() => handleSelect(rec.lat, rec.lon, rec.name)}
+                    className="ee-search-item rounded-md"
+                  >
+                    <Compass size={13} className="text-[#9333ea] shrink-0 mt-0.5" />
+                    <span className="ee-search-item-title truncate flex-1">
+                      {rec.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Recent searches */}
-      {!open && recentSearches.length > 0 && (
-        <div style={{ marginTop: 8 }}>
-          <div className="ee-section-label" style={{ marginBottom: 4 }}>
-            <Clock size={9} />
-            <span>Recent</span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {recentSearches.map((r, i) => (
-              <div
-                key={i}
-                className="ee-search-result"
-                onClick={() => onSelect(r.lat, r.lon, r.name)}
-              >
-                <span className="ee-search-result-name">{r.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </motion.div>
+    </div>
   );
 }

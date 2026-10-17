@@ -36,6 +36,7 @@ interface App {
   tags: string[];
   mine: boolean;
   featured?: boolean;
+  image?: string;
   links: { label: string; href: string }[];
 }
 
@@ -44,6 +45,7 @@ const APPS: App[] = [
   /* ── Scientific ──────────────────────────────────── */
   {
     id: "fractal-explorer",
+    image: "fractal-explorer.jfif",
     title: "Fractal Explorer",
     desc: "Explore the Mandelbrot and Julia sets with multi-threaded Web Worker rendering, 12 colour palettes, infinite pan/zoom, undo history, and PNG export.",
     icon: Infinity,
@@ -55,6 +57,7 @@ const APPS: App[] = [
   },
   {
     id: "particle-physics-visualizer",
+    image: "particle-physics.jfif",
     title: "Particle Physics Visualizer",
     desc: "Explore the fundamental building blocks of the universe — Standard Model, Supersymmetry, and Hadrons. Search, filter, and sort 49 particles by mass, charge, spin, and family.",
     icon: Atom,
@@ -67,6 +70,7 @@ const APPS: App[] = [
   },
   {
     id: "interactive-periodic-table",
+    image: "periodic-table.jfif",
     title: "Interactive Periodic Table",
     desc: "Explore all 118 elements with an interactive periodic table. Click any element for detailed properties, Bohr model, electron configuration, ionization energies, and more. Search and filter by category.",
     icon: LayoutGrid,
@@ -80,6 +84,7 @@ const APPS: App[] = [
 
   {
     id: "feynman-diagram-generator",
+    image: "feynman-diagram.jfif",
     title: "Feynman Diagram Generator",
     desc: "A tool for creating Feynman diagrams easily and intuitively. Export your diagrams directly as TikZ LaTeX code for use in papers, or as high-quality SVGs.",
     icon: GitFork,
@@ -92,6 +97,7 @@ const APPS: App[] = [
   },
   {
     id: "earth-explorer",
+    image: "earth-explorer.jfif",
     title: "Earth Explorer",
     desc: "Interactive 3D globe powered by CesiumJS and OpenStreetMap. Explore Earth with satellite imagery, location search, fly-to animations, day/night lighting, and bookmarked landmarks — a Google Earth-like experience in your browser.",
     icon: Globe,
@@ -107,6 +113,7 @@ const APPS: App[] = [
   /* ── Generators ──────────────────────────────────── */
   {
     id: "fibonacci-generator",
+    image: "fibonacci.jfif",
     title: "Fibonacci Generator",
     desc: "Generate Fibonacci sequences of arbitrary size using BigInt arithmetic. Download the full sequence or just the Nth number as a JSON file.",
     icon: Hash,
@@ -118,6 +125,7 @@ const APPS: App[] = [
   },
   {
     id: "prime-generator",
+    image: "prime.jfif",
     title: "Prime Sequence Generator",
     desc: "Generate the first n prime numbers using an optimised sieve. Preview results in-browser and download the full sequence as a JSON file.",
     icon: Zap,
@@ -131,6 +139,7 @@ const APPS: App[] = [
   /* ── Professional ────────────────────────────────── */
   {
     id: "website-builder-pro",
+    image: "website-builder.jfif",
     title: "Website Builder Pro",
     desc: "A full-featured visual website builder: drag-and-drop sections, rich text editing, 10 pre-built components, multi-page support, theme customization, asset management, and one-click ZIP export.",
     icon: Braces,
@@ -143,6 +152,7 @@ const APPS: App[] = [
   },
   {
     id: "image-editor",
+    image: "image-editor.jfif",
     title: "Image Editor",
     desc: "Professional-grade image editor with crop, resize, rotate, flip, 12 filters, 10 adjustment sliders, freehand drawing, text overlays, undo/redo history, and multi-format export. 100% client-side.",
     icon: Paintbrush,
@@ -157,6 +167,7 @@ const APPS: App[] = [
   /* ── AI ──────────────────────────────────────────── */
   {
     id: "artforge-imgen",
+    image: "imgen.jfif",
     title: "ArtForge AI Image Generator",
     desc: "Generate stunning AI images with advanced controls — anime, realistic, fantasy, cyberpunk and 25+ art styles. Multiple AI models, custom dimensions, prompt enhancement, and batch generation. Powered by Pollinations.ai, 100% free.",
     icon: ImagePlus,
@@ -169,6 +180,7 @@ const APPS: App[] = [
   },
   {
     id: "ai-chatbot",
+    image: "ai-chatbot.jfif",
     title: "AI Chatbot",
     desc: "Multi-model AI chatbot with 20+ LLMs: reasoning, coding, vision, and Pixazo AI image generation. Full chat history, markdown rendering, and HTML export.",
     icon: Bot,
@@ -183,6 +195,7 @@ const APPS: App[] = [
   /* ── Utilities ───────────────────────────────────── */
   {
     id: "plagiarism-checker",
+    image: "plagiarism-checker.jfif",
     title: "Plagiarism Checker",
     desc: "Check your text for potential plagiarism and ensure originality. Advanced analysis to identify similar passages and flag suspicious content.",
     icon: Search,
@@ -194,6 +207,7 @@ const APPS: App[] = [
   },
   {
     id: "unicode-explorer",
+    image: "unicode.jfif",
     title: "Unicode Explorer",
     desc: "Explore and visualise Unicode characters and their properties. Search the full Unicode library covering all scripts, symbols, and emoji.",
     icon: BookOpen,
@@ -205,6 +219,7 @@ const APPS: App[] = [
   },
   {
     id: "pdf-tools",
+    image: "pdf-tools.jfif",
     title: "PDF Tools",
     desc: "Your all-in-one tool for PDF and image conversion. Extract pages, convert image to PDF or PDF to image, and merge multiple PDF documents.",
     icon: Download,
@@ -216,6 +231,7 @@ const APPS: App[] = [
   },
   {
     id: "base64-converter",
+    image: "base64.jfif",
     title: "Multimedia Base64 Converter",
     desc: "Encode files to Base64 and decode Base64 strings back to files. Supports all common multimedia formats with drag-and-drop interface.",
     icon: Shuffle,
@@ -227,6 +243,7 @@ const APPS: App[] = [
   },
   {
     id: "unicode-font-generator",
+    image: "font-generator.jfif",
     title: "Unicode Font Generator",
     desc: "Generate text in various Unicode font styles — bold, italic, script, fraktur, monospace, and more. Works across all platforms and copy-paste ready.",
     icon: Type,
@@ -238,6 +255,7 @@ const APPS: App[] = [
   },
   {
     id: "qr-code-generator",
+    image: "qr-generator.jfif",
     title: "QR Code Generator",
     desc: "Generate QR codes easily and quickly with full customisation — size, colours, error-correction level, and download in multiple formats.",
     icon: QrCode,
@@ -249,6 +267,7 @@ const APPS: App[] = [
   },
   {
     id: "graphing-calculator",
+    image: "graphing-calculator.jfif",
     title: "Graphing Calculator",
     desc: "Plot explicit and implicit equations on a real-time SVG canvas. Pan, zoom, toggle the grid, add unlimited equations with custom colours, and export as PNG or SVG.",
     icon: TrendingUp,
@@ -262,6 +281,7 @@ const APPS: App[] = [
   /* ── Games ───────────────────────────────────────── */
   {
     id: "2048-tile",
+    image: "2048.jfif",
     title: "2048 Tile",
     desc: "Slide numbered tiles on the grid to combine them and create a tile with the number 2048. A classic puzzle that tests spatial reasoning.",
     icon: Gamepad2,
@@ -273,6 +293,7 @@ const APPS: App[] = [
   },
   {
     id: "celestial-chess",
+    image: "chess.jfif",
     title: "Celestial Chess",
     desc: "A strategic chess game set in a beautiful celestial theme. Full rules engine with all standard moves, castling, en passant, and promotion.",
     icon: Crown,
@@ -287,6 +308,7 @@ const APPS: App[] = [
   /* ── External ─────────────────────────────────────── */
   {
     id: "celestia",
+    image: "celestia.jfif",
     title: "Celestia",
     desc: "Real-time 3D space simulation by the Celestia Development Team. Explore the universe in three dimensions at any point in space and time. Screened and embedded for convenience — not affiliated with this site.",
     icon: Globe,
@@ -301,6 +323,7 @@ const APPS: App[] = [
   },
   {
     id: "stellarium",
+    image: "stellarium.jfif",
     title: "Stellarium",
     desc: "Open-source web planetarium by the Stellarium Team. Renders a realistic sky in 3D — stars, constellations, planets and deep-sky objects. Screened and embedded for convenience — not affiliated with this site.",
     icon: Star,
@@ -362,35 +385,51 @@ function AppCard({ app, index }: { app: App; index: number }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.055, duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
       whileHover={{ y: -6 }}
-      className={`glass-card border border-white/6 p-5 flex flex-col h-full transition-all duration-300 ${ac.border} relative overflow-hidden group`}
+      className={`glass-card border border-white/6 p-4 sm:p-5 flex flex-col h-full transition-all duration-300 ${ac.border} relative overflow-hidden group`}
     >
-      {/* Badges */}
-      <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-        {app.featured && (
-          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-quantum/12 text-quantum border border-quantum/20 uppercase tracking-widest">
-            Featured
-          </span>
-        )}
-        {!app.mine && (
-          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-white/6 text-foreground/35 border border-white/10 uppercase tracking-widest">
-            External
-          </span>
-        )}
+      {/* Preview Image */}
+      {app.image && (
+        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-4 border border-white/8 bg-black/40 shadow-inner">
+          <img
+            src={`/apps/${app.image}`}
+            alt={`${app.title} preview`}
+            loading="lazy"
+            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+          />
+          {/* Subtle vignette gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+          {/* Badges on top of image */}
+          <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1 z-10">
+            {app.featured && (
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-quantum/25 backdrop-blur-md text-quantum border border-quantum/35 uppercase tracking-widest font-semibold shadow-sm">
+                Featured
+              </span>
+            )}
+            {!app.mine && (
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-foreground/50 border border-white/10 uppercase tracking-widest">
+                External
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Header: Icon + Category + Title */}
+      <div className="flex items-center gap-3 mb-2.5">
+        <div className={`w-9 h-9 rounded-xl ${ac.icon} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+          <Icon size={18} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className={`text-[9px] font-mono uppercase tracking-widest ${ac.icon.split(" ")[1]}`}>
+            {app.category}
+          </div>
+          <h3 className="font-semibold text-sm leading-snug truncate text-foreground/90">{app.title}</h3>
+        </div>
       </div>
 
-      {/* Icon */}
-      <div className={`w-11 h-11 rounded-xl ${ac.icon} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-        <Icon size={22} />
-      </div>
-
-      {/* Category label */}
-      <div className={`text-[10px] font-mono uppercase tracking-widest mb-1.5 ${ac.icon.split(" ")[1]}`}>
-        {app.category}
-      </div>
-
-      {/* Title & desc */}
-      <h3 className="font-semibold text-sm leading-snug mb-2">{app.title}</h3>
-      <p className="text-xs text-foreground/45 leading-relaxed flex-1 mb-4">{app.desc}</p>
+      {/* Description */}
+      <p className="text-xs text-foreground/50 leading-relaxed flex-1 mb-4 line-clamp-3">{app.desc}</p>
 
       {/* Tags */}
       <div className="flex flex-wrap gap-1 mb-4">
@@ -405,9 +444,9 @@ function AppCard({ app, index }: { app: App; index: number }) {
       <div className="flex flex-wrap gap-2 mt-auto">
         {app.links.map((l) => {
           const isExternal = l.href.startsWith("http");
-          const cls = `flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play"
+          const cls = `flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play" || l.label === "Launch"
             ? ac.link
-            : "bg-white/5 text-foreground/40 hover:text-foreground/70 hover:bg-white/8 border-white/8"
+            : "bg-white/5 text-foreground/50 hover:text-foreground/80 hover:bg-white/8 border-white/8"
           }`;
           return isExternal ? (
             <a
@@ -429,7 +468,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
       </div>
 
       {/* Glow corner */}
-      <div className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${ac.glow}`} />
+      <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${ac.glow}`} />
     </motion.div>
   );
 }
@@ -444,21 +483,37 @@ function AppRow({ app, index }: { app: App; index: number }) {
       initial={{ opacity: 0, x: -18 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.04, duration: 0.35 }}
-      className={`glass-card border border-white/6 p-4 transition-all duration-300 ${ac.border}`}
+      className={`glass-card border border-white/6 p-3 sm:p-4 transition-all duration-300 ${ac.border} group`}
     >
-      <div className="flex items-start gap-4">
-        <div className={`w-10 h-10 rounded-xl ${ac.icon} flex items-center justify-center flex-shrink-0`}>
-          <Icon size={18} />
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Preview Thumbnail in List View */}
+        {app.image && (
+          <div className="relative w-full sm:w-36 aspect-[16/10] sm:aspect-auto sm:h-22 rounded-lg overflow-hidden flex-shrink-0 border border-white/8 bg-black/40">
+            <img
+              src={`/apps/${app.image}`}
+              alt={`${app.title} preview`}
+              loading="lazy"
+              className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+            <div className={`absolute bottom-1.5 left-1.5 w-6 h-6 rounded-md ${ac.icon} flex items-center justify-center shadow`}>
+              <Icon size={12} />
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">{app.title}</span>
+              <span className="font-semibold text-sm text-foreground/90">{app.title}</span>
+              {app.featured && (
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-quantum/12 text-quantum border border-quantum/20">Featured</span>
+              )}
               {!app.mine && (
                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-white/5 text-foreground/30 border border-white/8">External</span>
               )}
             </div>
-            <span className={`text-[10px] font-mono uppercase ${ac.icon.split(" ")[1]}`}>{app.category}</span>
+            <span className={`text-[10px] font-mono uppercase tracking-widest ${ac.icon.split(" ")[1]}`}>{app.category}</span>
           </div>
           <p className="text-xs text-foreground/45 mb-2 line-clamp-1">{app.desc}</p>
           <div className="flex flex-wrap gap-1">
@@ -467,20 +522,20 @@ function AppRow({ app, index }: { app: App; index: number }) {
             ))}
           </div>
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 self-end sm:self-center">
           {app.links[0].href.startsWith("http") ? (
             <a
               href={app.links[0].href}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all ${ac.link}`}
+              className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all ${ac.link}`}
             >
               <ExternalLink size={10} /> {app.links[0].label}
             </a>
           ) : (
             <Link
               href={app.links[0].href}
-              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all ${ac.link}`}
+              className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all ${ac.link}`}
             >
               {app.links[0].label}
             </Link>
@@ -628,7 +683,7 @@ export default function AppsPage() {
 
         {/* ── Featured row (only when "All" category & no search) ────────── */}
         <AnimatePresence mode="wait">
-          {category === "All" && !search && featured.length > 0 && (
+          {category === "All" && !search && featured.length > 0 && view === "grid" && (
             <motion.div
               key="featured"
               initial={{ opacity: 0 }}
