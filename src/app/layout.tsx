@@ -1,3 +1,4 @@
+import Script from "next/script";
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -71,6 +72,20 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} ${jetbrains.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
+        {/* Google tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-NYNSX08KYK"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-NYNSX08KYK');
+          `}
+        </Script>
         <ThemeProvider>
           <Navbar />
           <main className="flex-1 pt-20">{children}</main>
