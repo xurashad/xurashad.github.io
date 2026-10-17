@@ -1202,7 +1202,7 @@ export function ImageEditorApp() {
                     Paste
                   </button>
                   <button
-                    onClick={() => editor.loadImage("/apps/image-editor.jfif")}
+                    onClick={() => editor.loadImage("/imges/apps_backgrounds/image-editor.jfif")}
                     className="flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 rounded-xl border border-white/10
                       text-foreground/50 text-xs sm:text-sm hover:border-quantum/40 hover:text-quantum transition-all"
                   >

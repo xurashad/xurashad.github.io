@@ -25,10 +25,13 @@ export type GameStatus =
   | "CHECK"
   | "CHECKMATE"
   | "STALEMATE"
-  | "DRAW_50"       // fifty-move rule
+  | "DRAW_50"           // fifty-move rule
+  | "DRAW_INSUFFICIENT" // insufficient material to checkmate
+  | "DRAW_REPETITION"   // threefold repetition
   | "PROMOTION";
 
 export type GameMode = "pvp" | "pvc";
+export type AIDifficulty = "easy" | "medium" | "hard";
 
 export type Board = (Piece | null)[][];
 
@@ -38,4 +41,5 @@ export interface HistoryEntry {
   status: GameStatus;
   enPassantTarget: Square | null;
   halfMoveClock: number;
+  positionHash?: string;
 }

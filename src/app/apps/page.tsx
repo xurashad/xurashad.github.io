@@ -391,7 +391,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
       {app.image && (
         <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-4 border border-white/8 bg-black/40 shadow-inner">
           <img
-            src={`/apps/${app.image}`}
+            src={`/imges/apps_backgrounds/${app.image}`}
             alt={`${app.title} preview`}
             loading="lazy"
             className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -490,7 +490,7 @@ function AppRow({ app, index }: { app: App; index: number }) {
         {app.image && (
           <div className="relative w-full sm:w-36 aspect-[16/10] sm:aspect-auto sm:h-22 rounded-lg overflow-hidden flex-shrink-0 border border-white/8 bg-black/40">
             <img
-              src={`/apps/${app.image}`}
+              src={`/imges/apps_backgrounds/${app.image}`}
               alt={`${app.title} preview`}
               loading="lazy"
               className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"

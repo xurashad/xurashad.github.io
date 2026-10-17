@@ -4,9 +4,9 @@ import { ChessGame } from "./ChessGame";
 export const metadata: Metadata = {
   title: "Celestial Chess",
   description:
-    "A fully-featured celestial-themed chess game. Supports all legal moves — castling, en passant, pawn promotion. Play against a friend (PvP) or challenge the computer (alpha-beta minimax AI at depth 3). Features move notation, captured-piece display, board flip, and undo.",
+    "A fully-featured celestial-themed chess game with 2D and 3D views. Supports all legal moves — castling, en passant, pawn promotion. Play against a friend (PvP) or challenge the computer (alpha-beta minimax AI). Features 3D board, move notation, captured-piece display, board flip, undo, and Web Audio SFX.",
   keywords: [
-    "chess", "celestial chess", "online chess", "chess game", "browser chess",
+    "chess", "celestial chess", "3D chess", "online chess", "chess game", "browser chess",
     "en passant", "castling", "pawn promotion", "chess AI",
   ],
 };
@@ -20,29 +20,25 @@ export default function ChessPage() {
         <div className="absolute top-2/3 left-1/3 w-64 h-64 rounded-full bg-fuchsia-900/10 blur-[100px]" />
       </div>
 
-      <div className="section-container py-16 pb-28">
+      <div className="section-container pt-6 sm:pt-8 pb-16">
         {/* Header */}
-        <div className="mb-10">
-          <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-3">
-            // Games · Strategy
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-quantum/10 pb-4">
+          <div>
+            <div className="text-[11px] font-mono text-quantum/65 tracking-widest uppercase mb-1">
+              // Games · Grandmaster Strategy
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-serif font-bold">
+              <span className="gradient-text-quantum">Celestial</span>{" "}
+              <span className="text-foreground/70">Chess</span>
+            </h1>
           </div>
-          <h1 className="text-5xl sm:text-6xl font-serif font-bold mb-4">
-            <span className="gradient-text-quantum">Celestial</span>{" "}
-            <span className="text-foreground/60">Chess</span>
-          </h1>
-          <p className="text-foreground/45 max-w-xl leading-relaxed">
-            A beautiful chess game with full rule support — castling, en passant,
-            pawn promotion, check, checkmate and stalemate detection. Face a friend
-            or challenge the AI.
-          </p>
-
-          <div className="flex flex-wrap gap-2 mt-5">
+          <div className="flex flex-wrap gap-1.5 max-w-lg">
             {[
-              "All legal moves", "En passant", "Castling",
-              "Pawn promotion", "Alpha-beta AI (depth 3)",
-              "Move notation", "Undo", "Board flip",
+              "3D & 2D Views", "FIDE Rules", "En Passant", "Castling", "Promotion",
+              "Web Audio SFX", "3 AI Levels", "Drag & Drop",
+              "Material Lead", "Draw Detection",
             ].map(f => (
-              <span key={f} className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-quantum/20 bg-quantum/5 text-quantum/60">
+              <span key={f} className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-quantum/25 bg-quantum/5 text-quantum/70">
                 {f}
               </span>
             ))}

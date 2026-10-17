@@ -20,6 +20,7 @@ interface Dataset {
   id:       string;
   title:    string;
   desc:     string;
+  image?:   string;
   fields?:  string[];
   icon:     React.ComponentType<{ size?: number; className?: string }>;
   category: Exclude<DCategory, "All">;
@@ -39,6 +40,7 @@ const DATASETS: Dataset[] = [
     id:       "particles",
     title:    "Fundamental & Supersymmetric Particles",
     desc:     "A dataset containing information about fundamental particles and their supersymmetric counterparts. Covers the Standard Model particle zoo alongside their SUSY partners — squarks, sleptons, gauginos, and more.",
+    image:    "particle_physics.jfif",
     fields:   [
       "name", "symbol", "type", "mass", "charge", "spin",
       "susy_partner", "susy_mass", "lifetime", "discovery_year",
@@ -62,6 +64,7 @@ const DATASETS: Dataset[] = [
     id:       "primes-1m",
     title:    "First 1M Prime Numbers",
     desc:     "A dataset of the first 1,000,000 prime numbers, from 2 to 15,485,863. Generated via an optimised Sieve of Eratosthenes. Useful for number theory research, cryptography benchmarks, and machine learning experiments.",
+    image:    "prime_numbers.jfif",
     icon:     Hash,
     category: "Mathematics",
     format:   ["JSON", "Python"],
@@ -82,6 +85,7 @@ const DATASETS: Dataset[] = [
     id:       "elements",
     title:    "Chemical Elements",
     desc:     "A comprehensive dataset of all chemical elements in the periodic table. Each entry includes physical properties, thermodynamic constants, electron configuration, and a Bohr model image.",
+    image:    "chemical_elements.jfif",
     fields:   [
       "name", "symbol", "number", "atomic_mass", "category", "period", "group",
       "phase", "density", "melt", "boil", "discovery", "summary",
@@ -139,10 +143,38 @@ function DatasetCard({ dataset, index }: { dataset: Dataset; index: number }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
       whileHover={{ y: -5 }}
-      className={`glass-card border border-white/6 p-6 flex flex-col h-full relative overflow-hidden group transition-all duration-300 ${ac}`}
+      className={`glass-card border border-white/6 p-4 sm:p-5 flex flex-col h-full relative overflow-hidden group transition-all duration-300 ${ac}`}
     >
-      {/* Featured badge */}
-      {dataset.featured && (
+      {/* Preview Image */}
+      {dataset.image && (
+        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-4 border border-white/8 bg-black/40 shadow-inner">
+          <img
+            src={`/imges/datasets_backgrounds/${dataset.image}`}
+            alt={`${dataset.title} preview`}
+            loading="lazy"
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+          />
+          {/* Subtle vignette gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+
+          {/* Badges on top of image */}
+          <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1 z-10">
+            {dataset.featured && (
+              <span className="flex items-center gap-1 text-[9px] font-mono px-2 py-0.5 rounded-full bg-quantum/25 backdrop-blur-md text-quantum border border-quantum/35 uppercase tracking-widest font-semibold shadow-sm">
+                <Star size={8} /> Featured
+              </span>
+            )}
+          </div>
+
+          {/* Category Icon badge overlay on bottom left */}
+          <div className={`absolute bottom-2.5 left-2.5 w-7 h-7 rounded-lg ${cfg.bg} backdrop-blur-md border border-white/10 flex items-center justify-center shadow`}>
+            <Icon size={14} className={cfg.color} />
+          </div>
+        </div>
+      )}
+
+      {/* Featured badge fallback if no image */}
+      {!dataset.image && dataset.featured && (
         <div className="absolute top-4 right-4">
           <span className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-quantum/12 text-quantum border border-quantum/20 uppercase tracking-widest">
             <Star size={8} /> Featured
@@ -151,15 +183,17 @@ function DatasetCard({ dataset, index }: { dataset: Dataset; index: number }) {
       )}
 
       {/* Icon + category */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className={`w-12 h-12 rounded-xl ${cfg.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-          <Icon size={24} className={cfg.color} />
-        </div>
-        <div>
+      <div className="flex items-center gap-2.5 mb-3">
+        {!dataset.image && (
+          <div className={`w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+            <Icon size={20} className={cfg.color} />
+          </div>
+        )}
+        <div className="min-w-0">
           <span className={`text-[10px] font-mono uppercase tracking-widest ${cfg.color}`}>{dataset.category}</span>
-          <div className="flex gap-1 mt-1">
+          <div className="flex gap-1 mt-0.5">
             {dataset.format.map((f) => (
-              <span key={f} className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${FORMAT_BADGE[f]}`}>{f}</span>
+              <span key={f} className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${FORMAT_BADGE[f]}`}>{f}</span>
             ))}
           </div>
         </div>
@@ -234,11 +268,23 @@ function DatasetRow({ dataset, index }: { dataset: Dataset; index: number }) {
       transition={{ delay: index * 0.07 }}
       className="border-b border-white/5 hover:bg-white/2 transition-colors group"
     >
-      <td className="py-4 pr-4">
+      <td className="py-3.5 pr-4">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-lg ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
-            <Icon size={15} className={cfg.color} />
-          </div>
+          {dataset.image ? (
+            <div className="relative w-12 sm:w-14 h-9 sm:h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/8 bg-black/40">
+              <img
+                src={`/imges/datasets_backgrounds/${dataset.image}`}
+                alt={`${dataset.title} preview`}
+                loading="lazy"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            </div>
+          ) : (
+            <div className={`w-8 h-8 rounded-lg ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={15} className={cfg.color} />
+            </div>
+          )}
           <div>
             <div className="text-sm font-medium text-foreground/85 group-hover:text-foreground transition-colors">
               {dataset.title}

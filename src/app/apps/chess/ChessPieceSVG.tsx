@@ -122,9 +122,10 @@ const PIECES: Record<string, PieceDef> = {
 interface Props {
   piece: Piece;
   size?: number;
+  className?: string;
 }
 
-export function ChessPieceSVG({ piece, size = 44 }: Props) {
+export function ChessPieceSVG({ piece, size, className }: Props) {
   const isWhite = piece.color === "WHITE";
   const reactId = useId();
   const uid = `${piece.type}-${piece.color}-${reactId}`;
@@ -147,7 +148,7 @@ export function ChessPieceSVG({ piece, size = 44 }: Props) {
       viewBox="0 0 45 45"
       width={size}
       height={size}
-      className="pointer-events-none"
+      className={`pointer-events-none select-none ${className ?? ""}`}
       style={{ filter: `drop-shadow(0 2px 4px ${shadowClr})` }}
       aria-label={`${piece.color.toLowerCase()} ${piece.type.toLowerCase()}`}
     >
