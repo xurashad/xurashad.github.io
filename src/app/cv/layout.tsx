@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "CV — Rashad Hamidi",
+  title: "CV",
   description:
     "Curriculum Vitae of Rashad Hamidi — PhD researcher in Mathematical and Theoretical Physics at Durham University, specialising in integrable sigma models, string theory, and supersymmetry.",
 };

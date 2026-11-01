@@ -43,6 +43,38 @@
             "volume": "08",
             "pages": "090",
             "year": "2025"
+        },
+        {
+            "article": "Hamidi:2026",
+            "authors": [
+                "Rashad Hamidi",
+                "Ben Hoare",
+                "Ana Retore"
+            ],
+            "title": "Twisted quantum affine symmetry and the Z₂-twisted η-model",
+            "eprint": null,
+            "archivePrefix": null,
+            "primaryClass": "soon",
+            "doi": null,
+            "journal": " ",
+            "volume": " ",
+            "pages": " ",
+            "year": "soon"
+        },
+        {
+            "article": "Hamidi:2027",
+            "authors": [
+                "Rashad Hamidi"
+            ],
+            "title": "Coupled twisted sigma models",
+            "eprint": null,
+            "archivePrefix": null,
+            "primaryClass": "soon",
+            "doi": null,
+            "journal": " ",
+            "volume": " ",
+            "pages": " ",
+            "year": "soon"
         }
     ],
     "work_experience": [
@@ -57,7 +89,7 @@
                 "Evaluate and rank model reasoning outputs, isolating mathematical fallacies and hallucinations.",
                 "Design adversarial edge cases and evaluation rubrics to benchmark complex multi-step reasoning."
             ],
-            "working_time": "part time",
+            "working_time": "project-based",
             "start_year": "2026",
             "start_month": "06",
             "end_year": null,
@@ -318,7 +350,7 @@
             "start_month": "10",
             "end_year": "2022",
             "end_month": "09",
-            "thesis_title": "BTZ Black Hole: Holographic Duality, Entropy, and AdS$_3$/CFT$_2$",
+            "thesis_title": "BTZ Black Hole: Holographic Duality, Entropy, and AdS₃/CFT₂",
             "supervisor": "Prof. Nabil Iqbal",
             "grants": [
                 {
@@ -793,6 +825,7 @@
             "editions": [
                 {
                     "edition": "75th",
+                    "city": "Durham",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Durham University",
@@ -804,6 +837,7 @@
                 },
                 {
                     "edition": "74th",
+                    "city": "York",
                     "presentation_type": "Speaker",
                     "sponsors": [
                         "University of York",
@@ -815,6 +849,7 @@
                 },
                 {
                     "edition": "72nd",
+                    "city": "Durham",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Durham University",
@@ -826,6 +861,7 @@
                 },
                 {
                     "edition": "71st",
+                    "city": "York",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "University of York",
@@ -837,6 +873,7 @@
                 },
                 {
                     "edition": "69th",
+                    "city": "Durham",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Durham University",
@@ -848,6 +885,7 @@
                 },
                 {
                     "edition": "66th",
+                    "city": "Durham",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Durham University",
@@ -864,6 +902,7 @@
             "editions": [
                 {
                     "edition": "Meteorology",
+                    "city": "Birzeit",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Birzeit University",
@@ -875,6 +914,7 @@
                 },
                 {
                     "edition": "Computational Multiphysics in Condensed Matter",
+                    "city": "Birzeit",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Birzeit University",
@@ -886,6 +926,7 @@
                 },
                 {
                     "edition": "Black Holes",
+                    "city": "Birzeit",
                     "presentation_type": "Attendee",
                     "sponsors": [
                         "Birzeit University",
@@ -1097,7 +1138,7 @@
     ],
     "certification_programs": [
         {
-            "title": "Access Program",
+            "title": "AMIDEAST Access Program",
             "editions": [
                 {
                     "sponsors": [

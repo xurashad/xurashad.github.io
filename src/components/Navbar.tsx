@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home", emoji: "⚛️" },
   { href: "/apps", label: "Apps", emoji: "🚀" },
   { href: "/datasets", label: "Datasets", emoji: "📡" },
-  //  { href: "/blog", label: "Blog", emoji: "🌊" },
+  { href: "/blog", label: "Blog", emoji: "🌊" },
   { href: "/documents", label: "Documents", emoji: "📁" },
   { href: "/art", label: "Art", emoji: "🎨" },
   { href: "/cv", label: "CV", emoji: "🛸" },

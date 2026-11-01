@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run generate:cv:all && next dev",
     "generate:cv": "node scripts/generate-cv-pdf.mjs",
-    "build": "npm run generate:cv && next build",
+    "build": "npm run generate:cv:all && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:cv:short": "node scripts/generate-cv-short-pdf.mjs",
+    "generate:cv:all": "node scripts/generate-cv-pdf.mjs && node scripts/generate-cv-short-pdf.mjs"
   },
   "dependencies": {
     "@next/font": "^14.2.15",

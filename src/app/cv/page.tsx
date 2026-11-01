@@ -185,7 +185,26 @@ export default function CVPage() {
                   <Download size={16} />
                   <span>Download Full CV (PDF)</span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-quantum/20 text-quantum/90 border border-quantum/30">
-                    A4
+                    Full
+                  </span>
+                </motion.button>
+              </a>
+              <a
+                href="/documents/cv-short.pdf"
+                download="Rashad_Hamidi_CV_Short.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.03, boxShadow: "0 0 25px rgba(0,195,245,0.25)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl bg-surface-muted/60 border border-white/10 text-foreground/85 font-semibold text-sm hover:bg-surface-muted hover:text-foreground transition-all shadow-md cursor-pointer"
+                >
+                  <Download size={15} />
+                  <span>Download Short CV (PDF)</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-foreground/60 border border-white/10">
+                    Concise
                   </span>
                 </motion.button>
               </a>
@@ -311,13 +330,20 @@ export default function CVPage() {
                 );
               })}
             </nav>
-            <div className="pt-4 border-t border-white/8 mt-4">
+            <div className="pt-4 border-t border-white/8 mt-4 space-y-2">
               <a
                 href="/documents/cv.pdf"
                 download="Rashad_Hamidi_CV.pdf"
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-quantum/10 border border-quantum/25 text-quantum hover:bg-quantum/20 text-xs font-medium transition-colors"
               >
-                <Download size={13} /> Download PDF
+                <Download size={13} /> Full CV (PDF)
+              </a>
+              <a
+                href="/documents/cv-short.pdf"
+                download="Rashad_Hamidi_CV_Short.pdf"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-foreground/75 hover:bg-white/10 hover:text-foreground text-xs font-medium transition-colors"
+              >
+                <Download size={13} /> Short CV (PDF)
               </a>
             </div>
           </aside>
@@ -578,7 +604,7 @@ export default function CVPage() {
                 badge="05 // Funding & Recognitions"
                 title="Honours, Awards & Grants"
                 icon={Award}
-                accent="olive"
+                accent="quantum"
               />
 
               {/* Filter pills */}

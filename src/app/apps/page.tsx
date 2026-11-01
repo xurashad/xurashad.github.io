@@ -194,6 +194,18 @@ const APPS: App[] = [
 
   /* ── Utilities ───────────────────────────────────── */
   {
+    id: "hisab-jummal",
+    image: "hisab-jummal.jfif",
+    title: "Hisab Al-Jummal (حساب الجُمَّل)",
+    desc: "Calculate the numerical value of Arabic words, sentences, and poetry verses using Mashriqi and Maghrebi Abjad systems. Features deep character breakdowns, digital roots, minor/bast values, chronogram solver, and an extensive historical guide.",
+    icon: Hash,
+    category: "Utilities",
+    accent: "olive",
+    tags: ["Arabic", "Abjad", "Gematria", "History", "Linguistics", "Poetry"],
+    mine: true,
+    links: [{ label: "Open App", href: "/apps/hisab-jummal" }],
+  },
+  {
     id: "plagiarism-checker",
     image: "plagiarism-checker.jfif",
     title: "Plagiarism Checker",
@@ -447,7 +459,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
           const cls = `flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play" || l.label === "Launch"
             ? ac.link
             : "bg-white/5 text-foreground/50 hover:text-foreground/80 hover:bg-white/8 border-white/8"
-          }`;
+            }`;
           return isExternal ? (
             <a
               key={l.label}

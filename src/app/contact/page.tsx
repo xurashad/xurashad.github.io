@@ -612,7 +612,7 @@ export default function ContactPage() {
             >
               <div className="flex items-center gap-3 text-sm text-foreground/40 glass rounded-xl border border-white/6 p-3">
                 <MapPin size={14} className="text-quantum/60 flex-shrink-0" />
-                <span>Newcastle upon Tyne, UK · Open to relocate</span>
+                <span>Gateshead, UK · Open to relocate</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-foreground/40 glass rounded-xl border border-white/6 p-3">
                 <Clock size={14} className="text-olive/60 flex-shrink-0" />
