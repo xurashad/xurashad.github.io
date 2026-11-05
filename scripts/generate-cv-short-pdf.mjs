@@ -302,7 +302,7 @@ async function generateShortPDF() {
   const name = info.name || "Rashad Hamidi";
   const title = info.title || "PhD Researcher in Mathematical and Theoretical Physics";
   const institution = info.institution || "Durham University";
-  const location = info.location || cvData.links?.location || "Gateshead, UK";
+  const location = info.location || cvData.links?.location || "London, UK";
   const email = info.email || cvData.links?.email || "xurashad@gmail.com";
   const website = info.website || cvData.links?.website || "https://xurashad.github.io/";
   const orcid = info.orcid || cvData.links?.orcid || "0000-0002-0719-3269";

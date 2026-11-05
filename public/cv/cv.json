@@ -5,7 +5,7 @@
         "title": "PhD Researcher in Mathematical and Theoretical Physics",
         "institution": "Durham University",
         "department": "Department of Mathematical Sciences",
-        "location": "Gateshead, UK",
+        "location": "London, UK",
         "email": "xurashad@gmail.com",
         "website": "https://xurashad.github.io/",
         "orcid": "0000-0002-0719-3269",
@@ -16,7 +16,7 @@
         "email": "xurashad@gmail.com",
         "orcid": "0000-0002-0719-3269",
         "inspirehep": "2915639",
-        "location": "Gateshead, UK"
+        "location": "London, UK"
     },
     "research_interests": {
         "topics": [
@@ -92,9 +92,9 @@
             "working_time": "project-based",
             "start_year": "2026",
             "start_month": "06",
-            "end_year": null,
-            "end_month": null,
-            "current": true
+            "end_year": "2026",
+            "end_month": "7",
+            "current": false
         },
         {
             "position": "Teaching Assistant",

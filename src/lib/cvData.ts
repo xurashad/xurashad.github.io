@@ -15,7 +15,7 @@ export const personalInfo: PersonalInfo = cvData.personal_info || {
   title: "PhD Researcher in Mathematical and Theoretical Physics",
   institution: "Durham University",
   department: "Department of Mathematical Sciences",
-  location: cvData.links.location || "Gateshead, UK",
+  location: cvData.links.location || "London, UK",
   email: cvData.links.email || "xurashad@gmail.com",
   website: cvData.links.website || "https://xurashad.github.io/",
   orcid: cvData.links.orcid || "0000-0002-0719-3269",
