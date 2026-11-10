@@ -306,7 +306,7 @@ export const RAW_POSTS: RawPost[] = [
     },
     sections: [
       {
-        heading: "1. The Subatomic Basement: Welcome to the Void (10⁻³⁵ to 10⁻¹⁰ m)",
+        heading: "The Subatomic Basement: Welcome to the Void (10⁻³⁵ to 10⁻¹⁰ m)",
         image: {
           src: "/images/blog/scale/atom-quantum-void.jpg",
           alt: "Quantum spacetime foam and subatomic vacuum wave fluctuations",
@@ -324,7 +324,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "You are not solid matter; you are an electromagnetic phantom whistling through a hollow cathedral of void.",
       },
       {
-        heading: "2. The Biological Sweet Spot: The Cosmic Center (10⁻⁹ to 10⁰ m)",
+        heading: "The Biological Sweet Spot: The Cosmic Center (10⁻⁹ to 10⁰ m)",
         image: {
           src: "/images/blog/scale/dna-cosmic-midpoint.jpg",
           alt: "Bioluminescent cellular structures and molecular helices in starlight",
@@ -343,7 +343,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "On a logarithmic scale, humanity does not reside in the basement. We occupy the penthouse of complexity right in the center of the spectrum.",
       },
       {
-        heading: "3. The Planetary Yard: Space is Mostly Empty Space (10⁷ to 10¹³ m)",
+        heading: "The Planetary Yard: Space is Mostly Empty Space (10⁷ to 10¹³ m)",
         image: {
           src: "/images/blog/scale/solar-system-scale.jpg",
           alt: "The Sun and pale blue Earth in vast dark cosmic space",
@@ -362,7 +362,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Space is called space for a reason: it is almost entirely, mercilessly empty.",
       },
       {
-        heading: "4. The Galactic Highway: Cosmic Monsters (10¹⁶ to 10²¹ m)",
+        heading: "The Galactic Highway: Cosmic Monsters (10¹⁶ to 10²¹ m)",
         image: {
           src: "/images/blog/scale/milky-way-monsters.jpg",
           alt: "Supermassive black hole accretion disk warping spacetime alongside a galaxy",
@@ -381,7 +381,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "If the solar system were the size of a coin, our galaxy would span an entire continent — and billions of stars would still never touch.",
       },
       {
-        heading: "5. The Cosmic Web: The 93-Billion-Light-Year Horizon (10²³ to 10²⁷ m)",
+        heading: "The Cosmic Web: The 93-Billion-Light-Year Horizon (10²³ to 10²⁷ m)",
         image: {
           src: "/images/blog/scale/cosmic-web-filaments.jpg",
           alt: "The Cosmic Web glowing filaments and cosmic voids",
@@ -400,7 +400,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "We are the universe's way of thinking about itself: atoms that woke up, built mirrors, and marveled at the light.",
       },
       {
-        heading: "6. Beyond the Edge: Multiverse, Xenoverse & The Truly Weird",
+        heading: "Beyond the Edge: Multiverse, Xenoverse & The Truly Weird",
         image: {
           src: "/images/blog/scale/multiverse-bubbles.jpg",
           alt: "Luminous bubble universes floating in a hyperdimensional multiverse",
@@ -423,7 +423,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "The universe is not only stranger than we imagine; it is stranger than we can imagine.",
       },
       {
-        heading: "7. Summary: The 62-Order Journey at a Glance",
+        heading: "Summary: The 62-Order Journey at a Glance",
         image: {
           src: "/images/blog/scale/cosmic-ladder-infographic.jpg",
           alt: "Panoramic celestial continuum of stars, galaxies, and cosmic filaments",
@@ -464,7 +464,7 @@ export const RAW_POSTS: RawPost[] = [
     },
     sections: [
       {
-        heading: "1. January to August: The Cosmic Spring & Summer (The Slow Simmer)",
+        heading: "January to August: The Cosmic Spring & Summer (The Slow Simmer)",
         image: {
           src: "/images/blog/calendar/section1-cosmic-cliffs.jpg",
           alt: "James Webb Space Telescope Cosmic Cliffs showing glittering landscape of infant stars and cosmic gas clouds",
@@ -496,7 +496,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "If the universe were a 12-episode streaming epic, planet Earth doesn't even get cast until Episode 9.",
       },
       {
-        heading: "2. September to November: Earth Arrives & Life Takes a Two-Month Nap",
+        heading: "September to November: Earth Arrives & Life Takes a Two-Month Nap",
         image: {
           src: "/images/blog/calendar/section2-precambrian-earth.jpg",
           alt: "Serene primeval Archean and Proterozoic landscape with emerging stromatolite reefs, crystal turquoise oceans, and luminous infant Moon",
@@ -516,7 +516,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Life wasted no time waking up on Earth — but once awake, it spent two cosmic months taking an uninterrupted nap.",
       },
       {
-        heading: "3. December: The Holiday Rush of Complex Life & Dinosaurs",
+        heading: "December: The Holiday Rush of Complex Life & Dinosaurs",
         image: {
           src: "/images/blog/calendar/section3-prehistoric-life-dinosaurs.jpg",
           alt: "Lush Mesozoic valley with giant prehistoric ferns, cycads, winding river, and majestic sauropod dinosaurs under morning sunlight",
@@ -536,7 +536,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Dinosaurs roamed Earth for five full cosmic days. Humanity's entire existence is just a fleeting coffee break at the end of the year.",
       },
       {
-        heading: "4. December 31st: The Final Midnight Countdown (Where Humans Show Up)",
+        heading: "December 31st: The Final Midnight Countdown (Where Humans Show Up)",
         image: {
           src: "/images/blog/calendar/section4-human-history-timeline.jpg",
           alt: "Panoramic timeline of human civilisation from Stone Age fire, ancient Egyptian pyramids, classical Greece, Islamic Golden Age astronomy, European sailing voyages, to the Industrial Revolution",
@@ -564,7 +564,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Every king, peasant, warrior, lover, and explorer who ever lived lived in the final eleven seconds before the cosmic countdown ended.",
       },
       {
-        heading: "5. The Master Chronology: 50 Milestones Across 13.8 Billion Years",
+        heading: "The Master Chronology: 50 Milestones Across 13.8 Billion Years",
         image: {
           src: "/images/blog/calendar/cosmic-calendar-grid-alt.jpg",
           alt: "The Complete Cosmic Calendar chronology grid linking astronomical deep time to human civilisation",
@@ -640,7 +640,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself.",
       },
       {
-        heading: "6. Summary & Epilogue: What Does a Cosmic Second Mean for You?",
+        heading: "Summary & Epilogue: What Does a Cosmic Second Mean for You?",
         image: {
           src: "/images/blog/calendar/section5-deep-field.jpg",
           alt: "Hubble and Webb Deep Field showing thousands of ancient galaxies stretching across cosmic time",
@@ -695,7 +695,7 @@ export const RAW_POSTS: RawPost[] = [
     },
     sections: [
       {
-        heading: "1. The Blank Margin: Why Physicists Must Test Their Own Truth",
+        heading: "The Blank Margin: Why Physicists Must Test Their Own Truth",
         body: [
           "In school, mathematics is taught with an answer key in the back of the book. If you dropped a minus sign on step three, you lost two points on your exam and went on with your day. In frontier research, however, nature never hands out solutions. When Albert Einstein spent eight agonizing years formulating General Relativity, or Paul Dirac predicted antimatter, there was no teacher's manual to verify their work.",
           "Worse, human beings are remarkably blind to their own algebraic blunders. Just as our brains effortlessly overlook spelling typos in an essay we wrote minutes ago, our eyes gloss over an inverted fraction, an omitted factor of $2\\pi$, or an unphysical minus sign because the mind reads what it intended to write. Physicists survive by treating their equations like crash-test prototypes: rather than re-reading the algebra, they subject their equations to an interrogation torture test across extreme regimes, boundary seams, and fundamental symmetries.",
@@ -708,7 +708,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "I would rather have questions that can't be answered than answers that can't be questioned — and above all, derivations that fail their own sanity checks.",
       },
       {
-        heading: "2. Trick 1: Dimensional Analysis & Type Consistency (Never Add Elephants to Seconds)",
+        heading: "Trick 1: Dimensional Analysis & Type Consistency (Never Add Elephants to Seconds)",
         body: [
           "In pure mathematics, numbers are free spirits. But in physics, numbers wear rigid suits of armor known as physical dimensions: Mass $[M]$, Length $[L]$, and Time $[T]$. The cardinal rule of physical mathematics is dimensional homogeneity: you can multiply 5 kilograms by 2 meters per second to get momentum, but attempting to add 5 kilograms to 2 seconds is meaningless gibberish.",
           "In 1947, British fluid dynamicist G.I. Taylor proved how devastatingly potent this rule is. The US military had published newly declassified photos of the top-secret 1945 Trinity atomic bomb detonation in *Life* magazine. Crucially, the bomb's total explosive yield $E$ was one of the most closely guarded military secrets on Earth. Taylor reasoned that the expanding fireball radius $R$ could only depend on explosive energy $E$, air density $\\rho$, and time $t$. Balancing dimensions of $[M]$, $[L]$, and $[T]$ permitted only one possible mathematical combination:",
@@ -729,7 +729,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Units and tensor ranks are not arbitrary accounting tags; they are the geometric fabric of physical reality.",
       },
       {
-        heading: "3. Trick 2: Compatibility & Boundary Conditions (Checking the Seams)",
+        heading: "Trick 2: Compatibility & Boundary Conditions (Checking the Seams)",
         body: [
           "Nature detests jagged tears. When light passes from air into glass, when heat conducts across welded metals, or when an electron wave tunnels through a semiconductor barrier, the physical equations describing each side must stitch together seamlessly at the interface. In mathematical physics, these are known as **Compatibility Conditions**.",
           "Think of building an elevated highway: a bridge team constructs from the west, while a tunnel team bores from the east. When they meet at the border $x_0$, two conditions must hold simultaneously:",
@@ -747,7 +747,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Nature detests unphysical discontinuities. Wherever two descriptions meet, their boundaries must shake hands.",
       },
       {
-        heading: "4. Trick 3: Limiting Cases & Generalisations (Turning Knobs from Einstein to Newton)",
+        heading: "Trick 3: Limiting Cases & Generalisations (Turning Knobs from Einstein to Newton)",
         body: [
           "An equation is an engine equipped with control dials: mass, length, gravity, velocity. The fastest way to see if it is broken is to crank those dials all the way to their extreme stops: turn them to zero, or send them to infinity.",
           "Take the classic formula for a pendulum's period:",
@@ -767,7 +767,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Turn the knobs until the dials break. If your generalisation cannot reproduce the humble specialisation that came before it, nature will reject it.",
       },
       {
-        heading: "5. Trick 4: Symmetry & Invariance (If Nature Doesn't Care, Your Math Shouldn't Either)",
+        heading: "Trick 4: Symmetry & Invariance (If Nature Doesn't Care, Your Math Shouldn't Either)",
         body: [
           "In 1915, mathematician Emmy Noether proved that every continuous symmetry of nature yields an exact conservation law: time symmetry gives energy conservation, spatial symmetry gives momentum conservation, and rotational symmetry gives angular momentum conservation. Because nature respects symmetry, any correct equation must mirror that same indifference.",
           "• **Rotational Invariance:** The gravitational field outside a uniform spherical planet has zero preferred direction. If your formula depends on an arbitrary angle $\\theta$, your math has invented an imaginary celestial pole.",
@@ -783,7 +783,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "Symmetry is not merely an aesthetic ornament; it is the sternest guardian of mathematical truth.",
       },
       {
-        heading: "6. Trick 5: Order-of-Magnitude Estimation & Fermi Checks (The 'Powers of 10' Gut Check)",
+        heading: "Trick 5: Order-of-Magnitude Estimation & Fermi Checks (The 'Powers of 10' Gut Check)",
         body: [
           "During the 1945 Trinity nuclear blast, Enrico Fermi dropped scraps of torn paper as the shockwave arrived. By measuring how far they were blown across the bunker floor (2.5 meters), he instantly estimated the blast yield at ~10 kilotons of TNT on a pocket notepad before complex electronic sensor data was even collected.",
           "In physics, precision is useless if your magnitude is absurd. A single misplaced exponent can derail hours of work. Before polishing decimals, run a Fermi smell test: round every number to its nearest power of 10 and do mental arithmetic. If you calculate the drift velocity of electrons in a household wire and get $10^7\\text{ m/s}$ (they actually crawl at fractions of a millimeter per second), or calculate an atom's radius as 4 centimeters, stop calculating. Your gut already knows an exponent was dropped. Check the exponent first; calculate decimals later.",
@@ -796,7 +796,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "It is better to be approximately right by a factor of two than precisely wrong by a factor of a billion.",
       },
       {
-        heading: "7. Trick 6 & 7: Perturbations, Toy Models & Multiple Paths (The Falsification Matrix)",
+        heading: "Trick 6 & 7: Perturbations, Toy Models & Multiple Paths (The Falsification Matrix)",
         body: [
           "Almost no real-world physics problem has an exact closed-form solution. Physicists zoom in using **Perturbation Theory**, expanding an equation in a small parameter $\\epsilon \\ll 1$:",
           "$$f(x) \\approx f_0 + \\epsilon f_1 + \\mathcal{O}(\\epsilon^2)$$",
@@ -811,7 +811,7 @@ export const RAW_POSTS: RawPost[] = [
         quote: "If you only have one way to calculate something, you don't fully understand it. Truth in physics is where multiple independent paths collide.",
       },
       {
-        heading: "8. Summary: The Master Sanity-Check Matrix & Everyday Applications",
+        heading: "Summary: The Master Sanity-Check Matrix & Everyday Applications",
         body: [
           "The beauty of the physicist's toolkit is that its wisdom extends far beyond chalkboard equations. These seven sanity checks are universal mental models for software engineering, investing, and decision-making.",
           "Software engineers use them constantly: dimensional analysis is static typing (TypeScript / Rust); compatibility conditions are API contracts and seamless microservice handoffs; limiting cases are boundary value unit tests (handling empty arrays and INT_MAX); and toy models are minimal reproducible examples (MREs).",
