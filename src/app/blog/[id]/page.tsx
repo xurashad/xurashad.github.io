@@ -5,6 +5,7 @@ import { POSTS, type Post } from "@/lib/blogData";
 import { ArrowLeft, ArrowRight, Calendar, Clock, Share2, Tag, BookOpen, User } from "lucide-react";
 import { TagBadge, WaveDivider } from "@/components/ui";
 import { BlogTableViewer } from "@/components/BlogTableViewer";
+import katex from "katex";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -40,13 +41,51 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function renderMathToHtml(math: string, displayMode = false): string {
+  try {
+    return katex.renderToString(math.trim(), {
+      displayMode,
+      throwOnError: false,
+    });
+  } catch {
+    return math;
+  }
+}
+
 function renderInlineText(text: string) {
-  // Regex splits on markdown tokens: [link](url), **bold**, *italic*, `code`, and $math$
-  // URL matching handles balanced parentheses inside URLs (e.g. Wikipedia pages like .../Columbia_(supercontinent))
-  const regex = /(\[[^\]]+\]\((?:[^\s()]|\([^\s()]*\))+\)|\*\*.*?\*\*|\*[^*]+?\*|`[^`]+?`|\$[^\$]+?\$)/g;
+  // Regex splits on markdown tokens:
+  // - $$...$$ (display math)
+  // - $...$ (inline math)
+  // - [link](url)
+  // - **bold**
+  // - *italic*
+  // - `code`
+  const regex = /(\$\$[^\$]+?\$\$|\$[^\$\n]+?\$|\[[^\]]+\]\((?:[^\s()]|\([^\s()]*\))+\)|\*\*.*?\*\*|\*[^*]+?\*|`[^`]+?`)/g;
   const parts = text.split(regex);
 
   return parts.map((part, i) => {
+    if (part.startsWith("$$") && part.endsWith("$$") && part.length >= 4) {
+      const math = part.slice(2, -2);
+      const html = renderMathToHtml(math, true);
+      return (
+        <span
+          key={i}
+          className="block my-4 py-2 px-3 overflow-x-auto text-center"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    }
+    if (part.startsWith("$") && part.endsWith("$") && part.length >= 2) {
+      const math = part.slice(1, -1);
+      const html = renderMathToHtml(math, false);
+      return (
+        <span
+          key={i}
+          className="inline-math inline-block align-baseline px-0.5"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    }
     if (part.startsWith("[") && part.endsWith(")")) {
       const splitIdx = part.indexOf("](");
       if (splitIdx !== -1) {
@@ -85,13 +124,6 @@ function renderInlineText(text: string) {
         <code key={i} className="font-mono text-xs sm:text-sm text-quantum bg-quantum/10 px-1.5 py-0.5 rounded">
           {part.slice(1, -1)}
         </code>
-      );
-    }
-    if (part.startsWith("$") && part.endsWith("$") && part.length >= 2) {
-      return (
-        <span key={i} className="font-mono text-xs sm:text-sm text-foreground/95 bg-white/5 px-1 py-0.5 rounded">
-          {part.slice(1, -1)}
-        </span>
       );
     }
     return part;
@@ -253,6 +285,19 @@ export default async function BlogPostPage({ params }: PageProps) {
                       </div>
                     );
                   }
+                  const trimmed = para.trim();
+                  const isDisplayMath = trimmed.startsWith("$$") && trimmed.endsWith("$$") && trimmed.length >= 4;
+                  if (isDisplayMath) {
+                    const math = trimmed.slice(2, -2).trim();
+                    const html = renderMathToHtml(math, true);
+                    return (
+                      <div
+                        key={pIdx}
+                        className="my-5 py-3 px-4 rounded-xl bg-white/[0.03] border border-white/10 overflow-x-auto text-center"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                      />
+                    );
+                  }
                   return (
                     <p key={pIdx} className="leading-relaxed text-foreground/75 text-base sm:text-lg">
                       {renderInlineText(para)}
@@ -275,11 +320,11 @@ export default async function BlogPostPage({ params }: PageProps) {
                       </div>
                     )}
                     <div className="text-base sm:text-lg font-serif font-bold text-foreground mb-1.5">
-                      {section.callout.title}
+                      {renderInlineText(section.callout.title)}
                     </div>
-                    <p className="text-sm text-foreground/75 leading-relaxed font-sans">
-                      {section.callout.text}
-                    </p>
+                    <div className="text-sm text-foreground/75 leading-relaxed font-sans">
+                      {renderInlineText(section.callout.text)}
+                    </div>
                   </div>
                 )}
 
@@ -287,13 +332,13 @@ export default async function BlogPostPage({ params }: PageProps) {
                   <blockquote
                     className={`border-l-2 pl-5 py-2 my-6 font-serif italic text-foreground/90 ${accentBorder} ${accentBg} rounded-r-lg`}
                   >
-                    {section.quote}
+                    {renderInlineText(section.quote)}
                   </blockquote>
                 )}
               </section>
             ))
           ) : (
-            <p className="text-foreground/75 leading-relaxed">{post.excerpt}</p>
+            <p className="text-foreground/75 leading-relaxed">{renderInlineText(post.excerpt)}</p>
           )}
 
           {/* End of article notice */}

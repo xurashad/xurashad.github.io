@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Search, X, Calendar, Clock, Filter, Sparkles, AlertTriangle } from "lucide-react";
 import type { BlogTable } from "@/lib/blogData";
+import katex from "katex";
 
 interface BlogTableViewerProps {
   table: BlogTable;
@@ -44,10 +45,24 @@ function getRowEra(dateStr: string): EraKey {
 }
 
 function renderTableCellContent(text: string) {
-  // Handles markdown links with balanced parentheses in URLs (e.g. Wikipedia titles)
-  const linkRegex = /(\[[^\]]+\]\((?:[^\s()]|\([^\s()]*\))+\))/g;
-  const parts = text.split(linkRegex);
+  // Handles markdown links, bold, italic, code, and LaTeX math ($...$)
+  const regex = /(\$[^\$\n]+?\$|\[[^\]]+\]\((?:[^\s()]|\([^\s()]*\))+\)|\*\*.*?\*\*|\*[^*]+?\*|`[^`]+?`)/g;
+  const parts = text.split(regex);
   return parts.map((part, i) => {
+    if (part.startsWith("$") && part.endsWith("$") && part.length >= 2) {
+      try {
+        const html = katex.renderToString(part.slice(1, -1), { throwOnError: false });
+        return (
+          <span
+            key={i}
+            className="inline-math inline-block align-baseline px-0.5 text-foreground/95"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        );
+      } catch {
+        return <span key={i}>{part}</span>;
+      }
+    }
     if (part.startsWith("[") && part.endsWith(")")) {
       const splitIdx = part.indexOf("](");
       if (splitIdx !== -1) {
@@ -67,6 +82,27 @@ function renderTableCellContent(text: string) {
           </a>
         );
       }
+    }
+    if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+      return (
+        <strong key={i} className="text-foreground font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
+      return (
+        <em key={i} className="italic text-foreground/90 font-serif">
+          {part.slice(1, -1)}
+        </em>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
+      return (
+        <code key={i} className="font-mono text-xs text-quantum bg-quantum/10 px-1 py-0.5 rounded">
+          {part.slice(1, -1)}
+        </code>
+      );
     }
     return part;
   });
