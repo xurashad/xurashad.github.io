@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { KitsuneLoader } from "@/components/KitsuneLoader";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -88,6 +89,7 @@ export default function RootLayout({
         </Script>
         <ThemeProvider>
           <Navbar />
+          <KitsuneLoader />
           <main className="flex-1 pt-20">{children}</main>
           <Footer />
         </ThemeProvider>

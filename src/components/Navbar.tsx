@@ -8,6 +8,7 @@ import { motion, AnimatePresence, useScroll, useSpring, type Variants } from "fr
 import { Menu, X, Search } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { MusicToggle } from "./MusicToggle";
+import { KitsuneToggle } from "./KitsuneToggle";
 import { CommandPalette } from "./CommandPalette";
 
 const NAV_LINKS = [
@@ -168,6 +169,7 @@ export function Navbar() {
               </motion.button>
 
               <MusicToggle />
+              <KitsuneToggle />
               <ThemeToggle />
 
               {/* Mobile hamburger */}

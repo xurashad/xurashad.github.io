@@ -6,8 +6,9 @@ import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Search, X, ArrowRight, Compass, Atom, BookOpen, Database,
-  FileText, User, Sun, Moon, Download, CornerDownLeft,
+  FileText, User, Sun, Moon, Download, CornerDownLeft, Sparkles,
 } from "lucide-react";
+import { toggleKitsuneGlobal } from "@/lib/kitsuneState";
 
 type ItemGroup = "Actions" | "Pages" | "Apps" | "Blog" | "Datasets" | "Documents" | "CV";
 
@@ -121,6 +122,14 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         group: "Actions",
         keywords: "theme dark light mode toggle switch",
         action: () => setTheme(isDark ? "light" : "dark"),
+      },
+      {
+        id: "action-kitsune",
+        title: "Toggle Azurite Kitsune (3D Companion)",
+        subtitle: "Show or hide the 3D nine-tailed fox companion",
+        group: "Actions",
+        keywords: "kitsune fox azurite 3d pet companion toggle",
+        action: () => toggleKitsuneGlobal(),
       },
       {
         id: "action-cv-full",
@@ -289,9 +298,11 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
                   ? resolvedTheme !== "light"
                     ? Sun
                     : Moon
-                  : item.download
-                    ? Download
-                    : GROUP_ICON[item.group];
+                  : item.id === "action-kitsune"
+                    ? Sparkles
+                    : item.download
+                      ? Download
+                      : GROUP_ICON[item.group];
 
               return (
                 <button
