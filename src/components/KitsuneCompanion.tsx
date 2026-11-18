@@ -1746,7 +1746,7 @@ export function KitsuneCompanion() {
   const containerRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: 0, y: 0 });
   const targetRef = useRef({ x: 0, y: 0 });
-  const viewportRef = useRef({ w: 1280, h: 720, size: 148 });
+  const viewportRef = useRef({ w: 1280, h: 720, size: 216 });
   const dragRef = useRef({
     active: false,
     moved: false,
@@ -1833,7 +1833,7 @@ export function KitsuneCompanion() {
     const updateViewport = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const size = w < 640 ? 124 : 148;
+      const size = w < 640 ? 180 : 216;
       viewportRef.current = { w, h, size };
     };
     updateViewport();
@@ -2128,7 +2128,7 @@ export function KitsuneCompanion() {
     <div
       ref={containerRef}
       style={{ transform: "translate3d(0px, 0px, 0)" }}
-      className="fixed top-0 left-0 z-40 w-[124px] h-[124px] sm:w-[148px] sm:h-[148px] pointer-events-none select-none will-change-transform"
+      className="fixed top-0 left-0 z-40 w-[180px] h-[180px] sm:w-[216px] sm:h-[216px] pointer-events-none select-none will-change-transform"
     >
       {/* Pure Visual Crystal Mote Shimmer (No Text / No Emojis) */}
       <div className="absolute inset-0 pointer-events-none overflow-visible">
@@ -2136,14 +2136,14 @@ export function KitsuneCompanion() {
           <span
             key={m.id}
             style={{ transform: `translate(${m.x}px, ${m.y}px)` }}
-            className="absolute top-3 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 rounded-[1px] bg-gradient-to-br from-sky-200 to-violet-400 shadow-[0_0_8px_rgba(125,211,252,0.9)] animate-ping"
+            className="absolute top-7 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 rounded-[1px] bg-gradient-to-br from-sky-200 to-violet-400 shadow-[0_0_8px_rgba(125,211,252,0.9)] animate-ping"
           />
         ))}
       </div>
 
       {/* Subtle Ground Frost Halo */}
       <div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-3 rounded-full pointer-events-none blur-sm opacity-50"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 w-16 h-3 rounded-full pointer-events-none blur-sm opacity-50"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(125,211,252,0.5), rgba(167,139,250,0.28), transparent 75%)",
@@ -2154,7 +2154,7 @@ export function KitsuneCompanion() {
       <CanvasErrorBoundary>
         <Canvas
           dpr={[1, 2]}
-          camera={{ position: [0, 0.42, 4.15], fov: 35 }}
+          camera={{ position: [0, 0.55, 5.65], fov: 35 }}
           gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
           className="w-full h-full pointer-events-none"
         >
