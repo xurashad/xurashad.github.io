@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { useKitsuneEnabled } from "@/lib/kitsuneState";
 
@@ -13,9 +14,10 @@ const emptySubscribe = () => () => {};
 
 export function KitsuneLoader() {
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const pathname = usePathname();
   const [enabled] = useKitsuneEnabled();
 
-  if (!mounted || !enabled) return null;
+  if (!mounted || !enabled || pathname?.includes("/website-builder/editor")) return null;
 
   return <KitsuneCompanion />;
 }

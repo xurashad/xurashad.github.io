@@ -222,6 +222,12 @@
   --nebula:           #9333ea;
   --aurora:           #6366f1;
   --void:             #050510;
+  --cursor-core:      #080d22;
+  --cursor-stroke:    rgba(248, 249, 250, 0.94);
+  --cursor-accent:    #0088b3;
+  --cursor-secondary: #7b2ff7;
+  --cursor-ring:      rgba(0, 136, 179, 0.16);
+  --cursor-glow:      rgba(123, 47, 247, 0.28);
 }
 
 .dark {
@@ -231,6 +237,12 @@
   --surface:          rgba(15, 10, 40, 0.55);
   --surface-border:   rgba(123, 47, 247, 0.12);
   --nav-bg:           rgba(5, 5, 16, 0.88);
+  --cursor-core:      #f8f9fa;
+  --cursor-stroke:    rgba(5, 5, 16, 0.86);
+  --cursor-accent:    #00c3f5;
+  --cursor-secondary: #c084fc;
+  --cursor-ring:      rgba(0, 195, 245, 0.14);
+  --cursor-glow:      rgba(0, 195, 245, 0.42);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────────── */
@@ -511,8 +523,240 @@ code, pre {
   100% { opacity: 0; transform: translateY(-32px); }
 }
 
+/* ── Custom Context-Aware Quantum & Kitsune Cursor ───────────────────────── */
+@keyframes cc-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes cc-spin-reverse {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+
+@media (pointer: fine) {
+  html.custom-cursor-ready,
+  html.custom-cursor-ready *,
+  html.custom-cursor-ready *::before,
+  html.custom-cursor-ready *::after {
+    cursor: none !important;
+  }
+}
+
+.custom-cursor-root {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.custom-cursor-root[data-visible="true"] {
+  opacity: 1;
+}
+
+.cc-tip-anchor,
+.cc-ring-anchor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+.cc-tip-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cc-tip-arrow {
+  transform: translate(-2px, -2px) scale(1);
+}
+
+.custom-cursor-root[data-mode="default"] .cc-tip-arrow {
+  opacity: 1;
+}
+
+.custom-cursor-root[data-mode="default"][data-pressed="true"] .cc-tip-arrow {
+  transform: translate(-2px, -2px) scale(0.84);
+}
+
+.cc-tip-reticle {
+  transform: translate(-50%, -50%) scale(0.55) rotate(-45deg);
+}
+
+.custom-cursor-root[data-mode="interactive"] .cc-tip-reticle {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+}
+
+.custom-cursor-root[data-mode="interactive"][data-pressed="true"] .cc-tip-reticle {
+  transform: translate(-50%, -50%) scale(0.78) rotate(45deg);
+}
+
+.cc-tip-paw {
+  transform: translate(-50%, -50%) scale(0.6);
+}
+
+.cc-paw-tilt {
+  will-change: transform;
+  transform-origin: center;
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"] .cc-tip-paw {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"][data-pressed="true"] .cc-tip-paw {
+  transform: translate(-50%, -50%) scale(0.88);
+}
+
+.custom-cursor-root[data-mode="kitsune-grab"] .cc-tip-paw {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(0.86);
+}
+
+.cc-tip-text {
+  transform: translate(-50%, -50%) scaleY(0.7);
+}
+
+.custom-cursor-root[data-mode="text"] .cc-tip-text {
+  opacity: 1;
+  transform: translate(-50%, -50%) scaleY(1);
+}
+
+.custom-cursor-root[data-mode="text"][data-pressed="true"] .cc-tip-text {
+  transform: translate(-50%, -50%) scaleY(0.86);
+}
+
+/* Trailing Magnetic Halo Ring */
+.cc-ring-frame {
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%) scale(0.58);
+  opacity: 0.85;
+  will-change: transform, opacity;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.cc-ring-orbit {
+  transform-origin: 24px 24px;
+  animation: cc-spin-slow 14s linear infinite;
+  transition: opacity 0.18s ease;
+}
+
+.cc-ring-portal {
+  transform-origin: 24px 24px;
+  opacity: 0;
+  animation: cc-spin-reverse 9s linear infinite;
+  transition: opacity 0.18s ease;
+}
+
+.cc-ring-spirit {
+  transform-origin: 24px 24px;
+  opacity: 0;
+  animation: cc-spin-slow 11s linear infinite;
+  transition: opacity 0.2s ease;
+}
+
+.custom-cursor-root[data-mode="default"][data-pressed="true"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.46);
+}
+
+.custom-cursor-root[data-mode="interactive"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.88);
+  opacity: 0.96;
+}
+
+.custom-cursor-root[data-mode="interactive"] .cc-ring-portal {
+  opacity: 0.9;
+}
+
+.custom-cursor-root[data-mode="interactive"][data-pressed="true"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.7);
+}
+
+.custom-cursor-root[data-mode="text"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.34);
+  opacity: 0.18;
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0.96;
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"] .cc-ring-orbit,
+.custom-cursor-root[data-mode="kitsune-grab"] .cc-ring-orbit {
+  opacity: 0;
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"] .cc-ring-spirit,
+.custom-cursor-root[data-mode="kitsune-grab"] .cc-ring-spirit {
+  opacity: 0.96;
+}
+
+.custom-cursor-root[data-mode="kitsune-pet"][data-pressed="true"] .cc-ring-frame,
+.custom-cursor-root[data-mode="kitsune-grab"] .cc-ring-frame {
+  transform: translate(-50%, -50%) scale(0.56);
+  opacity: 0.98;
+}
+
+/* Click Shockwave Ripples & Pooled Sparks */
+.cc-ripple {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  border: 1.5px solid var(--cursor-accent);
+  box-shadow: 0 0 12px var(--cursor-glow);
+}
+
+.cc-ripple-outer {
+  border-style: dashed;
+  border-color: var(--cursor-secondary);
+}
+
+.cc-ripple[data-mode="kitsune-pet"].cc-ripple-inner,
+.cc-ripple[data-mode="kitsune-grab"].cc-ripple-inner {
+  border-color: #f472b6;
+  box-shadow: 0 0 14px rgba(244, 114, 182, 0.45);
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.16), rgba(125, 211, 252, 0.08) 55%, transparent 72%);
+}
+
+.cc-ripple[data-mode="kitsune-pet"].cc-ripple-outer,
+.cc-ripple[data-mode="kitsune-grab"].cc-ripple-outer {
+  border-color: #7dd3fc;
+}
+
+.cc-spark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  color: var(--cursor-accent);
+}
+
+.cc-spark[data-tone="quantum"] { color: var(--cursor-accent); }
+.cc-spark[data-tone="nebula"]  { color: var(--cursor-secondary); }
+.cc-spark[data-tone="rose"]    { color: #f472b6; }
+.cc-spark[data-tone="ice"]     { color: #7dd3fc; }
+
 /* ── Print Optimization for Academic CV ─────────────────────────────────── */
 @media print {
+  .custom-cursor-root {
+    display: none !important;
+  }
   body {
     background: #ffffff !important;
     color: #111827 !important;
@@ -558,7 +802,10 @@ code, pre {
   .animate-pulse,
   .aurora-gradient,
   .gradient-text-quantum,
-  .gradient-text-celestial {
+  .gradient-text-celestial,
+  .cc-ring-orbit,
+  .cc-ring-portal,
+  .cc-ring-spirit {
     animation: none !important;
   }
 }
