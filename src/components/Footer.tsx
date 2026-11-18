@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { GitFork, X as XIcon, Link2, Mail } from "lucide-react";
+import { GitFork, Link2, Mail } from "lucide-react";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Home" },
@@ -43,12 +43,12 @@ export function Footer() {
                   whileHover={{ scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 >
-                  <Image src="/favicon.ico" alt="Logo" width={32} height={32} className="object-contain" />
+                  <Image src="/images/logo.png" alt="Logo" width={32} height={32} className="object-contain" />
                 </motion.div>
                 <span className="font-serif font-bold gradient-text-celestial">Rashad Hamidi</span>
               </Link>
               <p className="text-sm text-foreground/50 leading-relaxed max-w-xs">
-                Exploring the relams of science, logic, and thoughts.
+                Exploring the realms of science, logic, and thought.
               </p>
               {/* Palestinian flag colors */}
               <div className="flex gap-1 items-center">

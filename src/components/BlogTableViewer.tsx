@@ -3,11 +3,11 @@
 import { useState, useMemo } from "react";
 import { Search, X, Calendar, Clock, Filter, Sparkles, AlertTriangle } from "lucide-react";
 import type { BlogTable } from "@/lib/blogData";
-import katex from "katex";
 
 interface BlogTableViewerProps {
   table: BlogTable;
   accent?: "quantum" | "olive" | "crimson";
+  mathHtmlMap?: Record<string, string>;
 }
 
 type EraKey = "all" | "cosmic" | "precambrian" | "evolution" | "human";
@@ -44,24 +44,27 @@ function getRowEra(dateStr: string): EraKey {
   return "all";
 }
 
-function renderTableCellContent(text: string) {
-  // Handles markdown links, bold, italic, code, and LaTeX math ($...$)
+function renderTableCellContent(text: string, mathHtmlMap?: Record<string, string>) {
+  // Handles markdown links, bold, italic, code, and pre-rendered LaTeX math ($...$)
   const regex = /(\$[^\$\n]+?\$|\[[^\]]+\]\((?:[^\s()]|\([^\s()]*\))+\)|\*\*.*?\*\*|\*[^*]+?\*|`[^`]+?`)/g;
   const parts = text.split(regex);
   return parts.map((part, i) => {
     if (part.startsWith("$") && part.endsWith("$") && part.length >= 2) {
-      try {
-        const html = katex.renderToString(part.slice(1, -1), { throwOnError: false });
+      const preRendered = mathHtmlMap?.[part];
+      if (preRendered) {
         return (
           <span
             key={i}
             className="inline-math inline-block align-baseline px-0.5 text-foreground/95"
-            dangerouslySetInnerHTML={{ __html: html }}
+            dangerouslySetInnerHTML={{ __html: preRendered }}
           />
         );
-      } catch {
-        return <span key={i}>{part}</span>;
       }
+      return (
+        <span key={i} className="font-mono text-xs text-foreground/90">
+          {part.slice(1, -1)}
+        </span>
+      );
     }
     if (part.startsWith("[") && part.endsWith(")")) {
       const splitIdx = part.indexOf("](");
@@ -108,7 +111,7 @@ function renderTableCellContent(text: string) {
   });
 }
 
-export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProps) {
+export function BlogTableViewer({ table, accent = "olive", mathHtmlMap }: BlogTableViewerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEra, setSelectedEra] = useState<EraKey>("all");
 
@@ -123,8 +126,6 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
   // Categorize & filter rows
   const filteredRows = useMemo(() => {
     return table.rows.filter((row) => {
-      const eventText = row[0] || "";
-      const timeText = row[1] || "";
       const dateText = row[2] || "";
 
       // Era filter (if cosmic calendar table)
@@ -133,13 +134,10 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
         if (rowEra !== selectedEra) return false;
       }
 
-      // Keyword search
+      // Keyword search across all cells
       if (searchQuery.trim() !== "") {
         const q = searchQuery.toLowerCase().trim();
-        const matchesEvent = eventText.toLowerCase().includes(q);
-        const matchesTime = timeText.toLowerCase().includes(q);
-        const matchesDate = dateText.toLowerCase().includes(q);
-        if (!matchesEvent && !matchesTime && !matchesDate) return false;
+        if (!row.some((cell) => cell.toLowerCase().includes(q))) return false;
       }
 
       return true;
@@ -152,13 +150,6 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
       : accent === "olive"
       ? "text-olive-400"
       : "text-crimson";
-
-  const accentBorder =
-    accent === "quantum"
-      ? "border-quantum/30"
-      : accent === "olive"
-      ? "border-olive/30"
-      : "border-crimson/30";
 
   const accentActiveBtn =
     accent === "quantum"
@@ -179,7 +170,7 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
               ) : (
                 <Clock size={13} className={accentColor} />
               )}
-              <span>// {table.title || (isCosmicCalendarTable ? "Cosmic Timeline Master Index" : "Conversion Scale")}</span>
+              <span>{"// "}{table.title || (isCosmicCalendarTable ? "Cosmic Timeline Master Index" : "Conversion Scale")}</span>
             </div>
             <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground">
               {table.title || (isCosmicCalendarTable ? "Master Chronology: 50 Milestones Across 13.8 Billion Years" : "Conversion Scale")}
@@ -310,10 +301,10 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
                           >
                             {isBold ? (
                               <strong className="text-foreground font-semibold">
-                                {renderTableCellContent(displayVal)}
+                                {renderTableCellContent(displayVal, mathHtmlMap)}
                               </strong>
                             ) : (
-                              renderTableCellContent(displayVal)
+                              renderTableCellContent(displayVal, mathHtmlMap)
                             )}
                           </td>
                         );
@@ -376,7 +367,7 @@ export function BlogTableViewer({ table, accent = "olive" }: BlogTableViewerProp
                           </span>
                         )}
                         <span className="text-foreground leading-snug">
-                          {renderTableCellContent(eventTitle)}
+                          {renderTableCellContent(eventTitle, mathHtmlMap)}
                         </span>
                       </div>
                     </td>

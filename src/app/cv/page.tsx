@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap, Briefcase, Award, BookOpen,
-  MapPin, Globe, Code2, Zap, Download,
-  Atom, Mic2, Layers, Search, Printer,
+  MapPin, Globe, Code2, Download,
+  Atom, Mic2, Layers, Search,
   Users, Trophy, Database, Cpu, ExternalLink,
-  CheckCircle2, ChevronDown, ChevronRight, School,
+  ChevronDown, ChevronRight, School,
   Sparkles,
 } from "lucide-react";
 import {
@@ -54,6 +54,30 @@ export default function CVPage() {
     return awardsList.filter((a) => a.type === awardFilter);
   }, [awardsList, awardFilter]);
 
+  useEffect(() => {
+    const sectionIds = CV_SECTIONS.map((s) => s.id);
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0 && visible[0].target.id) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-140px 0px -65% 0px", threshold: 0 }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const scrollToSection = (id: string) => {
     setActiveSection(id);
     const element = document.getElementById(id);
@@ -68,14 +92,8 @@ export default function CVPage() {
     }
   };
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") {
-      window.print();
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-cosmos-950 text-foreground pt-24 pb-28 selection:bg-quantum/30 selection:text-quantum">
+    <div className="min-h-screen celestial-bg text-foreground pt-24 pb-28 selection:bg-quantum/30 selection:text-quantum">
 
       {/* ── Top Ambient Atmosphere ────────────────────────────────────────── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -199,11 +217,11 @@ export default function CVPage() {
                 <motion.button
                   whileHover={{ scale: 1.03, boxShadow: "0 0 25px rgba(0,195,245,0.25)" }}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl bg-surface-muted/60 border border-white/10 text-foreground/85 font-semibold text-sm hover:bg-surface-muted hover:text-foreground transition-all shadow-md cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl bg-foreground/5 dark:bg-white/5 border border-foreground/15 dark:border-white/10 text-foreground/85 font-semibold text-sm hover:bg-foreground/10 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-md cursor-pointer"
                 >
                   <Download size={15} />
                   <span>Download Short CV (PDF)</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-foreground/60 border border-white/10">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-foreground/5 dark:bg-white/5 text-foreground/60 border border-foreground/10 dark:border-white/10">
                     Concise
                   </span>
                 </motion.button>
@@ -212,13 +230,13 @@ export default function CVPage() {
           </div>
 
           {/* Quick Stats Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/8 text-center sm:text-left">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-foreground/10 dark:border-white/8 text-center sm:text-left">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-quantum/10 flex items-center justify-center text-quantum border border-quantum/20">
                 <BookOpen size={18} />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">1 Peer-Reviewed</div>
+                <div className="text-lg font-bold text-foreground dark:text-white">1 Peer-Reviewed</div>
                 <div className="text-xs text-foreground/45 font-mono">JHEP Article (2025)</div>
               </div>
             </div>
@@ -227,7 +245,7 @@ export default function CVPage() {
                 <Mic2 size={18} />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">13 Conferences/Seminars</div>
+                <div className="text-lg font-bold text-foreground dark:text-white">13 Conferences/Seminars</div>
                 <div className="text-xs text-foreground/45 font-mono">NBMPS, IDD, IGST</div>
               </div>
             </div>
@@ -236,7 +254,7 @@ export default function CVPage() {
                 <Award size={18} />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">9 Awards & Grants</div>
+                <div className="text-lg font-bold text-foreground dark:text-white">9 Awards & Grants</div>
                 <div className="text-xs text-foreground/45 font-mono">STFC, Global Masters, Distinction</div>
               </div>
             </div>
@@ -245,7 +263,7 @@ export default function CVPage() {
                 <Briefcase size={18} />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">7 Modules Taught</div>
+                <div className="text-lg font-bold text-foreground dark:text-white">7 Modules Taught</div>
                 <div className="text-xs text-foreground/45 font-mono">Teaching Assistant at Durham</div>
               </div>
             </div>
@@ -253,7 +271,7 @@ export default function CVPage() {
         </motion.div>
 
         {/* ── SEARCH & INTERACTIVE CV LIST BAR ───────────────────────────── */}
-        <div className="sticky top-20 z-30 mb-10 py-3 bg-cosmos-950/85 backdrop-blur-md border-y border-white/6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className="sticky top-20 z-30 mb-10 py-3 bg-background/85 backdrop-blur-md border-y border-foreground/10 dark:border-white/6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
 
             {/* Live Filter Search */}
@@ -264,12 +282,12 @@ export default function CVPage() {
                 placeholder="Search CV (e.g. Chern-Simons, Python, JHEP, Birzeit, Durham, NBMPS)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/4 border border-white/10 text-xs text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-quantum/50 transition-colors"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-foreground/[0.04] dark:bg-white/4 border border-foreground/15 dark:border-white/10 text-xs text-foreground placeholder:text-foreground/35 focus:outline-none focus:border-quantum/50 transition-colors"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-foreground/40 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-foreground/40 hover:text-foreground dark:hover:text-white"
                 >
                   ✕
                 </button>
@@ -287,7 +305,7 @@ export default function CVPage() {
                   onClick={() => scrollToSection(sec.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${activeSection === sec.id
                     ? "bg-quantum/20 text-quantum border border-quantum/40 font-semibold"
-                    : "bg-white/3 text-foreground/50 hover:text-foreground/90 hover:bg-white/6 border border-white/5"
+                    : "bg-foreground/[0.04] dark:bg-white/3 text-foreground/60 hover:text-foreground hover:bg-foreground/[0.08] dark:hover:bg-white/6 border border-foreground/10 dark:border-white/5"
                     }`}
                 >
                   {sec.label}
@@ -301,8 +319,8 @@ export default function CVPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10 items-start">
 
           {/* Desktop Sticky Table of Contents (CV List) */}
-          <aside className="hidden lg:block sticky top-36 glass-card p-4 border border-white/8 space-y-1">
-            <div className="text-xs font-mono text-quantum font-semibold uppercase tracking-wider px-3 py-2 border-b border-white/8 mb-2 flex items-center justify-between">
+          <aside className="hidden lg:block sticky top-36 glass-card p-4 border border-foreground/10 dark:border-white/8 space-y-1">
+            <div className="text-xs font-mono text-quantum font-semibold uppercase tracking-wider px-3 py-2 border-b border-foreground/10 dark:border-white/8 mb-2 flex items-center justify-between">
               <span>CV Directory</span>
               <span className="text-[10px] text-foreground/40">15 Sections</span>
             </div>
@@ -316,7 +334,7 @@ export default function CVPage() {
                     onClick={() => scrollToSection(sec.id)}
                     className={`w-full text-left flex items-center justify-between px-3 py-2 rounded-lg transition-all cursor-pointer ${isActive
                       ? "bg-quantum/15 text-quantum border-l-2 border-quantum font-semibold pl-2.5"
-                      : "text-foreground/55 hover:text-white hover:bg-white/4"
+                      : "text-foreground/60 hover:text-foreground dark:hover:text-white hover:bg-foreground/[0.05] dark:hover:bg-white/4"
                       }`}
                   >
                     <span className="flex items-center gap-2 truncate">
@@ -411,7 +429,7 @@ export default function CVPage() {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-quantum transition-colors">
+                          <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white group-hover:text-quantum transition-colors">
                             {edu.degree}
                           </h3>
                           {edu.degree_achievement && (
@@ -468,7 +486,7 @@ export default function CVPage() {
                     {cvData.pre_university_education.map((pre) => (
                       <div key={pre.degree} className="p-4 rounded-xl glass border border-white/5 text-xs space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-white">{pre.degree}</span>
+                          <span className="font-bold text-foreground dark:text-white">{pre.degree}</span>
                           <span className="font-mono text-[10px] text-foreground/35">{pre.start_year} – {pre.end_year}</span>
                         </div>
                         <p className="text-foreground/70">{pre.institution} ({pre.school_type})</p>
@@ -504,7 +522,7 @@ export default function CVPage() {
                       <span className="text-xs font-mono text-foreground/40 font-bold">{pub.year}</span>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-serif font-bold text-white leading-snug">
+                    <h3 className="text-base sm:text-lg font-serif font-bold text-foreground dark:text-white leading-snug">
                       &ldquo;{pub.title}&rdquo;
                     </h3>
 
@@ -529,7 +547,7 @@ export default function CVPage() {
                         href={`https://arxiv.org/abs/${pub.eprint}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass border border-white/10 hover:border-quantum/30 text-xs font-mono text-foreground/70 hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass border border-white/10 hover:border-quantum/30 text-xs font-mono text-foreground/70 hover:text-foreground dark:hover:text-white transition-colors"
                       >
                         <ExternalLink size={12} /> arXiv:{pub.eprint} [{pub.primaryClass}]
                       </a>
@@ -558,7 +576,7 @@ export default function CVPage() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
                       <div>
-                        <h3 className="text-base sm:text-lg font-bold text-white">{work.position}</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white">{work.position}</h3>
                         <p className="text-xs sm:text-sm text-foreground/70 font-medium mt-0.5">
                           {work.institutions.join(" · ")} · <span className="text-foreground/45">{work.location} ({work.working_time})</span>
                         </p>
@@ -621,7 +639,7 @@ export default function CVPage() {
                     onClick={() => setAwardFilter(f.id as typeof awardFilter)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${awardFilter === f.id
                       ? "bg-olive-500/20 text-olive-400 border border-olive-500/40 font-semibold"
-                      : "bg-white/3 text-foreground/50 hover:text-white border border-white/5"
+                      : "bg-foreground/[0.04] dark:bg-white/3 text-foreground/60 hover:text-foreground dark:hover:text-white border border-foreground/10 dark:border-white/5"
                       }`}
                   >
                     {f.label}
@@ -665,7 +683,7 @@ export default function CVPage() {
                             <Award size={16} className={textClass} />
                           </div>
                           <div>
-                            <h4 className="text-sm font-bold text-white">{item.title}</h4>
+                            <h4 className="text-sm font-bold text-foreground dark:text-white">{item.title}</h4>
                             <p className="text-xs text-foreground/50 font-mono mt-0.5">{item.organization}</p>
                           </div>
                         </div>
@@ -708,7 +726,7 @@ export default function CVPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-quantum" />
-                        <h4 className="text-sm font-bold text-white">{grp.name}</h4>
+                        <h4 className="text-sm font-bold text-foreground dark:text-white">{grp.name}</h4>
                       </div>
                       <p className="text-xs text-foreground/60 pl-4">{grp.institution}</p>
                     </div>
@@ -770,7 +788,7 @@ export default function CVPage() {
                 {cvData.schools_and_workshops.map((sw) => (
                   <div key={sw.title} className="glass-card p-5 border border-white/8 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm sm:text-base font-bold text-white">{sw.title}</h4>
+                      <h4 className="text-sm sm:text-base font-bold text-foreground dark:text-white">{sw.title}</h4>
                       <span className="text-xs font-mono text-quantum bg-quantum/10 px-2 py-0.5 rounded border border-quantum/20">
                         {sw.editions.length} edition{sw.editions.length > 1 ? "s" : ""}
                       </span>
@@ -815,7 +833,7 @@ export default function CVPage() {
                   </h4>
                   {cvData.competitions.map((comp) => (
                     <div key={comp.title} className="glass-card p-4 border border-white/8 space-y-2">
-                      <div className="font-bold text-sm text-white">{comp.title}</div>
+                      <div className="font-bold text-sm text-foreground dark:text-white">{comp.title}</div>
                       <div className="space-y-1.5 text-xs text-foreground/70">
                         {comp.editions.map((ed, idx) => (
                           <div key={idx} className="flex items-center justify-between gap-2 border-b border-white/4 pb-1.5 last:border-0 last:pb-0">
@@ -840,7 +858,7 @@ export default function CVPage() {
                   </h4>
                   {cvData.certification_programs.map((cp) => (
                     <div key={cp.title} className="glass-card p-4 border border-white/8 space-y-2">
-                      <div className="font-bold text-sm text-white">{cp.title}</div>
+                      <div className="font-bold text-sm text-foreground dark:text-white">{cp.title}</div>
                       <div className="space-y-1.5 text-xs text-foreground/70">
                         {cp.editions.map((ed, idx) => (
                           <div key={idx} className="flex items-center justify-between gap-2 border-b border-white/4 pb-1.5 last:border-0 last:pb-0">
@@ -917,7 +935,7 @@ export default function CVPage() {
                     {cvData.developed_applications.applications.map((cat) => (
                       <div key={cat.category} className="glass-card p-4 border border-white/8 space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-sm text-white">{cat.category}</span>
+                          <span className="font-bold text-sm text-foreground dark:text-white">{cat.category}</span>
                           <span className="text-[10px] font-mono text-foreground/40">{cat.apps.length} tools</span>
                         </div>
                         <div className="space-y-2 text-xs">
@@ -959,7 +977,7 @@ export default function CVPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {cvData.generated_datasets.datasets.map((ds) => (
                       <div key={ds.name} className="glass-card p-4 border border-olive/20 space-y-1.5">
-                        <h5 className="font-bold text-sm text-white">{ds.name}</h5>
+                        <h5 className="font-bold text-sm text-foreground dark:text-white">{ds.name}</h5>
                         <p className="text-xs text-foreground/60 leading-relaxed">{ds.description}</p>
                       </div>
                     ))}
@@ -996,7 +1014,7 @@ export default function CVPage() {
                         <Code2 size={16} />
                       </div>
                       <div className="space-y-1 min-w-0">
-                        <h4 className="text-sm font-bold text-white group-hover:text-olive-300 transition-colors leading-snug">
+                        <h4 className="text-sm font-bold text-foreground dark:text-white group-hover:text-olive-300 transition-colors leading-snug">
                           {proj.title}
                         </h4>
                         <p className="text-xs text-foreground/50 font-mono">
@@ -1030,7 +1048,7 @@ export default function CVPage() {
                         <GraduationCap size={18} />
                       </div>
                       <div>
-                        <h4 className="text-base font-bold text-white">{degree.degreeTitle}</h4>
+                        <h4 className="text-base font-bold text-foreground dark:text-white">{degree.degreeTitle}</h4>
                         <p className="text-xs text-foreground/50 font-mono">{degree.institution} · {degree.location}</p>
                       </div>
                     </div>
@@ -1068,7 +1086,7 @@ export default function CVPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <h4 className="text-sm font-bold text-white">{ref.name}</h4>
+                        <h4 className="text-sm font-bold text-foreground dark:text-white">{ref.name}</h4>
                         <span className="text-[10px] font-mono text-quantum/80 px-2 py-0.5 rounded bg-quantum/10 border border-quantum/20">
                           {ref.relationship}
                         </span>
@@ -1110,11 +1128,10 @@ export default function CVPage() {
 function SeriesCard({
   title,
   editions,
-  type,
 }: {
   title: string;
   editions: SeriesEdition[];
-  type: "conference" | "seminar";
+  type?: "conference" | "seminar";
 }) {
   const [expanded, setExpanded] = useState(true);
 
@@ -1134,7 +1151,7 @@ function SeriesCard({
             <Mic2 size={16} />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white">{title}</h4>
+            <h4 className="text-base font-bold text-foreground dark:text-white">{title}</h4>
             <div className="flex items-center gap-2 text-xs font-mono text-foreground/45 mt-0.5">
               <span>{editions.length} edition{editions.length > 1 ? "s" : ""}</span>
               {speakerCount > 0 && (
@@ -1257,7 +1274,7 @@ function SectionTitle({
         <Icon size={13} className="text-quantum" />
         <span>{badge}</span>
       </div>
-      <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+      <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground dark:text-white">
         <span className={accentClass}>{title}</span>
       </h2>
     </div>

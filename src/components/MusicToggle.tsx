@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 import { VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TRACKS = [
-  "/music/1 Levantine Mirage.mp3",
-  "/music/2 Ancient Sands & Emerald Isles.mp3",
-  "/music/3 Levantine Mystic Fantasy.mp3",
-  "/music/4 Ancient Sands & Harps.mp3",
+  { src: "/music/1 Levantine Mirage.mp3", title: "Levantine Mirage" },
+  { src: "/music/2 Ancient Sands & Emerald Isles.mp3", title: "Ancient Sands & Emerald Isles" },
+  { src: "/music/3 Levantine Mystic Fantasy.mp3", title: "Levantine Mystic Fantasy" },
+  { src: "/music/4 Ancient Sands & Harps.mp3", title: "Ancient Sands & Harps" },
 ];
+
+const MUTE_STORAGE_KEY = "quantum-music-muted";
+const emptySubscribe = () => () => {};
 
 /* ─── Module-level singleton ──────────────────────────────────────────────
    The Audio object lives OUTSIDE React so it survives component
@@ -18,90 +21,88 @@ const TRACKS = [
 let _audio: HTMLAudioElement | null = null;
 let _trackIndex = -1;
 let _started = false;
-let _userMuted = false; // true when the user explicitly clicked mute
+let _userMuted = false;
+
+function readStoredMuted(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(MUTE_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredMuted(muted: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(MUTE_STORAGE_KEY, muted ? "true" : "false");
+  } catch {
+    // ignore storage errors
+  }
+}
 
 function getAudio(): HTMLAudioElement {
   if (!_audio) {
     _audio = new Audio();
     _audio.volume = 0.3;
-    _audio.preload = "auto";
+    _audio.preload = "none";
 
     _trackIndex = Math.floor(Math.random() * TRACKS.length);
-    _audio.src = TRACKS[_trackIndex];
-    _audio.load();
+    _audio.src = TRACKS[_trackIndex].src;
 
     // Cycle to next track when one ends
     _audio.addEventListener("ended", () => {
       _trackIndex = (_trackIndex + 1) % TRACKS.length;
-      _audio!.src = TRACKS[_trackIndex];
-      _audio!.play().catch(() => {});
+      if (_audio) {
+        _audio.src = TRACKS[_trackIndex].src;
+        _audio.play().catch(() => {});
+      }
     });
   }
   return _audio;
 }
 
 export function MusicToggle() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const listenersAttached = useRef(false);
+  const [trackTitle, setTrackTitle] = useState<string>("");
 
-  /* Sync UI state with the actual singleton audio state on mount */
+  /* Sync UI state with the singleton audio state on mount */
   useEffect(() => {
-    setMounted(true);
+    _userMuted = readStoredMuted();
+
     const audio = getAudio();
 
-    // If audio was already playing (component remounted), just sync the UI
     if (_started && !_userMuted && !audio.paused) {
-      setIsPlaying(true);
       return;
     }
 
-    // If user had previously muted, keep it muted
     if (_userMuted) {
-      setIsPlaying(false);
       return;
     }
-
-    // ─── Auto-start logic (only wire up once globally) ───
-    if (listenersAttached.current) return;
-    listenersAttached.current = true;
 
     const startMusic = () => {
       if (_started || _userMuted) return;
       audio.play().then(() => {
         _started = true;
         setIsPlaying(true);
+        if (_trackIndex >= 0 && TRACKS[_trackIndex]) {
+          setTrackTitle(TRACKS[_trackIndex].title);
+        }
         cleanup();
       }).catch(() => {
-        // Not allowed yet — leave listeners active to try again
+        // Browser blocked autoplay before user gesture
       });
     };
 
-    // Strategy 1: Try immediately
-    startMusic();
+    const cleanup = () => {
+      document.removeEventListener("click", startMusic, true);
+      document.removeEventListener("keydown", startMusic, true);
+    };
 
-    // Strategy 2: Every kind of user interaction
-    const events = [
-      "click", "mousedown", "pointerdown", "keydown",
-      "touchstart", "touchend", "wheel",
-    ];
-    events.forEach((e) => document.addEventListener(e, startMusic, { capture: true, passive: true }));
-    window.addEventListener("scroll", startMusic, { capture: true, passive: true });
+    document.addEventListener("click", startMusic, { capture: true, once: true, passive: true });
+    document.addEventListener("keydown", startMusic, { capture: true, once: true, passive: true });
 
-    // Strategy 3: Periodic retry
-    const retryId = setInterval(() => {
-      if (_started) { clearInterval(retryId); return; }
-      startMusic();
-    }, 2000);
-
-    function cleanup() {
-      events.forEach((e) => document.removeEventListener(e, startMusic, true));
-      window.removeEventListener("scroll", startMusic, true);
-      clearInterval(retryId);
-    }
-
-    // NOTE: No cleanup return that pauses/destroys audio!
-    // The audio singleton intentionally outlives the component.
     return () => {
       cleanup();
     };
@@ -114,12 +115,17 @@ export function MusicToggle() {
     if (isPlaying) {
       audio.pause();
       _userMuted = true;
+      writeStoredMuted(true);
       setIsPlaying(false);
     } else {
+      _userMuted = false;
+      writeStoredMuted(false);
       audio.play().then(() => {
         _started = true;
-        _userMuted = false;
         setIsPlaying(true);
+        if (_trackIndex >= 0 && TRACKS[_trackIndex]) {
+          setTrackTitle(TRACKS[_trackIndex].title);
+        }
       }).catch(() => {});
     }
   }, [isPlaying]);
@@ -130,14 +136,21 @@ export function MusicToggle() {
     );
   }
 
+  const tooltip = isPlaying
+    ? `Playing: ${trackTitle || "Ambient Music"} — Click to mute`
+    : trackTitle
+      ? `Play ambient music (${trackTitle})`
+      : "Play ambient music";
+
   return (
     <motion.button
       whileHover={{ scale: 1.1, rotate: -15 }}
       whileTap={{ scale: 0.9 }}
       onClick={toggleMusic}
+      title={tooltip}
       className={`
         relative w-10 h-10 rounded-full flex items-center justify-center
-        transition-all duration-300 overflow-hidden
+        transition-all duration-300 overflow-hidden cursor-pointer
         ${isPlaying
           ? "bg-quantum/15 border border-quantum/40 text-quantum hover:border-quantum/70"
           : "bg-cosmos-800 border border-foreground/15 text-foreground/50 hover:border-foreground/30 hover:text-foreground/70 dark:bg-cosmos-800 dark:border-quantum/20 dark:text-foreground/40 dark:hover:border-quantum/40"

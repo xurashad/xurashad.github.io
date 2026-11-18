@@ -18,7 +18,7 @@ const WAVE_CONFIGS: WaveConfig[] = [
   { amplitude: 30,  frequency: 0.008, phase: Math.PI/2,   speed: 0.010, color: "rgba(220,20,60,0.25)",   lineWidth: 0.8, yOffset: 0.48 },
   { amplitude: 10,  frequency: 0.025, phase: Math.PI*1.5, speed: 0.030, color: "rgba(127,141,204,0.35)", lineWidth: 0.6, yOffset: 0.52 },
   { amplitude: 18,  frequency: 0.015, phase: Math.PI*0.7, speed: 0.012, color: "rgba(0,195,245,0.2)",    lineWidth: 2,   yOffset: 0.46 },
-  // CELESTIAL MIRAGE — new nebula/aurora waves
+  // CELESTIAL MIRAGE — nebula/aurora waves
   { amplitude: 16,  frequency: 0.014, phase: Math.PI*0.3, speed: 0.018, color: "rgba(147,51,234,0.3)",   lineWidth: 1.2, yOffset: 0.53 },
   { amplitude: 12,  frequency: 0.022, phase: Math.PI*1.2, speed: 0.025, color: "rgba(99,102,241,0.25)",  lineWidth: 0.8, yOffset: 0.47 },
 ];
@@ -32,44 +32,55 @@ export function WaveCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
+    let animId = 0;
     let t = 0;
+    let isVisible = true;
+    let isTabActive = !document.hidden;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const resize = () => {
-      canvas.width  = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     };
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
 
-    const draw = () => {
+    const renderFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      WAVE_CONFIGS.forEach((wave) => {
+      for (let i = 0; i < WAVE_CONFIGS.length; i++) {
+        const wave = WAVE_CONFIGS[i];
         const baseY = canvas.height * wave.yOffset;
         ctx.beginPath();
-        ctx.strokeStyle = wave.color;
-        ctx.lineWidth = wave.lineWidth;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = wave.color;
 
-        for (let x = 0; x <= canvas.width; x += 2) {
+        for (let x = 0; x <= canvas.width; x += 3) {
           const y = baseY + wave.amplitude * Math.sin(x * wave.frequency + t * wave.speed + wave.phase);
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
-        ctx.stroke();
-      });
 
-      ctx.shadowBlur = 0;
+        // Soft wide glow pass + crisp core pass (replaces shadowBlur)
+        ctx.strokeStyle = wave.color;
+        ctx.lineWidth = wave.lineWidth * 3;
+        ctx.globalAlpha = 0.25;
+        ctx.stroke();
+
+        ctx.lineWidth = wave.lineWidth;
+        ctx.globalAlpha = 0.9;
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
 
       // Ψ probability density envelope (quantum cyan)
       const baseY = canvas.height * 0.50;
       ctx.beginPath();
-      for (let x = 0; x <= canvas.width; x += 2) {
+      for (let x = 0; x <= canvas.width; x += 3) {
         const y = baseY + 22 * Math.sin(x * 0.012 + t * 0.015);
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
-      for (let x = canvas.width; x >= 0; x -= 2) {
+      for (let x = canvas.width; x >= 0; x -= 3) {
         const y = baseY - 22 * Math.sin(x * 0.012 + t * 0.015);
         ctx.lineTo(x, y);
       }
@@ -80,11 +91,12 @@ export function WaveCanvas() {
       // Nebula probability density envelope (purple)
       const nebulaBaseY = canvas.height * 0.52;
       ctx.beginPath();
-      for (let x = 0; x <= canvas.width; x += 2) {
+      for (let x = 0; x <= canvas.width; x += 3) {
         const y = nebulaBaseY + 16 * Math.sin(x * 0.014 + t * 0.018 + Math.PI * 0.3);
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
-      for (let x = canvas.width; x >= 0; x -= 2) {
+      for (let x = canvas.width; x >= 0; x -= 3) {
         const y = nebulaBaseY - 16 * Math.sin(x * 0.014 + t * 0.018 + Math.PI * 0.3);
         ctx.lineTo(x, y);
       }
@@ -93,13 +105,57 @@ export function WaveCanvas() {
       ctx.fill();
 
       t++;
-      animId = requestAnimationFrame(draw);
     };
 
-    draw();
+    const stopLoop = () => {
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
+    };
+
+    const loop = () => {
+      if (!isVisible || !isTabActive) {
+        animId = 0;
+        return;
+      }
+      renderFrame();
+      animId = requestAnimationFrame(loop);
+    };
+
+    const startLoop = () => {
+      if (prefersReducedMotion) {
+        renderFrame();
+        return;
+      }
+      if (!animId && isVisible && isTabActive) {
+        animId = requestAnimationFrame(loop);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisible = entries.some((e) => e.isIntersecting);
+        if (isVisible && isTabActive) startLoop();
+        else stopLoop();
+      },
+      { threshold: 0.01 }
+    );
+    observer.observe(canvas);
+
+    const onVisibilityChange = () => {
+      isTabActive = !document.hidden;
+      if (isVisible && isTabActive) startLoop();
+      else stopLoop();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", resize);
     };
   }, []);

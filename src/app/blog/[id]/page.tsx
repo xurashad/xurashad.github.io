@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { POSTS, type Post } from "@/lib/blogData";
-import { ArrowLeft, ArrowRight, Calendar, Clock, Share2, Tag, BookOpen, User } from "lucide-react";
+import { POSTS, type BlogTable } from "@/lib/blogData";
+import { ArrowLeft, ArrowRight, Calendar, Clock } from "lucide-react";
 import { TagBadge, WaveDivider } from "@/components/ui";
 import { BlogTableViewer } from "@/components/BlogTableViewer";
+import { BlogArticleEnhancements } from "@/components/BlogArticleEnhancements";
 import katex from "katex";
+import "katex/dist/katex.min.css";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -50,6 +53,24 @@ function renderMathToHtml(math: string, displayMode = false): string {
   } catch {
     return math;
   }
+}
+
+function buildTableMathMap(table: BlogTable): Record<string, string> {
+  const mathMap: Record<string, string> = {};
+  const mathRegex = /\$[^\$\n]+?\$/g;
+  for (const row of table.rows) {
+    for (const cell of row) {
+      const matches = cell.match(mathRegex);
+      if (matches) {
+        for (const token of matches) {
+          if (!mathMap[token]) {
+            mathMap[token] = renderMathToHtml(token.slice(1, -1), false);
+          }
+        }
+      }
+    }
+  }
+  return mathMap;
 }
 
 function renderInlineText(text: string) {
@@ -226,9 +247,11 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Cover Image */}
           {post.coverImage && (
             <div className="mt-8 rounded-2xl overflow-hidden border border-white/10 glass-card relative shadow-2xl group">
-              <img
+              <Image
                 src={post.coverImage.src}
                 alt={post.coverImage.alt}
+                width={1376}
+                height={768}
                 className="w-full h-auto object-cover max-h-[460px]"
               />
               {post.coverImage.caption && (
@@ -242,11 +265,22 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         <WaveDivider variant={post.accent} />
 
+        {post.sections && post.sections.length > 0 && (
+          <BlogArticleEnhancements
+            accent={post.accent}
+            sections={post.sections.map((s, idx) => ({
+              id: `section-${idx}`,
+              heading: s.heading,
+              readTime: s.readTime,
+            }))}
+          />
+        )}
+
         {/* Article Body Content */}
         <div className="space-y-12 my-12 text-foreground/80 leading-relaxed text-base sm:text-lg font-sans">
           {post.sections && post.sections.length > 0 ? (
             post.sections.map((section, idx) => (
-              <section key={idx} className="space-y-5">
+              <section key={idx} id={`section-${idx}`} className="space-y-5 scroll-mt-28">
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pt-2 border-b border-white/6 pb-2">
                   <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-foreground tracking-tight">
                     {section.heading}
@@ -260,9 +294,11 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                 {section.image && (
                   <div className="my-6 rounded-2xl overflow-hidden border border-white/10 glass-card relative shadow-xl">
-                    <img
+                    <Image
                       src={section.image.src}
                       alt={section.image.alt}
+                      width={1376}
+                      height={768}
                       className="w-full h-auto object-cover max-h-[440px]"
                     />
                     {section.image.caption && (
@@ -306,7 +342,11 @@ export default async function BlogPostPage({ params }: PageProps) {
                 })}
 
                 {section.table && (
-                  <BlogTableViewer table={section.table} accent={post.accent} />
+                  <BlogTableViewer
+                    table={section.table}
+                    accent={post.accent}
+                    mathHtmlMap={buildTableMathMap(section.table)}
+                  />
                 )}
 
                 {section.callout && (
@@ -344,7 +384,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* End of article notice */}
           <div className="mt-12 p-6 rounded-xl border border-white/8 glass text-center space-y-3">
             <div className="text-xs font-mono text-quantum tracking-wider uppercase">
-              // Theoretical Physics & Longform Reflections
+              {"// Theoretical Physics & Longform Reflections"}
             </div>
             <p className="text-sm text-foreground/60 max-w-xl mx-auto">
               Have feedback, questions, or extensions to discuss? Feel free to reach out.

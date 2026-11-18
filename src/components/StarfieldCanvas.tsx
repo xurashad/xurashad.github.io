@@ -61,10 +61,39 @@ const NEBULA_CONFIGS = [
 
 const SHOOTING_STAR_COLORS = ["#c084fc", "#a5b4fc", "#66d9ff", "#e0c3fc"];
 
+function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace("#", "");
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function createGlowSprites(colors: string[]): Map<string, HTMLCanvasElement> {
+  const map = new Map<string, HTMLCanvasElement>();
+  const uniqueColors = Array.from(new Set(colors));
+  for (const color of uniqueColors) {
+    const sprite = document.createElement("canvas");
+    sprite.width = 16;
+    sprite.height = 16;
+    const sctx = sprite.getContext("2d");
+    if (sctx) {
+      const grad = sctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+      grad.addColorStop(0, hexToRgba(color, 0.9));
+      grad.addColorStop(0.35, hexToRgba(color, 0.35));
+      grad.addColorStop(1, hexToRgba(color, 0));
+      sctx.fillStyle = grad;
+      sctx.fillRect(0, 0, 16, 16);
+    }
+    map.set(color, sprite);
+  }
+  return map;
+}
+
 /* ── Component ─────────────────────────────────────────────────────────────── */
 export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const mouseRef = useRef({ x: 0, y: 0 });
   const [mounted, setMounted] = useState(false);
 
@@ -81,11 +110,15 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
+    let animId = 0;
     let t = 0;
+    let isVisible = true;
+    let isTabActive = !document.hidden;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const isDark = theme === "dark";
+    const isDark = resolvedTheme !== "light";
     const starColors = isDark ? STAR_COLORS_DARK : STAR_COLORS_LIGHT;
+    const glowSprites = createGlowSprites(starColors);
 
     /* ── Resize ── */
     const resize = () => {
@@ -93,8 +126,8 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
       canvas.height = canvas.offsetHeight;
     };
     resize();
-    window.addEventListener("resize", resize);
-    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("mousemove", onMouse, { passive: true });
 
     /* ── Create Stars ── */
     const stars: Star[] = [];
@@ -147,22 +180,25 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
     };
 
     /* ── Draw Loop ── */
-    const draw = () => {
+    const renderFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
       t++;
 
       /* ── Nebula Clouds ── */
-      nebulae.forEach((n) => {
+      for (let idx = 0; idx < nebulae.length; idx++) {
+        const n = nebulae[idx];
         const pulse = Math.sin(t * n.pulseSpeed + n.pulseOffset) * 0.5 + 0.5;
         const r = n.radius + pulse * 40;
         const px = n.x + n.driftX * t + mx * 8;
         const py = n.y + n.driftY * t + my * 8;
 
-        // Wrap around
-        const wx = ((px % canvas.width) + canvas.width) % canvas.width;
-        const wy = ((py % canvas.height) + canvas.height) % canvas.height;
+        // Smooth wrap-around across canvas + 2*radius so clouds never pop at edges
+        const spanX = canvas.width + r * 2;
+        const spanY = canvas.height + r * 2;
+        const wx = ((((px + r) % spanX) + spanX) % spanX) - r;
+        const wy = ((((py + r) % spanY) + spanY) % spanY) - r;
 
         const grad = ctx.createRadialGradient(wx, wy, 0, wx, wy, r);
         grad.addColorStop(0, n.color);
@@ -170,34 +206,35 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
         ctx.fillStyle = grad;
         ctx.globalAlpha = 0.6 + pulse * 0.4;
         ctx.fillRect(wx - r, wy - r, r * 2, r * 2);
-        ctx.globalAlpha = 1;
-      });
+      }
+      ctx.globalAlpha = 1;
 
       /* ── Stars ── */
-      stars.forEach((s) => {
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
         const twinkle = Math.sin(t * s.twinkleSpeed + s.twinkleOffset);
         s.alpha = s.baseAlpha * (0.5 + twinkle * 0.5);
 
         const px = s.x + mx * s.parallaxFactor * 3;
         const py = s.y + my * s.parallaxFactor * 3;
 
+        // Draw pre-rendered glow sprite for larger stars instead of ctx.shadowBlur
+        if (s.radius > 1.5) {
+          const sprite = glowSprites.get(s.color);
+          if (sprite) {
+            const glowRadius = s.radius * 3.8 + twinkle * 1.4;
+            ctx.globalAlpha = s.alpha * 0.75;
+            ctx.drawImage(sprite, px - glowRadius, py - glowRadius, glowRadius * 2, glowRadius * 2);
+          }
+        }
+
         ctx.beginPath();
         ctx.arc(px, py, s.radius, 0, Math.PI * 2);
         ctx.fillStyle = s.color;
         ctx.globalAlpha = s.alpha;
-
-        // Add glow for larger stars
-        if (s.radius > 1.5) {
-          ctx.shadowBlur = 6 + twinkle * 4;
-          ctx.shadowColor = s.color;
-        } else {
-          ctx.shadowBlur = 0;
-        }
-
         ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-      });
+      }
+      ctx.globalAlpha = 1;
 
       /* ── Shooting Stars ── */
       nextShootingStarTime--;
@@ -206,7 +243,8 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
         nextShootingStarTime = 200 + Math.random() * 400;
       }
 
-      shootingStars.forEach((ss, i) => {
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const ss = shootingStars[i];
         ss.life++;
         ss.x += ss.vx;
         ss.y += ss.vy;
@@ -214,26 +252,31 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
         const progress = ss.life / ss.maxLife;
         ss.alpha = progress < 0.1 ? progress / 0.1 : progress > 0.6 ? (1 - progress) / 0.4 : 1;
 
-        // Trail
+        const speedMag = Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy);
+        const normX = ss.vx / speedMag;
+        const normY = ss.vy / speedMag;
         const trailLen = ss.length;
+
         const grad = ctx.createLinearGradient(
           ss.x, ss.y,
-          ss.x - ss.vx * trailLen / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy) * 0.5,
-          ss.y - ss.vy * trailLen / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy) * 0.5
+          ss.x - normX * trailLen * 0.5,
+          ss.y - normY * trailLen * 0.5
         );
         grad.addColorStop(0, ss.color);
         grad.addColorStop(1, "transparent");
 
         ctx.beginPath();
         ctx.moveTo(ss.x, ss.y);
-        const normX = ss.vx / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy);
-        const normY = ss.vy / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy);
         ctx.lineTo(ss.x - normX * trailLen, ss.y - normY * trailLen);
         ctx.strokeStyle = grad;
+
+        // Soft glow pass + crisp core pass (replaces shadowBlur)
+        ctx.lineWidth = 4;
+        ctx.globalAlpha = ss.alpha * 0.22;
+        ctx.stroke();
+
         ctx.lineWidth = 1.5;
-        ctx.globalAlpha = ss.alpha * 0.8;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = ss.color;
+        ctx.globalAlpha = ss.alpha * 0.85;
         ctx.stroke();
 
         // Head dot
@@ -243,14 +286,11 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
         ctx.globalAlpha = ss.alpha;
         ctx.fill();
 
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-
-        // Remove dead
         if (ss.life >= ss.maxLife) {
           shootingStars.splice(i, 1);
         }
-      });
+      }
+      ctx.globalAlpha = 1;
 
       /* ── Faint Sacred Geometry (hexagon at center) ── */
       if (isDark) {
@@ -264,7 +304,8 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
           const angle = (Math.PI / 3) * i - Math.PI / 6;
           const hx = cx + hexRadius * Math.cos(angle) + mx * 5;
           const hy = cy + hexRadius * Math.sin(angle) + my * 5;
-          i === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+          if (i === 0) ctx.moveTo(hx, hy);
+          else ctx.lineTo(hx, hy);
         }
         ctx.closePath();
         ctx.strokeStyle = `rgba(147, 51, 234, ${hexAlpha})`;
@@ -278,7 +319,8 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
           const angle = (Math.PI / 3) * i;
           const hx = cx + innerR * Math.cos(angle) + mx * 3;
           const hy = cy + innerR * Math.sin(angle) + my * 3;
-          i === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+          if (i === 0) ctx.moveTo(hx, hy);
+          else ctx.lineTo(hx, hy);
         }
         ctx.closePath();
         ctx.strokeStyle = `rgba(99, 102, 241, ${hexAlpha * 0.8})`;
@@ -297,24 +339,67 @@ export function StarfieldCanvas({ starCount = 200 }: { starCount?: number }) {
           ctx.stroke();
         }
       }
-
-      animId = requestAnimationFrame(draw);
     };
 
-    draw();
+    const stopLoop = () => {
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
+    };
+
+    const loop = () => {
+      if (!isVisible || !isTabActive) {
+        animId = 0;
+        return;
+      }
+      renderFrame();
+      animId = requestAnimationFrame(loop);
+    };
+
+    const startLoop = () => {
+      if (prefersReducedMotion) {
+        renderFrame();
+        return;
+      }
+      if (!animId && isVisible && isTabActive) {
+        animId = requestAnimationFrame(loop);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisible = entries.some((e) => e.isIntersecting);
+        if (isVisible && isTabActive) startLoop();
+        else stopLoop();
+      },
+      { threshold: 0.01 }
+    );
+    observer.observe(canvas);
+
+    const onVisibilityChange = () => {
+      isTabActive = !document.hidden;
+      if (isVisible && isTabActive) startLoop();
+      else stopLoop();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animId);
+      stopLoop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouse);
     };
-  }, [starCount, theme, onMouse]);
+  }, [starCount, resolvedTheme, onMouse]);
 
   return (
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: mounted && theme === "dark" ? 0.9 : 0.3 }}
+      style={{ opacity: mounted && resolvedTheme === "light" ? 0.3 : 0.9 }}
     />
   );
 }

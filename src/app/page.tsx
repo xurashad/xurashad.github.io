@@ -2,10 +2,12 @@
 
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
-  Atom, Database, BookOpen, FileText, User, Globe, Mail,
-  ArrowRight, ChevronDown, Zap, Star, Code2, Sparkles
+  Atom, Database, BookOpen, FileText, User, Mail,
+  ArrowRight, ChevronDown, Zap, Star, Code2, Sparkles,
+  GitFork, Infinity as InfinityIcon, Calendar,
 } from "lucide-react";
 import { ParticleField } from "@/components/ParticleField";
 import { WaveCanvas } from "@/components/WaveCanvas";
@@ -275,11 +277,114 @@ const QUICK_LINKS = [
 ];
 
 /* ─── Equations ───────────────────────────────────────────────────────────── */
-const EQUATIONS = [
-  { label: "Schrödinger", eq: "iℏ ∂ψ/∂t = Ĥψ", color: "text-quantum" },
-  { label: "Dirac", eq: "(iγᵘ∂ᵤ − m)ψ = 0", color: "text-nebula-300" },
-  { label: "Klein-Gordon", eq: "(□ + m²)φ = 0", color: "text-aurora-400" },
-  //  { label: "Resilience", eq: "∀t: Resilience(t) > 0", color: "text-crimson" },
+interface PhysicsEquation {
+  id: string;
+  label: string;
+  domain: string;
+  eq: string;
+  color: string;
+  insight: string;
+  wavePrimary: [string, string, string];
+  waveSecondary: [string, string, string];
+  duration: number;
+}
+
+const EQUATIONS: PhysicsEquation[] = [
+  {
+    id: "yang-baxter",
+    label: "Yang-Baxter",
+    domain: "Integrable Models",
+    eq: "R₁₂ R₁₃ R₂₃ = R₂₃ R₁₃ R₁₂",
+    color: "text-quantum",
+    insight: "Guarantees multi-particle scattering factorizes into two-body interactions, unlocking exact solvability in 1+1D quantum field theories.",
+    wavePrimary: [
+      "M0,30 C45,8 95,52 150,30 C205,8 255,52 300,30 C345,8 380,22 400,30",
+      "M0,30 C45,52 95,8 150,30 C205,52 255,8 300,30 C345,52 380,38 400,30",
+      "M0,30 C45,8 95,52 150,30 C205,8 255,52 300,30 C345,8 380,22 400,30",
+    ],
+    waveSecondary: [
+      "M0,30 C40,20 80,40 120,30 C160,20 200,40 240,30 C280,20 320,40 360,30 C380,24 395,28 400,30",
+      "M0,30 C40,40 80,20 120,30 C160,40 200,20 240,30 C280,40 320,20 360,30 C380,36 395,32 400,30",
+      "M0,30 C40,20 80,40 120,30 C160,20 200,40 240,30 C280,20 320,40 360,30 C380,24 395,28 400,30",
+    ],
+    duration: 2.8,
+  },
+  {
+    id: "lax",
+    label: "Lax Connection",
+    domain: "Classical Integrability",
+    eq: "∂₊L₋ − ∂₋L₊ + [L₊, L₋] = 0",
+    color: "text-nebula-300",
+    insight: "Zero-curvature condition in light-cone coordinates whose monodromy matrix generates an infinite tower of conserved charges.",
+    wavePrimary: [
+      "M0,30 C60,12 120,48 200,30 C280,12 340,48 400,30",
+      "M0,30 C60,48 120,12 200,30 C280,48 340,12 400,30",
+      "M0,30 C60,12 120,48 200,30 C280,12 340,48 400,30",
+    ],
+    waveSecondary: [
+      "M0,30 C50,24 100,36 160,30 C220,24 280,36 340,30 C370,27 385,29 400,30",
+      "M0,30 C50,36 100,24 160,30 C220,36 280,24 340,30 C370,33 385,31 400,30",
+      "M0,30 C50,24 100,36 160,30 C220,24 280,36 340,30 C370,27 385,29 400,30",
+    ],
+    duration: 3.4,
+  },
+  {
+    id: "schrodinger",
+    label: "Schrödinger",
+    domain: "Quantum Mechanics",
+    eq: "iℏ ∂ψ/∂t = Ĥψ",
+    color: "text-aurora-400",
+    insight: "Governs unitary time evolution of quantum states, linking energy eigenstates directly to interference frequencies.",
+    wavePrimary: [
+      "M0,30 C50,10 100,50 150,30 C200,10 250,50 300,30 C350,10 380,20 400,30",
+      "M0,30 C50,50 100,10 150,30 C200,50 250,10 300,30 C350,50 380,40 400,30",
+      "M0,30 C50,10 100,50 150,30 C200,10 250,50 300,30 C350,10 380,20 400,30",
+    ],
+    waveSecondary: [
+      "M0,30 C40,22 80,38 120,30 C160,22 200,38 240,30 C280,22 320,38 360,30 C380,24 395,28 400,30",
+      "M0,30 C40,38 80,22 120,30 C160,38 200,22 240,30 C280,38 320,22 360,30 C380,36 395,32 400,30",
+      "M0,30 C40,22 80,38 120,30 C160,22 200,38 240,30 C280,22 320,38 360,30 C380,24 395,28 400,30",
+    ],
+    duration: 3.0,
+  },
+  {
+    id: "dirac",
+    label: "Dirac",
+    domain: "Relativistic Fermions",
+    eq: "(iγᵘ∂ᵤ − m)ψ = 0",
+    color: "text-quantum",
+    insight: "Unifies special relativity and quantum mechanics for spin-½ particles, naturally predicting spinors and antimatter.",
+    wavePrimary: [
+      "M0,30 C35,14 70,46 105,30 C140,14 175,46 210,30 C245,14 280,46 315,30 C350,14 375,40 400,30",
+      "M0,30 C35,46 70,14 105,30 C140,46 175,14 210,30 C245,46 280,14 315,30 C350,46 375,20 400,30",
+      "M0,30 C35,14 70,46 105,30 C140,14 175,46 210,30 C245,14 280,46 315,30 C350,14 375,40 400,30",
+    ],
+    waveSecondary: [
+      "M0,30 C30,22 60,38 90,30 C120,22 150,38 180,30 C210,22 240,38 270,30 C300,22 330,38 360,30 C380,25 390,32 400,30",
+      "M0,30 C30,38 60,22 90,30 C120,38 150,22 180,30 C210,38 240,22 270,30 C300,38 330,22 360,30 C380,35 390,28 400,30",
+      "M0,30 C30,22 60,38 90,30 C120,22 150,38 180,30 C210,22 240,38 270,30 C300,22 330,38 360,30 C380,25 390,32 400,30",
+    ],
+    duration: 2.3,
+  },
+  {
+    id: "polyakov",
+    label: "Polyakov Action",
+    domain: "String Theory",
+    eq: "S = −T/2 ∫ d²σ √−h hᵃᵇ ∂ₐXᵘ ∂ᵦXᵤ",
+    color: "text-olive-400",
+    insight: "Describes a 1D string sweeping out a 2D worldsheet in target spacetime with Weyl and diffeomorphism invariance.",
+    wavePrimary: [
+      "M0,30 C80,6 160,54 240,30 C300,12 350,42 400,30",
+      "M0,30 C80,54 160,6 240,30 C300,48 350,18 400,30",
+      "M0,30 C80,6 160,54 240,30 C300,12 350,42 400,30",
+    ],
+    waveSecondary: [
+      "M0,30 C55,16 110,44 175,30 C240,16 300,44 360,30 C380,24 392,28 400,30",
+      "M0,30 C55,44 110,16 175,30 C240,44 300,16 360,30 C380,36 392,32 400,30",
+      "M0,30 C55,16 110,44 175,30 C240,16 300,44 360,30 C380,24 392,28 400,30",
+    ],
+    duration: 3.8,
+  },
 ];
 
 /* ─── Featured Publications ───────────────────────────────────────────────── */
@@ -293,6 +398,188 @@ const FEATURED_PUBS = [
     link: "https://doi.org/10.1007/JHEP08(2025)090",
   },
 ];
+
+/* ─── Featured Interactive Lab ────────────────────────────────────────────── */
+const FEATURED_LAB_APPS = [
+  {
+    title: "Particle Physics Visualizer",
+    category: "Scientific",
+    desc: "Explore 49 particles across the Standard Model, Supersymmetry, and Hadrons — filter and sort by mass, charge, and spin.",
+    href: "/apps/particle-physics",
+    image: "/images/apps_backgrounds/particle-physics.jfif",
+    icon: Atom,
+    accent: "text-quantum border-quantum/25 hover:border-quantum/45",
+  },
+  {
+    title: "Feynman Diagram Generator",
+    category: "QFT · LaTeX",
+    desc: "Compose interactive Feynman diagrams in the browser and export publication-ready TikZ LaTeX code or crisp SVGs.",
+    href: "/apps/feynman-diagram",
+    image: "/images/apps_backgrounds/feynman-diagram.jfif",
+    icon: GitFork,
+    accent: "text-nebula-300 border-nebula/25 hover:border-nebula/45",
+  },
+  {
+    title: "Fractal Explorer",
+    category: "Mathematics",
+    desc: "Multi-threaded Web Worker Mandelbrot and Julia set explorer with 12 palettes, deep zoom, and PNG export.",
+    href: "/apps/fractal-explorer",
+    image: "/images/apps_backgrounds/fractal-explorer.jfif",
+    icon: InfinityIcon,
+    accent: "text-aurora-400 border-aurora/25 hover:border-aurora/45",
+  },
+];
+
+/* ─── Latest Longform Essays ──────────────────────────────────────────────── */
+const FEATURED_ESSAYS = [
+  {
+    id: "physicists-toolkit-sanity-checks",
+    title: "The Physicist's Toolkit: 7 Quick Tricks to Check Your Work When There's No Answer Key",
+    category: "Theoretical Physics",
+    date: "2026-11-09",
+    image: "/images/blog/physicists-tricks/physicists-toolkit-hero.jpg",
+    excerpt: "Dimensional analysis, compatibility conditions, extreme limits, and Noether symmetry checks for catching errors without an answer key.",
+  },
+  {
+    id: "recommended-physics-reading-list",
+    title: "The Theoretical Physicist's Roadmap: Recommended Books & Papers",
+    category: "Reading Guides",
+    date: "2026-11-01",
+    image: "/images/blog/books/physics-library-cover.jpg",
+    excerpt: "A curated pedagogical guide from Conformal Field Theory and Integrability to General Relativity, Supersymmetry, and Quantum Gravity.",
+  },
+  {
+    id: "scale-of-the-universe",
+    title: "From Planck to the Cosmic Web",
+    category: "Cosmology",
+    date: "2026-11-01",
+    image: "/images/blog/scale/quantum-to-galaxy.jpg",
+    excerpt: "Mapping 62 orders of magnitude from spacetime foam at 10⁻³⁵ m to the 93-billion-light-year observable cosmos.",
+  },
+  {
+    id: "the-cosmic-calendar",
+    title: "The Cosmic Calendar",
+    category: "Cosmology",
+    date: "2026-11-01",
+    image: "/images/blog/calendar/cosmic-calendar-cover.jpg",
+    excerpt: "Compressing 13.8 billion years of cosmic history into a single calendar year — where human history occupies the final ten seconds.",
+  },
+];
+
+/* ─── Interactive Quantum State Analysis Card ────────────────────────────── */
+function QuantumStateCard() {
+  const [selectedId, setSelectedId] = useState<string>(EQUATIONS[0].id);
+  const activeEq = EQUATIONS.find((e) => e.id === selectedId) ?? EQUATIONS[0];
+
+  return (
+    <motion.div
+      className="glass-card p-6 sm:p-8 relative overflow-hidden"
+      whileHover={{ scale: 1.01 }}
+    >
+      <div className="flex items-center justify-between gap-2 mb-5">
+        <div className="text-xs font-mono text-foreground/40 tracking-widest">
+          Ψ(x,t) — QUANTUM STATE ANALYSIS
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-quantum/10 text-quantum border border-quantum/25">
+          {activeEq.domain}
+        </span>
+      </div>
+
+      {/* Animated wave SVG modulated by selected equation */}
+      <div className="relative h-24 mb-5 overflow-hidden rounded-lg bg-black/15 dark:bg-black/25 border border-foreground/5 dark:border-white/5">
+        <svg
+          key={activeEq.id}
+          viewBox="0 0 400 60"
+          className="absolute inset-0 w-full h-full"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(0,195,245,0)" />
+              <stop offset="20%" stopColor="rgba(0,195,245,0.85)" />
+              <stop offset="50%" stopColor="rgba(147,51,234,0.75)" />
+              <stop offset="80%" stopColor="rgba(99,102,241,0.65)" />
+              <stop offset="100%" stopColor="rgba(107,143,39,0)" />
+            </linearGradient>
+            <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(147,51,234,0)" />
+              <stop offset="30%" stopColor="rgba(147,51,234,0.45)" />
+              <stop offset="70%" stopColor="rgba(99,102,241,0.35)" />
+              <stop offset="100%" stopColor="rgba(0,195,245,0)" />
+            </linearGradient>
+          </defs>
+          <motion.path
+            d={activeEq.wavePrimary[0]}
+            stroke="url(#wg1)"
+            strokeWidth="2"
+            fill="none"
+            animate={{ d: activeEq.wavePrimary }}
+            transition={{ duration: activeEq.duration, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.path
+            d={activeEq.waveSecondary[0]}
+            stroke="url(#wg2)"
+            strokeWidth="1"
+            fill="none"
+            animate={{ d: activeEq.waveSecondary }}
+            transition={{ duration: activeEq.duration * 1.4, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </svg>
+      </div>
+
+      {/* Interactive Equations List */}
+      <div className="space-y-1.5" role="listbox" aria-label="Select physics equation">
+        {EQUATIONS.map((eq) => {
+          const isSelected = eq.id === activeEq.id;
+          return (
+            <motion.button
+              key={eq.id}
+              type="button"
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => setSelectedId(eq.id)}
+              whileHover={{ x: 4 }}
+              className={`w-full flex items-center justify-between gap-3 text-xs font-mono px-3 py-2 rounded-lg border transition-all cursor-pointer text-left ${
+                isSelected
+                  ? "bg-quantum/10 border-quantum/35 shadow-[0_0_16px_rgba(0,195,245,0.08)]"
+                  : "border-transparent hover:bg-nebula/5 hover:border-nebula/15"
+              }`}
+            >
+              <span className={isSelected ? "text-foreground/85 font-semibold" : "text-foreground/45"}>
+                {eq.label}
+              </span>
+              <span className={`${eq.color} tracking-wider truncate`}>{eq.eq}</span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Physical Insight Panel */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeEq.id}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.2 }}
+          className="mt-4 p-3.5 rounded-xl bg-foreground/[0.03] dark:bg-black/25 border border-foreground/10 dark:border-white/8"
+        >
+          <div className="text-[10px] font-mono uppercase tracking-widest text-quantum/80 mb-1">
+            {"// "}{activeEq.label} · {activeEq.domain}
+          </div>
+          <p className="text-xs text-foreground/65 leading-relaxed">
+            {activeEq.insight}
+          </p>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Decorative glows — celestial */}
+      <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-nebula/8 blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-aurora/8 blur-2xl pointer-events-none" />
+      <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-quantum/5 blur-xl pointer-events-none" />
+    </motion.div>
+  );
+}
 
 /* ─── Floating Cosmic Elements ───────────────────────────────────────────── */
 function FloatingCosmicElements() {
@@ -377,30 +664,22 @@ export default function HomePage() {
           <WaveCanvas />
         </motion.div>
 
-        {/* Nebula color blobs — celestial mirage */}
-        <motion.div
-          className="absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-[100px] pointer-events-none"
+        {/* Nebula color blobs — static GPU-accelerated ambient layers */}
+        <div
+          className="absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-[100px] opacity-65 transform-gpu pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)" }}
-          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div
-          className="absolute bottom-1/4 -right-20 w-80 h-80 rounded-full blur-[100px] pointer-events-none"
+        <div
+          className="absolute bottom-1/4 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-55 transform-gpu pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%)" }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[140px] pointer-events-none"
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[140px] transform-gpu pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(0,195,245,0.06), rgba(147,51,234,0.04), transparent 60%)" }}
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
-        <motion.div
-          className="absolute top-[10%] right-[30%] w-60 h-60 rounded-full blur-[90px] pointer-events-none"
+        <div
+          className="absolute top-[10%] right-[30%] w-60 h-60 rounded-full blur-[90px] opacity-45 transform-gpu pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(192,132,252,0.08), transparent 70%)" }}
-          animate={{ x: [0, 30, 0], y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 3 }}
         />
 
         {/* Floating cosmic elements */}
@@ -466,11 +745,11 @@ export default function HomePage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-base text-foreground/55 leading-relaxed mb-3 max-w-2xl"
               >
-                I'm a Theoretical Physicist. My work focuses on integrable models, string
-                theory and quantum field theories. My hopies are in the realms of programming
+                I&apos;m a Theoretical Physicist. My work focuses on integrable models, string
+                theory and quantum field theories. My hobbies are in the realms of programming
                 and AI. My portfolio lives at the confluence of
                 fundamental <span className="text-quantum font-medium">science</span>,
-                tomorrow's <span className="text-nebula-300 font-medium">technologies</span>,
+                tomorrow&apos;s <span className="text-nebula-300 font-medium">technologies</span>,
                 and human <span className="text-aurora-400 font-medium">thought</span>.
                 Welcome; feel free to explore and connect.
               </motion.p>
@@ -625,7 +904,7 @@ export default function HomePage() {
             className="mb-12"
           >
             <div className="text-xs font-mono text-nebula-300/50 tracking-widest uppercase mb-2">
-              // Navigate the field
+              {"// Navigate the field"}
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold">
               Explore the <span className="gradient-text-celestial">Portfolio</span>
@@ -701,7 +980,7 @@ export default function HomePage() {
               transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
             >
               <div className="text-xs font-mono text-nebula-300/50 tracking-widest uppercase mb-3">
-                // About Me
+                {"// About Me"}
               </div>
               <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-6 leading-tight">
                 Theoretical Physics{" "}
@@ -756,86 +1035,7 @@ export default function HomePage() {
               transition={{ duration: 0.7, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
               className="relative"
             >
-              <motion.div
-                className="glass-card p-8 relative overflow-hidden"
-                whileHover={{ scale: 1.01 }}
-              >
-                <div className="text-xs font-mono text-foreground/25 mb-5 tracking-widest">
-                  Ψ(x,t) — QUANTUM STATE ANALYSIS
-                </div>
-
-                {/* Animated wave SVG */}
-                <div className="relative h-24 mb-6 overflow-hidden rounded-lg bg-black/10">
-                  <svg
-                    viewBox="0 0 400 60"
-                    className="absolute inset-0 w-full h-full"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="rgba(0,195,245,0)" />
-                        <stop offset="20%" stopColor="rgba(0,195,245,0.8)" />
-                        <stop offset="50%" stopColor="rgba(147,51,234,0.7)" />
-                        <stop offset="80%" stopColor="rgba(99,102,241,0.6)" />
-                        <stop offset="100%" stopColor="rgba(107,143,39,0)" />
-                      </linearGradient>
-                      <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="rgba(147,51,234,0)" />
-                        <stop offset="30%" stopColor="rgba(147,51,234,0.4)" />
-                        <stop offset="70%" stopColor="rgba(99,102,241,0.3)" />
-                        <stop offset="100%" stopColor="rgba(0,195,245,0)" />
-                      </linearGradient>
-                    </defs>
-                    <motion.path
-                      d="M0,30 C50,10 100,50 150,30 C200,10 250,50 300,30 C350,10 380,20 400,30"
-                      stroke="url(#wg1)"
-                      strokeWidth="2"
-                      fill="none"
-                      animate={{
-                        d: [
-                          "M0,30 C50,10 100,50 150,30 C200,10 250,50 300,30 C350,10 380,20 400,30",
-                          "M0,30 C50,50 100,10 150,30 C200,50 250,10 300,30 C350,50 380,40 400,30",
-                          "M0,30 C50,10 100,50 150,30 C200,10 250,50 300,30 C350,10 380,20 400,30",
-                        ]
-                      }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                    <motion.path
-                      d="M0,30 C40,22 80,38 120,30 C160,22 200,38 240,30 C280,22 320,38 360,30 C380,24 395,28 400,30"
-                      stroke="url(#wg2)"
-                      strokeWidth="1"
-                      fill="none"
-                      animate={{
-                        d: [
-                          "M0,30 C40,22 80,38 120,30 C160,22 200,38 240,30 C280,22 320,38 360,30 C380,24 395,28 400,30",
-                          "M0,30 C40,38 80,22 120,30 C160,38 200,22 240,30 C280,38 320,22 360,30 C380,36 395,32 400,30",
-                          "M0,30 C40,22 80,38 120,30 C160,22 200,38 240,30 C280,22 320,38 360,30 C380,24 395,28 400,30",
-                        ]
-                      }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                  </svg>
-                </div>
-
-                {/* Equations */}
-                <div className="space-y-3">
-                  {EQUATIONS.map((eq) => (
-                    <motion.div
-                      key={eq.label}
-                      className="flex items-center justify-between text-xs font-mono p-2 rounded-lg hover:bg-nebula/5 transition-colors"
-                      whileHover={{ x: 4, boxShadow: "inset 0 0 20px rgba(147,51,234,0.05)" }}
-                    >
-                      <span className="text-foreground/30">{eq.label}</span>
-                      <span className={`${eq.color} tracking-wider`}>{eq.eq}</span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Decorative glows — celestial */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-nebula/8 blur-2xl pointer-events-none" />
-                <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-aurora/8 blur-2xl pointer-events-none" />
-                <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-quantum/5 blur-xl pointer-events-none" />
-              </motion.div>
+              <QuantumStateCard />
             </motion.div>
           </div>
         </div>
@@ -853,7 +1053,7 @@ export default function HomePage() {
             className="mb-10"
           >
             <div className="text-xs font-mono text-nebula-300/50 tracking-widest uppercase mb-2">
-              // Recent Research
+              {"// Recent Research"}
             </div>
             <div className="flex items-end justify-between gap-4">
               <h2 className="text-3xl font-serif font-bold">
@@ -898,6 +1098,150 @@ export default function HomePage() {
                     <span>{pub.year}</span>
                   </div>
                 </motion.a>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          FEATURED INTERACTIVE LAB
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 relative border-t border-nebula/10">
+        <div className="section-container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <div className="text-xs font-mono text-quantum/60 tracking-widest uppercase mb-2">
+              {"// Browser-Native Science & Engineering"}
+            </div>
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="text-3xl font-serif font-bold">
+                Featured <span className="gradient-text-quantum">Interactive Lab</span>
+              </h2>
+              <Link href="/apps" className="text-xs text-foreground/45 hover:text-quantum transition-colors font-mono flex items-center gap-1">
+                All 23 apps <ArrowRight size={10} />
+              </Link>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {FEATURED_LAB_APPS.map((app, i) => {
+              const Icon = app.icon;
+              return (
+                <motion.div
+                  key={app.href}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08, duration: 0.45 }}
+                >
+                  <Link href={app.href} className="block h-full group">
+                    <div className={`glass-card p-5 h-full flex flex-col border transition-all duration-300 ${app.accent}`}>
+                      <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-4 border border-foreground/10 dark:border-white/10 bg-black/40">
+                        <Image
+                          src={app.image}
+                          alt={app.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                        <span className="absolute top-2.5 left-2.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/65 backdrop-blur-md text-white/85 border border-white/15">
+                          {app.category}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <Icon size={16} className="flex-shrink-0" />
+                        <h3 className="font-semibold text-sm text-foreground/90 group-hover:text-quantum transition-colors">
+                          {app.title}
+                        </h3>
+                      </div>
+                      <p className="text-xs text-foreground/55 leading-relaxed flex-1 mb-4">
+                        {app.desc}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs font-mono text-quantum/80 group-hover:gap-2 transition-all">
+                        <span>Launch tool</span>
+                        <ArrowRight size={11} />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LATEST LONGFORM ESSAYS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 celestial-bg relative border-t border-nebula/10">
+        <div className="section-container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <div className="text-xs font-mono text-nebula-300/60 tracking-widest uppercase mb-2">
+              {"// Essays & Research Notes"}
+            </div>
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="text-3xl font-serif font-bold">
+                Latest <span className="gradient-text-celestial">Longform Essays</span>
+              </h2>
+              <Link href="/blog" className="text-xs text-foreground/45 hover:text-nebula-300 transition-colors font-mono flex items-center gap-1">
+                Read all essays <ArrowRight size={10} />
+              </Link>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {FEATURED_ESSAYS.map((essay, i) => (
+              <motion.div
+                key={essay.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.45 }}
+              >
+                <Link href={`/blog/${essay.id}`} className="block h-full group">
+                  <div className="glass-card p-5 h-full flex flex-col sm:flex-row gap-4 border border-foreground/10 dark:border-white/8 hover:border-quantum/40 transition-all duration-300">
+                    <div className="relative w-full sm:w-40 aspect-[16/10] sm:aspect-square rounded-xl overflow-hidden flex-shrink-0 border border-foreground/10 dark:border-white/10">
+                      <Image
+                        src={essay.image}
+                        alt={essay.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 160px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-foreground/45 mb-2">
+                        <span className="px-2 py-0.5 rounded-full bg-quantum/10 text-quantum border border-quantum/25 uppercase">
+                          {essay.category}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar size={10} /> {essay.date}
+                        </span>
+                      </div>
+                      <h3 className="font-serif font-bold text-base leading-snug mb-2 text-foreground/90 group-hover:text-quantum transition-colors line-clamp-2">
+                        {essay.title}
+                      </h3>
+                      <p className="text-xs text-foreground/55 leading-relaxed line-clamp-2 flex-1 mb-3">
+                        {essay.excerpt}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs font-mono text-quantum group-hover:gap-2 transition-all mt-auto">
+                        <span>Read essay</span>
+                        <ArrowRight size={11} />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>

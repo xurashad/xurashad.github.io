@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence, useScroll, useSpring, type Variants } from "framer-motion";
+import { Menu, X, Search } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { MusicToggle } from "./MusicToggle";
+import { CommandPalette } from "./CommandPalette";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", emoji: "⚛️" },
@@ -48,179 +49,222 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 280,
+    damping: 32,
+    restDelta: 0.001,
+  });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close on route change
+  // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-      className={`
-        fixed top-0 left-0 right-0 z-50 transition-all duration-500
-        ${scrolled ? "glass-nav shadow-card-dark py-2" : "bg-transparent py-4"}
-      `}
-    >
-      <div className="section-container">
-        <div className="flex items-center justify-between">
+    <>
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+        className={`
+          fixed top-0 left-0 right-0 z-50 transition-all duration-500
+          ${scrolled ? "glass-nav shadow-card-dark py-2" : "bg-transparent py-4"}
+        `}
+      >
+        <div className="section-container">
+          <div className="flex items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <motion.div
-              className="relative w-9 h-9 rounded-lg overflow-hidden"
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            >
-              <Image src="/favicon.ico" alt="Logo" width={36} height={36} className="object-contain" />
-              <span className="absolute inset-0 rounded-lg bg-gradient-to-br from-quantum via-nebula to-olive opacity-0 group-hover:opacity-25 blur-md transition-opacity duration-300" />
-            </motion.div>
-            <div className="flex flex-col leading-none">
-              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula to-olive bg-clip-text text-transparent">
-                Rashad Hamidi
-              </span>
-              <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula-300 to-olive bg-clip-text text-transparent"
-                style={{
-                  fontFamily: '"DecoTypeThuluth", serif',
-                  lineHeight: 1.6,
-                  textAlign: "center",
-                  direction: "rtl",
-                }}
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 group">
+              <motion.div
+                className="relative w-9 h-9 rounded-lg overflow-hidden"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
-                رشاد حميدي
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`
-                    nav-link relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                    ${isActive
-                      ? "text-quantum bg-nebula/8"
-                      : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
-                    }
-                    ${link.href === "/palestine" ? "text-olive-400 hover:text-olive-300" : ""}
-                  `}
+                <Image src="/images/logo.png" alt="Logo" width={36} height={36} className="object-contain" />
+                <span className="absolute inset-0 rounded-lg bg-gradient-to-br from-quantum via-nebula to-olive opacity-0 group-hover:opacity-25 blur-md transition-opacity duration-300" />
+              </motion.div>
+              <div className="flex flex-col leading-none">
+                <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula to-olive bg-clip-text text-transparent">
+                  Rashad Hamidi
+                </span>
+                <span className="font-serif font-bold text-base bg-gradient-to-r from-quantum via-nebula-300 to-olive bg-clip-text text-transparent"
+                  style={{
+                    fontFamily: '"DecoTypeThuluth", serif',
+                    lineHeight: 1.6,
+                    textAlign: "center",
+                    direction: "rtl",
+                  }}
                 >
-                  <span className={isActive ? "" : "hidden sm:hidden"}>{link.emoji}</span>
-                  {link.label}
-                  {isActive && (
+                  رشاد حميدي
+                </span>
+              </div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-1">
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`
+                      nav-link relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                      ${isActive
+                        ? "text-quantum bg-nebula/8"
+                        : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
+                      }
+                      ${link.href === "/palestine" ? "text-olive-400 hover:text-olive-300" : ""}
+                    `}
+                  >
+                    <span className={isActive ? "" : "hidden sm:hidden"}>{link.emoji}</span>
+                    {link.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-gradient-to-r from-quantum via-nebula to-olive rounded-full"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Right side controls */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              {/* Command Palette trigger (desktop pill + mobile icon) */}
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setPaletteOpen(true)}
+                aria-label="Open quick search (Ctrl+K)"
+                title="Quick Search (Ctrl+K / ⌘K)"
+                className="h-10 px-2.5 sm:px-3 rounded-full glass border border-white/10 hover:border-quantum/40 flex items-center gap-2 text-foreground/65 hover:text-quantum transition-colors cursor-pointer"
+              >
+                <Search size={15} />
+                <span className="hidden sm:inline text-xs font-mono text-foreground/45">Search</span>
+                <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-foreground/45">
+                  ⌘K
+                </kbd>
+              </motion.button>
+
+              <MusicToggle />
+              <ThemeToggle />
+
+              {/* Mobile hamburger */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsOpen((v) => !v)}
+                className="lg:hidden w-10 h-10 rounded-lg glass flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
+                aria-label="Toggle menu"
+              >
+                <AnimatePresence mode="wait">
+                  {isOpen ? (
                     <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-gradient-to-r from-quantum via-nebula to-olive rounded-full"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <X size={20} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Menu size={20} />
+                    </motion.div>
                   )}
-                </Link>
-              );
-            })}
+                </AnimatePresence>
+              </motion.button>
+            </div>
           </div>
 
-          {/* Right side controls */}
-          <div className="flex items-center gap-3">
-            <MusicToggle />
-            <ThemeToggle />
-
-            {/* Mobile hamburger */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsOpen((v) => !v)}
-              className="lg:hidden w-10 h-10 rounded-lg glass flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
-              aria-label="Toggle menu"
-            >
-              <AnimatePresence mode="wait">
-                {isOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <X size={20} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Menu size={20} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </div>
+          {/* Mobile Dropdown Menu */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                variants={menuVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="lg:hidden overflow-hidden"
+              >
+                <div className="pt-4 pb-2 space-y-1">
+                  {NAV_LINKS.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <motion.div key={link.href} variants={itemVariants}>
+                        <Link
+                          href={link.href}
+                          onClick={() => setIsOpen(false)}
+                          className={`
+                            flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                            ${isActive
+                              ? "bg-nebula/8 text-quantum border border-nebula/20"
+                              : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
+                            }
+                            ${link.href === "/palestine" ? "hover:border-l-2 hover:border-olive-500" : ""}
+                          `}
+                        >
+                          <span className="text-lg w-7 text-center">{link.emoji}</span>
+                          <span>{link.label}</span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="mobile-indicator"
+                              className="ml-auto w-1.5 h-1.5 rounded-full bg-quantum"
+                            />
+                          )}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+                {/* Palestinian colors strip */}
+                <div className="flex h-0.5 mt-2 rounded-full overflow-hidden mx-4">
+                  <div className="flex-1 bg-quantum" />
+                  <div className="flex-1 bg-nebula" />
+                  <div className="flex-1 bg-aurora" />
+                  <div className="flex-1 bg-olive" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              variants={menuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="lg:hidden overflow-hidden"
-            >
-              <div className="pt-4 pb-2 space-y-1">
-                {NAV_LINKS.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <motion.div key={link.href} variants={itemVariants}>
-                      <Link
-                        href={link.href}
-                        className={`
-                          flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                          ${isActive
-                            ? "bg-nebula/8 text-quantum border border-nebula/20"
-                            : "text-foreground/70 hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5"
-                          }
-                          ${link.href === "/palestine" ? "hover:border-l-2 hover:border-olive-500" : ""}
-                        `}
-                      >
-                        <span className="text-lg w-7 text-center">{link.emoji}</span>
-                        <span>{link.label}</span>
-                        {isActive && (
-                          <motion.div
-                            layoutId="mobile-indicator"
-                            className="ml-auto w-1.5 h-1.5 rounded-full bg-quantum"
-                          />
-                        )}
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
-              {/* Palestinian colors strip */}
-              <div className="flex h-0.5 mt-2 rounded-full overflow-hidden mx-4">
-                <div className="flex-1 bg-quantum" />
-                <div className="flex-1 bg-nebula" />
-                <div className="flex-1 bg-aurora" />
-                <div className="flex-1 bg-olive" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.nav>
+        {/* GPU-accelerated top scroll progress bar */}
+        <motion.div
+          style={{ scaleX }}
+          className="absolute bottom-0 left-0 right-0 h-[2px] origin-left bg-gradient-to-r from-quantum via-nebula to-aurora pointer-events-none"
+        />
+      </motion.nav>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+    </>
   );
 }
