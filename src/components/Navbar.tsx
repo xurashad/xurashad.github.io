@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useSpring, type Variants } from "framer-motion";
 import { Menu, X, Search } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
-import { MusicToggle } from "./MusicToggle";
+import { MusicToggle, pauseAmbientMusic } from "./MusicToggle";
 import { KitsuneToggle } from "./KitsuneToggle";
 import { CommandPalette } from "./CommandPalette";
 
@@ -48,6 +48,7 @@ const itemVariants: Variants = {
 
 export function Navbar() {
   const pathname = usePathname();
+  const isBuilderEditor = Boolean(pathname?.includes("/website-builder/editor"));
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -60,14 +61,22 @@ export function Navbar() {
   });
 
   useEffect(() => {
+    if (isBuilderEditor) return;
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isBuilderEditor]);
+
+  useEffect(() => {
+    if (isBuilderEditor) {
+      pauseAmbientMusic();
+    }
+  }, [isBuilderEditor]);
 
   // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
+    if (isBuilderEditor) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -76,7 +85,9 @@ export function Navbar() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [isBuilderEditor]);
+
+  if (isBuilderEditor) return null;
 
   return (
     <>

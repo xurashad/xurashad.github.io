@@ -819,19 +819,19 @@ export function calculateJummal(
   const elementalDistribution: Record<LetterElement, { count: number; percentage: number }> = {
     ناري: {
       count: elementCounts.ناري,
-      percentage: pureLettersCount > 0 ? Math.round((elementCounts.ناري / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((elementCounts.ناري / pureLettersCount) * 1000) / 10 : 0,
     },
     ترابي: {
       count: elementCounts.ترابي,
-      percentage: pureLettersCount > 0 ? Math.round((elementCounts.ترابي / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((elementCounts.ترابي / pureLettersCount) * 1000) / 10 : 0,
     },
     هوائي: {
       count: elementCounts.هوائي,
-      percentage: pureLettersCount > 0 ? Math.round((elementCounts.هوائي / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((elementCounts.هوائي / pureLettersCount) * 1000) / 10 : 0,
     },
     مائي: {
       count: elementCounts.مائي,
-      percentage: pureLettersCount > 0 ? Math.round((elementCounts.مائي / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((elementCounts.مائي / pureLettersCount) * 1000) / 10 : 0,
     },
   };
 
@@ -839,19 +839,19 @@ export function calculateJummal(
   const tierDistribution: Record<AbjadTier, { count: number; percentage: number }> = {
     آحاد: {
       count: tierCounts.آحاد,
-      percentage: pureLettersCount > 0 ? Math.round((tierCounts.آحاد / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((tierCounts.آحاد / pureLettersCount) * 1000) / 10 : 0,
     },
     عشرات: {
       count: tierCounts.عشرات,
-      percentage: pureLettersCount > 0 ? Math.round((tierCounts.عشرات / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((tierCounts.عشرات / pureLettersCount) * 1000) / 10 : 0,
     },
     مئات: {
       count: tierCounts.مئات,
-      percentage: pureLettersCount > 0 ? Math.round((tierCounts.مئات / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((tierCounts.مئات / pureLettersCount) * 1000) / 10 : 0,
     },
     ألوف: {
       count: tierCounts.ألوف,
-      percentage: pureLettersCount > 0 ? Math.round((tierCounts.ألوف / pureLettersCount) * 100) : 0,
+      percentage: pureLettersCount > 0 ? Math.round((tierCounts.ألوف / pureLettersCount) * 1000) / 10 : 0,
     },
   };
 

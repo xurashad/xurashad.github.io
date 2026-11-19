@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -41,6 +42,12 @@ function writeStoredMuted(muted: boolean) {
   }
 }
 
+export function pauseAmbientMusic() {
+  if (_audio && !_audio.paused) {
+    _audio.pause();
+  }
+}
+
 function getAudio(): HTMLAudioElement {
   if (!_audio) {
     _audio = new Audio();
@@ -63,12 +70,19 @@ function getAudio(): HTMLAudioElement {
 }
 
 export function MusicToggle() {
+  const pathname = usePathname();
+  const isBuilderEditor = Boolean(pathname?.includes("/website-builder/editor"));
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackTitle, setTrackTitle] = useState<string>("");
 
   /* Sync UI state with the singleton audio state on mount */
   useEffect(() => {
+    if (isBuilderEditor) {
+      pauseAmbientMusic();
+      return;
+    }
+
     _userMuted = readStoredMuted();
 
     const audio = getAudio();
@@ -82,7 +96,7 @@ export function MusicToggle() {
     }
 
     const startMusic = () => {
-      if (_started || _userMuted) return;
+      if (_started || _userMuted || window.location.pathname.includes("/website-builder/editor")) return;
       audio.play().then(() => {
         _started = true;
         setIsPlaying(true);
@@ -106,7 +120,7 @@ export function MusicToggle() {
     return () => {
       cleanup();
     };
-  }, []);
+  }, [isBuilderEditor]);
 
   // ─── Manual toggle via button ───
   const toggleMusic = useCallback(() => {

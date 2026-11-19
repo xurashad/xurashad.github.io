@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,6 +26,9 @@ const SOCIALS = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.includes("/website-builder/editor")) return null;
+
   return (
     <footer className="relative border-t border-white/5 dark:border-white/5">
       {/* Keffiyeh pattern strip */}

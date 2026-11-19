@@ -1,14 +1,15 @@
 // ============================================================
-// Website Builder Pro — State Reducer
+// Website Builder Pro — State Reducer (Recursive Tree Support)
 // ============================================================
 'use client';
 
 import type {
   BuilderState, BuilderAction, BuilderProject, ElementNode,
-  SectionNode, RowNode, ColumnNode, SelectionInfo, ToastMessage,
-  ElementStyles, PageData,
+  SectionNode, RowNode, ColumnNode, SelectionTarget, ToastMessage,
+  PageData,
 } from './types';
-import { createDefaultProject, uid, createRow, createColumn, createElement } from './defaults';
+import { createDefaultProject, uid, createRow, createColumn } from './defaults';
+import { loadSavedBlocks, saveSavedBlocks } from './persistence';
 
 const MAX_HISTORY = 60;
 
@@ -16,13 +17,19 @@ const MAX_HISTORY = 60;
 
 export function createInitialState(project?: BuilderProject): BuilderState {
   const proj = project ?? createDefaultProject();
+  const initialSnapshot: BuilderProject = JSON.parse(JSON.stringify(proj));
   return {
     project: proj,
     currentPageId: proj.pageOrder[0] ?? Object.keys(proj.pages)[0],
     selection: null,
     editingElementId: null,
+    hoveredId: null,
+    editingStyleState: 'normal',
     viewportMode: 'desktop',
     canvasThemeMode: 'light',
+    zoom: 1,
+    showGridOverlay: false,
+    showOutlines: false,
     leftSidebarTab: 'elements',
     rightSidebarTab: 'style',
     leftSidebarOpen: true,
@@ -30,44 +37,232 @@ export function createInitialState(project?: BuilderProject): BuilderState {
     showProjectManager: false,
     showKeyboardShortcuts: false,
     showPreview: false,
-    history: [],
-    historyIndex: -1,
+    showCommandPalette: false,
+    showCodeModal: false,
+    showAuditModal: false,
+    contextMenu: null,
+    history: [initialSnapshot],
+    historyLabels: ['Initial state'],
+    historyIndex: 0,
     toasts: [],
     isDragging: false,
     dragData: null,
     clipboardElement: null,
+    copiedStyles: null,
+    savedBlocks: loadSavedBlocks(),
   };
 }
 
-/* ========== Tree Helpers ========== */
+/* ========== Deep Cloning Helpers ========== */
 
-/** Deep-clone an element node with new IDs */
 export function cloneElement(el: ElementNode): ElementNode {
   return {
     ...el,
     id: uid(el.type),
     styles: { ...el.styles },
     hoverStyles: { ...el.hoverStyles },
+    responsiveStyles: el.responsiveStyles
+      ? {
+          tablet: el.responsiveStyles.tablet ? { ...el.responsiveStyles.tablet } : undefined,
+          mobile: el.responsiveStyles.mobile ? { ...el.responsiveStyles.mobile } : undefined,
+        }
+      : undefined,
+    animation: el.animation ? { ...el.animation } : undefined,
     attributes: { ...el.attributes },
     children: el.children.map(cloneElement),
   };
 }
 
-/** Find element in a flat list of sections (page, header, or footer) */
+export function cloneSection(sec: SectionNode): SectionNode {
+  return {
+    ...sec,
+    id: uid('sec'),
+    styles: { ...sec.styles },
+    responsiveStyles: sec.responsiveStyles
+      ? {
+          tablet: sec.responsiveStyles.tablet ? { ...sec.responsiveStyles.tablet } : undefined,
+          mobile: sec.responsiveStyles.mobile ? { ...sec.responsiveStyles.mobile } : undefined,
+        }
+      : undefined,
+    rows: sec.rows.map(r => ({
+      ...r,
+      id: uid('row'),
+      styles: { ...r.styles },
+      columns: r.columns.map(c => ({
+        ...c,
+        id: uid('col'),
+        styles: { ...c.styles },
+        elements: c.elements.map(cloneElement),
+      })),
+    })),
+  };
+}
+
+/* ========== Recursive Element Helpers ========== */
+
+interface ElementSearchHit {
+  element: ElementNode;
+  trail: ElementNode[]; // parent containers from outermost down to direct parent
+  index: number;
+}
+
+function findElementInList(
+  elements: ElementNode[],
+  elementId: string,
+  trail: ElementNode[] = [],
+): ElementSearchHit | null {
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+    if (el.id === elementId) {
+      return { element: el, trail, index: i };
+    }
+    if (el.children.length > 0) {
+      const nested = findElementInList(el.children, elementId, [...trail, el]);
+      if (nested) return nested;
+    }
+  }
+  return null;
+}
+
+function containsElementId(el: ElementNode, targetId: string): boolean {
+  if (el.id === targetId) return true;
+  return el.children.some(child => containsElementId(child, targetId));
+}
+
+function mapElementsRecursive(
+  elements: ElementNode[],
+  elementId: string,
+  updater: (el: ElementNode) => ElementNode,
+): ElementNode[] {
+  return elements.map(el => {
+    if (el.id === elementId) {
+      return updater(el);
+    }
+    if (el.children.length > 0) {
+      return { ...el, children: mapElementsRecursive(el.children, elementId, updater) };
+    }
+    return el;
+  });
+}
+
+function filterElementsRecursive(
+  elements: ElementNode[],
+  elementId: string,
+): ElementNode[] {
+  return elements
+    .filter(el => el.id !== elementId)
+    .map(el =>
+      el.children.length > 0
+        ? { ...el, children: filterElementsRecursive(el.children, elementId) }
+        : el,
+    );
+}
+
+function moveElementInList(
+  elements: ElementNode[],
+  elementId: string,
+  direction: 'up' | 'down',
+): { list: ElementNode[]; moved: boolean } {
+  const idx = elements.findIndex(e => e.id === elementId);
+  if (idx >= 0) {
+    const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= elements.length) return { list: elements, moved: false };
+    const next = [...elements];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    return { list: next, moved: true };
+  }
+  let changed = false;
+  const next = elements.map(el => {
+    if (el.children.length === 0) return el;
+    const res = moveElementInList(el.children, elementId, direction);
+    if (res.moved) {
+      changed = true;
+      return { ...el, children: res.list };
+    }
+    return el;
+  });
+  return { list: next, moved: changed };
+}
+
+function duplicateElementInList(
+  elements: ElementNode[],
+  elementId: string,
+): { list: ElementNode[]; duplicated: boolean } {
+  const idx = elements.findIndex(e => e.id === elementId);
+  if (idx >= 0) {
+    const next = [...elements];
+    next.splice(idx + 1, 0, cloneElement(elements[idx]));
+    return { list: next, duplicated: true };
+  }
+  let changed = false;
+  const next = elements.map(el => {
+    if (el.children.length === 0) return el;
+    const res = duplicateElementInList(el.children, elementId);
+    if (res.duplicated) {
+      changed = true;
+      return { ...el, children: res.list };
+    }
+    return el;
+  });
+  return { list: next, duplicated: changed };
+}
+
+function insertElementInContainer(
+  elements: ElementNode[],
+  containerId: string,
+  element: ElementNode,
+  index?: number,
+): { list: ElementNode[]; inserted: boolean } {
+  let changed = false;
+  const next = elements.map(el => {
+    if (el.id === containerId) {
+      changed = true;
+      const children = [...el.children];
+      if (index !== undefined && index >= 0 && index <= children.length) {
+        children.splice(index, 0, element);
+      } else {
+        children.push(element);
+      }
+      return { ...el, children };
+    }
+    if (el.children.length > 0) {
+      const res = insertElementInContainer(el.children, containerId, element, index);
+      if (res.inserted) {
+        changed = true;
+        return { ...el, children: res.list };
+      }
+    }
+    return el;
+  });
+  return { list: next, inserted: changed };
+}
+
+/* ========== Location Helpers ========== */
+
+interface LocatedElement {
+  source: 'page' | 'header' | 'footer';
+  section: SectionNode;
+  row: RowNode;
+  col: ColumnNode;
+  sectionIdx: number;
+  rowIdx: number;
+  colIdx: number;
+  hit: ElementSearchHit;
+}
+
 function findInSections(
   sections: SectionNode[],
   elementId: string,
-): { element: ElementNode; sectionIdx: number; rowIdx: number; colIdx: number; elIdx: number } | null {
+): Omit<LocatedElement, 'source'> | null {
   for (let si = 0; si < sections.length; si++) {
     const sec = sections[si];
     for (let ri = 0; ri < sec.rows.length; ri++) {
       const row = sec.rows[ri];
       for (let ci = 0; ci < row.columns.length; ci++) {
         const col = row.columns[ci];
-        for (let ei = 0; ei < col.elements.length; ei++) {
-          if (col.elements[ei].id === elementId) {
-            return { element: col.elements[ei], sectionIdx: si, rowIdx: ri, colIdx: ci, elIdx: ei };
-          }
+        const hit = findElementInList(col.elements, elementId);
+        if (hit) {
+          return { section: sec, row, col, sectionIdx: si, rowIdx: ri, colIdx: ci, hit };
         }
       }
     }
@@ -75,31 +270,25 @@ function findInSections(
   return null;
 }
 
-/** Find which section array and location contains an element */
-function locateElement(
-  state: BuilderState,
-  elementId: string,
-): { source: 'page' | 'header' | 'footer'; sections: SectionNode[]; found: NonNullable<ReturnType<typeof findInSections>> } | null {
+function locateElement(state: BuilderState, elementId: string): LocatedElement | null {
   const page = state.project.pages[state.currentPageId];
-  if (!page) return null;
+  if (page) {
+    const found = findInSections(page.sections, elementId);
+    if (found) return { source: 'page', ...found };
+  }
+  const inHeader = findInSections([state.project.header], elementId);
+  if (inHeader) return { source: 'header', ...inHeader };
 
-  let found = findInSections(page.sections, elementId);
-  if (found) return { source: 'page', sections: page.sections, found };
-
-  found = findInSections([state.project.header], elementId);
-  if (found) return { source: 'header', sections: [state.project.header], found };
-
-  found = findInSections([state.project.footer], elementId);
-  if (found) return { source: 'footer', sections: [state.project.footer], found };
+  const inFooter = findInSections([state.project.footer], elementId);
+  if (inFooter) return { source: 'footer', ...inFooter };
 
   return null;
 }
 
-/** Find a column by ID across current page + header/footer */
 function findColumn(
   state: BuilderState,
   columnId: string,
-): { col: ColumnNode; sections: SectionNode[]; source: 'page' | 'header' | 'footer'; si: number; ri: number; ci: number } | null {
+): { col: ColumnNode; row: RowNode; section: SectionNode; source: 'page' | 'header' | 'footer'; si: number; ri: number; ci: number } | null {
   const sources: Array<{ key: 'page' | 'header' | 'footer'; sections: SectionNode[] }> = [];
   const page = state.project.pages[state.currentPageId];
   if (page) sources.push({ key: 'page', sections: page.sections });
@@ -111,7 +300,15 @@ function findColumn(
       for (let ri = 0; ri < sections[si].rows.length; ri++) {
         for (let ci = 0; ci < sections[si].rows[ri].columns.length; ci++) {
           if (sections[si].rows[ri].columns[ci].id === columnId) {
-            return { col: sections[si].rows[ri].columns[ci], sections, source: key, si, ri, ci };
+            return {
+              col: sections[si].rows[ri].columns[ci],
+              row: sections[si].rows[ri],
+              section: sections[si],
+              source: key,
+              si,
+              ri,
+              ci,
+            };
           }
         }
       }
@@ -120,7 +317,28 @@ function findColumn(
   return null;
 }
 
-/** Find a section by ID */
+function findRow(
+  state: BuilderState,
+  rowId: string,
+): { row: RowNode; section: SectionNode; source: 'page' | 'header' | 'footer'; si: number; ri: number } | null {
+  const sources: Array<{ key: 'page' | 'header' | 'footer'; sections: SectionNode[] }> = [];
+  const page = state.project.pages[state.currentPageId];
+  if (page) sources.push({ key: 'page', sections: page.sections });
+  sources.push({ key: 'header', sections: [state.project.header] });
+  sources.push({ key: 'footer', sections: [state.project.footer] });
+
+  for (const { key, sections } of sources) {
+    for (let si = 0; si < sections.length; si++) {
+      for (let ri = 0; ri < sections[si].rows.length; ri++) {
+        if (sections[si].rows[ri].id === rowId) {
+          return { row: sections[si].rows[ri], section: sections[si], source: key, si, ri };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 function findSection(
   state: BuilderState,
   sectionId: string,
@@ -135,7 +353,6 @@ function findSection(
   return null;
 }
 
-/** Immutably update sections array */
 function updateSections(
   state: BuilderState,
   source: 'page' | 'header' | 'footer',
@@ -156,6 +373,53 @@ function updateSections(
   return { ...state, project: { ...project, updatedAt: Date.now() } };
 }
 
+function insertElementIntoTarget(
+  state: BuilderState,
+  element: ElementNode,
+  opts: { columnId?: string; containerId?: string; index?: number },
+): BuilderState {
+  if (opts.containerId) {
+    const containerLoc = locateElement(state, opts.containerId);
+    if (!containerLoc) return state;
+    return updateSections(state, containerLoc.source, sections =>
+      sections.map(s => ({
+        ...s,
+        rows: s.rows.map(r => ({
+          ...r,
+          columns: r.columns.map(c => {
+            if (c.id !== containerLoc.col.id) return c;
+            const res = insertElementInContainer(c.elements, opts.containerId!, element, opts.index);
+            return res.inserted ? { ...c, elements: res.list } : c;
+          }),
+        })),
+      })),
+    );
+  }
+  if (opts.columnId) {
+    const loc = findColumn(state, opts.columnId);
+    if (!loc) return state;
+    return updateSections(state, loc.source, sections =>
+      sections.map(s => ({
+        ...s,
+        rows: s.rows.map(r => ({
+          ...r,
+          columns: r.columns.map(c => {
+            if (c.id !== opts.columnId) return c;
+            const els = [...c.elements];
+            if (opts.index !== undefined && opts.index >= 0 && opts.index <= els.length) {
+              els.splice(opts.index, 0, element);
+            } else {
+              els.push(element);
+            }
+            return { ...c, elements: els };
+          }),
+        })),
+      })),
+    );
+  }
+  return state;
+}
+
 /* ========== Reducer ========== */
 
 export function builderReducer(state: BuilderState, action: BuilderAction): BuilderState {
@@ -164,25 +428,8 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     // ---- Element CRUD ----
 
     case 'ADD_ELEMENT': {
-      const { columnId, element, index } = action.payload;
-      const loc = findColumn(state, columnId);
-      if (!loc) return state;
-      return updateSections(state, loc.source, sections => {
-        const newSections = sections.map(s => ({
-          ...s,
-          rows: s.rows.map(r => ({
-            ...r,
-            columns: r.columns.map(c => {
-              if (c.id !== columnId) return c;
-              const els = [...c.elements];
-              if (index !== undefined) els.splice(index, 0, element);
-              else els.push(element);
-              return { ...c, elements: els };
-            }),
-          })),
-        }));
-        return newSections;
-      });
+      const { columnId, containerId, element, index } = action.payload;
+      return insertElementIntoTarget(state, element, { columnId, containerId, index });
     }
 
     case 'UPDATE_ELEMENT': {
@@ -196,9 +443,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
             ...r,
             columns: r.columns.map(c => ({
               ...c,
-              elements: c.elements.map(e =>
-                e.id === elementId ? { ...e, ...updates } : e,
-              ),
+              elements: mapElementsRecursive(c.elements, elementId, e => ({ ...e, ...updates })),
             })),
           })),
         })),
@@ -216,9 +461,10 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
             ...r,
             columns: r.columns.map(c => ({
               ...c,
-              elements: c.elements.map(e =>
-                e.id === elementId ? { ...e, styles: { ...e.styles, ...styles } } : e,
-              ),
+              elements: mapElementsRecursive(c.elements, elementId, e => ({
+                ...e,
+                styles: { ...e.styles, ...styles },
+              })),
             })),
           })),
         })),
@@ -236,9 +482,60 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
             ...r,
             columns: r.columns.map(c => ({
               ...c,
-              elements: c.elements.map(e =>
-                e.id === elementId ? { ...e, hoverStyles: { ...e.hoverStyles, ...styles } } : e,
-              ),
+              elements: mapElementsRecursive(c.elements, elementId, e => ({
+                ...e,
+                hoverStyles: { ...e.hoverStyles, ...styles },
+              })),
+            })),
+          })),
+        })),
+      );
+    }
+
+    case 'UPDATE_ELEMENT_RESPONSIVE_STYLES': {
+      const { elementId, viewport, styles } = action.payload;
+      const loc = locateElement(state, elementId);
+      if (!loc) return state;
+      return updateSections(state, loc.source, sections =>
+        sections.map(s => ({
+          ...s,
+          rows: s.rows.map(r => ({
+            ...r,
+            columns: r.columns.map(c => ({
+              ...c,
+              elements: mapElementsRecursive(c.elements, elementId, e => ({
+                ...e,
+                responsiveStyles: {
+                  ...(e.responsiveStyles ?? {}),
+                  [viewport]: {
+                    ...(e.responsiveStyles?.[viewport] ?? {}),
+                    ...styles,
+                  },
+                },
+              })),
+            })),
+          })),
+        })),
+      );
+    }
+
+    case 'CLEAR_ELEMENT_RESPONSIVE_STYLES': {
+      const { elementId, viewport } = action.payload;
+      const loc = locateElement(state, elementId);
+      if (!loc) return state;
+      return updateSections(state, loc.source, sections =>
+        sections.map(s => ({
+          ...s,
+          rows: s.rows.map(r => ({
+            ...r,
+            columns: r.columns.map(c => ({
+              ...c,
+              elements: mapElementsRecursive(c.elements, elementId, e => {
+                if (!e.responsiveStyles) return e;
+                const nextResp = { ...e.responsiveStyles };
+                delete nextResp[viewport];
+                return { ...e, responsiveStyles: nextResp };
+              }),
             })),
           })),
         })),
@@ -256,12 +553,11 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
             ...r,
             columns: r.columns.map(c => ({
               ...c,
-              elements: c.elements.filter(e => e.id !== elementId),
+              elements: filterElementsRecursive(c.elements, elementId),
             })),
           })),
         })),
       );
-      // Deselect if deleted element was selected
       if (state.selection?.id === elementId) {
         return { ...newState, selection: null, editingElementId: null };
       }
@@ -272,25 +568,19 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       const { elementId, direction } = action.payload;
       const loc = locateElement(state, elementId);
       if (!loc) return state;
-      const { found, source } = loc;
-      return updateSections(state, source, sections =>
+      return updateSections(state, loc.source, sections =>
         sections.map((s, si) => {
-          if (si !== found.sectionIdx) return s;
+          if (si !== loc.sectionIdx) return s;
           return {
             ...s,
             rows: s.rows.map((r, ri) => {
-              if (ri !== found.rowIdx) return r;
+              if (ri !== loc.rowIdx) return r;
               return {
                 ...r,
                 columns: r.columns.map((c, ci) => {
-                  if (ci !== found.colIdx) return c;
-                  const els = [...c.elements];
-                  const idx = els.findIndex(e => e.id === elementId);
-                  if (idx < 0) return c;
-                  const newIdx = direction === 'up' ? idx - 1 : idx + 1;
-                  if (newIdx < 0 || newIdx >= els.length) return c;
-                  [els[idx], els[newIdx]] = [els[newIdx], els[idx]];
-                  return { ...c, elements: els };
+                  if (ci !== loc.colIdx) return c;
+                  const res = moveElementInList(c.elements, elementId, direction);
+                  return res.moved ? { ...c, elements: res.list } : c;
                 }),
               };
             }),
@@ -299,25 +589,66 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       );
     }
 
+    case 'MOVE_ELEMENT_TO': {
+      const { elementId, targetColumnId, targetContainerId, targetIndex } = action.payload;
+      const srcLoc = locateElement(state, elementId);
+      if (!srcLoc) return state;
+
+      const movingEl = srcLoc.hit.element;
+      if (targetContainerId && containsElementId(movingEl, targetContainerId)) {
+        return state; // prevent cyclic nesting into self or descendant
+      }
+
+      // Compute adjusted targetIndex if moving within the same list
+      let adjustedIndex = targetIndex;
+      if (adjustedIndex !== undefined) {
+        const directParentContainer = srcLoc.hit.trail[srcLoc.hit.trail.length - 1];
+        const sameContainer = Boolean(targetContainerId && directParentContainer?.id === targetContainerId);
+        const sameColumn = Boolean(targetColumnId && !directParentContainer && srcLoc.col.id === targetColumnId);
+        if ((sameContainer || sameColumn) && srcLoc.hit.index < adjustedIndex) {
+          adjustedIndex = Math.max(0, adjustedIndex - 1);
+        }
+      }
+
+      // Remove from source
+      const afterRemove = updateSections(state, srcLoc.source, sections =>
+        sections.map(s => ({
+          ...s,
+          rows: s.rows.map(r => ({
+            ...r,
+            columns: r.columns.map(c => ({
+              ...c,
+              elements: filterElementsRecursive(c.elements, elementId),
+            })),
+          })),
+        })),
+      );
+
+      // Insert into destination
+      return insertElementIntoTarget(afterRemove, movingEl, {
+        columnId: targetColumnId,
+        containerId: targetContainerId,
+        index: adjustedIndex,
+      });
+    }
+
     case 'DUPLICATE_ELEMENT': {
       const { elementId } = action.payload;
       const loc = locateElement(state, elementId);
       if (!loc) return state;
-      const clone = cloneElement(loc.found.element);
       return updateSections(state, loc.source, sections =>
         sections.map((s, si) => {
-          if (si !== loc.found.sectionIdx) return s;
+          if (si !== loc.sectionIdx) return s;
           return {
             ...s,
             rows: s.rows.map((r, ri) => {
-              if (ri !== loc.found.rowIdx) return r;
+              if (ri !== loc.rowIdx) return r;
               return {
                 ...r,
                 columns: r.columns.map((c, ci) => {
-                  if (ci !== loc.found.colIdx) return c;
-                  const els = [...c.elements];
-                  els.splice(loc.found.elIdx + 1, 0, clone);
-                  return { ...c, elements: els };
+                  if (ci !== loc.colIdx) return c;
+                  const res = duplicateElementInList(c.elements, elementId);
+                  return res.duplicated ? { ...c, elements: res.list } : c;
                 }),
               };
             }),
@@ -334,8 +665,11 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       if (dest === 'page') {
         const page = { ...state.project.pages[state.currentPageId] };
         const secs = [...page.sections];
-        if (index !== undefined) secs.splice(index, 0, section);
-        else secs.push(section);
+        if (index !== undefined && index >= 0 && index <= secs.length) {
+          secs.splice(index, 0, section);
+        } else {
+          secs.push(section);
+        }
         page.sections = secs;
         return {
           ...state,
@@ -346,7 +680,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
           },
         };
       }
-      return state; // header/footer are single sections
+      return state;
     }
 
     case 'UPDATE_SECTION': {
@@ -370,12 +704,33 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
 
     case 'UPDATE_SECTION_STYLES': {
       const { sectionId, styles } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc) return state;
+      return builderReducer(state, {
+        type: 'UPDATE_SECTION',
+        payload: {
+          sectionId,
+          updates: { styles: { ...loc.section.styles, ...styles } },
+        },
+      });
+    }
+
+    case 'UPDATE_SECTION_RESPONSIVE_STYLES': {
+      const { sectionId, viewport, styles } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc) return state;
       return builderReducer(state, {
         type: 'UPDATE_SECTION',
         payload: {
           sectionId,
           updates: {
-            styles: { ...(findSection(state, sectionId)?.section.styles ?? {}), ...styles },
+            responsiveStyles: {
+              ...(loc.section.responsiveStyles ?? {}),
+              [viewport]: {
+                ...(loc.section.responsiveStyles?.[viewport] ?? {}),
+                ...styles,
+              },
+            },
           },
         },
       });
@@ -400,6 +755,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     case 'MOVE_SECTION': {
       const { sectionId, direction } = action.payload;
       const page = { ...state.project.pages[state.currentPageId] };
+      if (!page) return state;
       const idx = page.sections.findIndex(s => s.id === sectionId);
       if (idx < 0) return state;
       const newIdx = direction === 'up' ? idx - 1 : idx + 1;
@@ -413,32 +769,37 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       };
     }
 
-    case 'DUPLICATE_SECTION': {
-      const { sectionId } = action.payload;
-      const loc = findSection(state, sectionId);
-      if (!loc || loc.source !== 'page') return state;
-      const clone: SectionNode = JSON.parse(JSON.stringify(loc.section));
-      // Assign new IDs throughout
-      const reId = (sec: SectionNode): SectionNode => ({
-        ...sec,
-        id: uid('sec'),
-        rows: sec.rows.map(r => ({
-          ...r,
-          id: uid('row'),
-          columns: r.columns.map(c => ({
-            ...c,
-            id: uid('col'),
-            elements: c.elements.map(e => cloneElement(e)),
-          })),
-        })),
-      });
+    case 'REORDER_SECTION': {
+      const { sectionId, targetIndex } = action.payload;
       const page = { ...state.project.pages[state.currentPageId] };
+      if (!page) return state;
+      const fromIdx = page.sections.findIndex(s => s.id === sectionId);
+      if (fromIdx < 0) return state;
       const secs = [...page.sections];
-      secs.splice(loc.index + 1, 0, reId(clone));
+      const [item] = secs.splice(fromIdx, 1);
+      const adjusted = fromIdx < targetIndex ? targetIndex - 1 : targetIndex;
+      const clamped = Math.max(0, Math.min(secs.length, adjusted));
+      secs.splice(clamped, 0, item);
       page.sections = secs;
       return {
         ...state,
         project: { ...state.project, pages: { ...state.project.pages, [state.currentPageId]: page }, updatedAt: Date.now() },
+      };
+    }
+
+    case 'DUPLICATE_SECTION': {
+      const { sectionId } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc || loc.source !== 'page') return state;
+      const cloned = cloneSection(loc.section);
+      const page = { ...state.project.pages[state.currentPageId] };
+      const secs = [...page.sections];
+      secs.splice(loc.index + 1, 0, cloned);
+      page.sections = secs;
+      return {
+        ...state,
+        project: { ...state.project, pages: { ...state.project.pages, [state.currentPageId]: page }, updatedAt: Date.now() },
+        selection: { id: cloned.id, target: 'section' },
       };
     }
 
@@ -458,7 +819,56 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       const loc = findSection(state, sectionId);
       if (!loc || loc.section.rows.length <= 1) return state;
       const updatedSection = { ...loc.section, rows: loc.section.rows.filter(r => r.id !== rowId) };
-      return builderReducer(state, { type: 'UPDATE_SECTION', payload: { sectionId, updates: updatedSection } });
+      const next = builderReducer(state, { type: 'UPDATE_SECTION', payload: { sectionId, updates: updatedSection } });
+      return next.selection?.id === rowId ? { ...next, selection: null } : next;
+    }
+
+    case 'UPDATE_ROW_STYLES': {
+      const { sectionId, rowId, styles } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc) return state;
+      const updatedRows = loc.section.rows.map(r =>
+        r.id === rowId ? { ...r, styles: { ...r.styles, ...styles } } : r,
+      );
+      return builderReducer(state, {
+        type: 'UPDATE_SECTION',
+        payload: { sectionId, updates: { rows: updatedRows } },
+      });
+    }
+
+    case 'DUPLICATE_ROW': {
+      const { sectionId, rowId } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc) return state;
+      const idx = loc.section.rows.findIndex(r => r.id === rowId);
+      if (idx < 0) return state;
+      const srcRow = loc.section.rows[idx];
+      const clonedRow: RowNode = {
+        id: uid('row'),
+        styles: { ...srcRow.styles },
+        columns: srcRow.columns.map(c => ({
+          id: uid('col'),
+          span: c.span,
+          styles: { ...c.styles },
+          elements: c.elements.map(cloneElement),
+        })),
+      };
+      const rows = [...loc.section.rows];
+      rows.splice(idx + 1, 0, clonedRow);
+      return builderReducer(state, { type: 'UPDATE_SECTION', payload: { sectionId, updates: { rows } } });
+    }
+
+    case 'MOVE_ROW': {
+      const { sectionId, rowId, direction } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc) return state;
+      const idx = loc.section.rows.findIndex(r => r.id === rowId);
+      if (idx < 0) return state;
+      const nextIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (nextIdx < 0 || nextIdx >= loc.section.rows.length) return state;
+      const rows = [...loc.section.rows];
+      [rows[idx], rows[nextIdx]] = [rows[nextIdx], rows[idx]];
+      return builderReducer(state, { type: 'UPDATE_SECTION', payload: { sectionId, updates: { rows } } });
     }
 
     case 'ADD_COLUMN': {
@@ -471,7 +881,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
           if (r.id !== rowId) return r;
           const newColCount = r.columns.length + 1;
           if (newColCount > 6) return r;
-          const span = Math.floor(12 / newColCount);
+          const span = Math.max(1, Math.floor(12 / newColCount));
           const cols = r.columns.map(c => ({ ...c, span }));
           cols.push(createColumn(span));
           return { ...r, columns: cols };
@@ -488,12 +898,97 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
         ...loc.section,
         rows: loc.section.rows.map(r => {
           if (r.id !== rowId || r.columns.length <= 1) return r;
+          const removed = r.columns[r.columns.length - 1];
           const cols = r.columns.slice(0, -1);
-          const span = Math.floor(12 / cols.length);
-          return { ...r, columns: cols.map(c => ({ ...c, span })) };
+          const span = Math.max(1, Math.floor(12 / cols.length));
+          return {
+            ...r,
+            columns: cols.map((c, idx) =>
+              idx === cols.length - 1
+                ? { ...c, span, elements: [...c.elements, ...removed.elements] }
+                : { ...c, span },
+            ),
+          };
         }),
       };
       return builderReducer(state, { type: 'UPDATE_SECTION', payload: { sectionId, updates: updatedSection } });
+    }
+
+    case 'UPDATE_COLUMN_STYLES': {
+      const { columnId, styles } = action.payload;
+      const loc = findColumn(state, columnId);
+      if (!loc) return state;
+      return updateSections(state, loc.source, sections =>
+        sections.map((s, si) => {
+          if (si !== loc.si) return s;
+          return {
+            ...s,
+            rows: s.rows.map((r, ri) => {
+              if (ri !== loc.ri) return r;
+              return {
+                ...r,
+                columns: r.columns.map((c, ci) =>
+                  ci === loc.ci ? { ...c, styles: { ...c.styles, ...styles } } : c,
+                ),
+              };
+            }),
+          };
+        }),
+      );
+    }
+
+    case 'SET_COLUMN_SPAN': {
+      const { columnId, span } = action.payload;
+      const clampedSpan = Math.max(1, Math.min(12, span));
+      const loc = findColumn(state, columnId);
+      if (!loc) return state;
+      return updateSections(state, loc.source, sections =>
+        sections.map((s, si) => {
+          if (si !== loc.si) return s;
+          return {
+            ...s,
+            rows: s.rows.map((r, ri) => {
+              if (ri !== loc.ri) return r;
+              return {
+                ...r,
+                columns: r.columns.map((c, ci) =>
+                  ci === loc.ci ? { ...c, span: clampedSpan } : c,
+                ),
+              };
+            }),
+          };
+        }),
+      );
+    }
+
+    case 'SET_COLUMN_LAYOUT': {
+      const { sectionId, rowId, spans } = action.payload;
+      const loc = findSection(state, sectionId);
+      if (!loc || spans.length === 0) return state;
+      const updatedRows = loc.section.rows.map(r => {
+        if (r.id !== rowId) return r;
+        const currentCols = r.columns;
+        const nextCols: ColumnNode[] = spans.map((span, idx) => {
+          if (idx < currentCols.length) {
+            return { ...currentCols[idx], span };
+          }
+          return createColumn(span);
+        });
+        // Preserve elements from removed columns by appending to the last remaining column
+        if (currentCols.length > spans.length) {
+          const overflow = currentCols.slice(spans.length).flatMap(c => c.elements);
+          const lastIdx = nextCols.length - 1;
+          nextCols[lastIdx] = {
+            ...nextCols[lastIdx],
+            elements: [...nextCols[lastIdx].elements, ...overflow],
+          };
+        }
+        return { ...r, columns: nextCols };
+      });
+      return builderReducer(state, {
+        type: 'UPDATE_SECTION',
+        payload: { sectionId, updates: { rows: updatedRows } },
+      });
     }
 
     // ---- Page Management ----
@@ -508,6 +1003,9 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
           pageOrder: [...state.project.pageOrder, page.id],
           updatedAt: Date.now(),
         },
+        currentPageId: page.id,
+        selection: null,
+        editingElementId: null,
       };
     }
 
@@ -531,7 +1029,6 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       const pages = { ...state.project.pages };
       delete pages[pageId];
       const pageOrder = state.project.pageOrder.filter(id => id !== pageId);
-      // Also remove children
       Object.values(pages).forEach(p => {
         if (p.parentId === pageId) {
           pages[p.id] = { ...p, parentId: null };
@@ -546,32 +1043,84 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       };
     }
 
-    case 'SET_CURRENT_PAGE': {
+    case 'DUPLICATE_PAGE': {
+      const { pageId } = action.payload;
+      const src = state.project.pages[pageId];
+      if (!src) return state;
+      const newPage: PageData = {
+        ...src,
+        id: uid('page'),
+        title: `${src.title} Copy`,
+        slug: `${src.slug}-copy`,
+        sections: src.sections.map(cloneSection),
+        seo: { ...src.seo, title: `${src.seo.title || src.title} Copy` },
+      };
+      const idx = state.project.pageOrder.indexOf(pageId);
+      const nextOrder = [...state.project.pageOrder];
+      nextOrder.splice(idx + 1, 0, newPage.id);
+      return {
+        ...state,
+        project: {
+          ...state.project,
+          pages: { ...state.project.pages, [newPage.id]: newPage },
+          pageOrder: nextOrder,
+          updatedAt: Date.now(),
+        },
+        currentPageId: newPage.id,
+        selection: null,
+      };
+    }
+
+    case 'MOVE_PAGE': {
+      const { pageId, direction } = action.payload;
+      const idx = state.project.pageOrder.indexOf(pageId);
+      if (idx < 0) return state;
+      const nextIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (nextIdx < 0 || nextIdx >= state.project.pageOrder.length) return state;
+      const order = [...state.project.pageOrder];
+      [order[idx], order[nextIdx]] = [order[nextIdx], order[idx]];
+      return {
+        ...state,
+        project: { ...state.project, pageOrder: order, updatedAt: Date.now() },
+      };
+    }
+
+    case 'SET_CURRENT_PAGE':
       return {
         ...state,
         currentPageId: action.payload.pageId,
         selection: null,
         editingElementId: null,
+        contextMenu: null,
       };
-    }
 
-    case 'REORDER_PAGES': {
+    case 'REORDER_PAGES':
       return {
         ...state,
         project: { ...state.project, pageOrder: action.payload.pageOrder, updatedAt: Date.now() },
       };
-    }
 
-    // ---- Selection ----
+    // ---- Selection & Hover ----
 
     case 'SELECT':
-      return { ...state, selection: action.payload, editingElementId: null };
+      return {
+        ...state,
+        selection: action.payload,
+        editingElementId: state.editingElementId === action.payload.id ? state.editingElementId : null,
+        contextMenu: null,
+      };
 
     case 'DESELECT':
-      return { ...state, selection: null, editingElementId: null };
+      return { ...state, selection: null, editingElementId: null, contextMenu: null };
 
     case 'SET_EDITING':
       return { ...state, editingElementId: action.payload.elementId };
+
+    case 'SET_HOVERED':
+      return { ...state, hoveredId: action.payload.id };
+
+    case 'SET_EDITING_STYLE_STATE':
+      return { ...state, editingStyleState: action.payload.mode };
 
     // ---- Theme ----
 
@@ -584,6 +1133,19 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
           updatedAt: Date.now(),
         },
       };
+
+    case 'APPLY_THEME_PRESET': {
+      const { preset } = action.payload;
+      return {
+        ...state,
+        canvasThemeMode: preset.defaultMode,
+        project: {
+          ...state.project,
+          theme: JSON.parse(JSON.stringify(preset.theme)),
+          updatedAt: Date.now(),
+        },
+      };
+    }
 
     case 'TOGGLE_CANVAS_THEME':
       return { ...state, canvasThemeMode: state.canvasThemeMode === 'light' ? 'dark' : 'light' };
@@ -637,16 +1199,25 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       };
     }
 
-    // ---- UI State ----
+    // ---- Viewport & UI ----
 
     case 'SET_VIEWPORT':
       return { ...state, viewportMode: action.payload.mode };
 
+    case 'SET_ZOOM':
+      return { ...state, zoom: Math.max(0.4, Math.min(1.5, action.payload.zoom)) };
+
+    case 'TOGGLE_GRID_OVERLAY':
+      return { ...state, showGridOverlay: !state.showGridOverlay };
+
+    case 'TOGGLE_OUTLINES':
+      return { ...state, showOutlines: !state.showOutlines };
+
     case 'SET_LEFT_TAB':
-      return { ...state, leftSidebarTab: action.payload.tab };
+      return { ...state, leftSidebarTab: action.payload.tab, leftSidebarOpen: true };
 
     case 'SET_RIGHT_TAB':
-      return { ...state, rightSidebarTab: action.payload.tab };
+      return { ...state, rightSidebarTab: action.payload.tab, rightSidebarOpen: true };
 
     case 'TOGGLE_LEFT_SIDEBAR':
       return { ...state, leftSidebarOpen: !state.leftSidebarOpen };
@@ -663,6 +1234,18 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     case 'SHOW_PREVIEW':
       return { ...state, showPreview: action.payload.show };
 
+    case 'SHOW_COMMAND_PALETTE':
+      return { ...state, showCommandPalette: action.payload.show };
+
+    case 'SHOW_CODE_MODAL':
+      return { ...state, showCodeModal: action.payload.show };
+
+    case 'SHOW_AUDIT_MODAL':
+      return { ...state, showAuditModal: action.payload.show };
+
+    case 'SET_CONTEXT_MENU':
+      return { ...state, contextMenu: action.payload.menu };
+
     // ---- Drag ----
 
     case 'SET_DRAGGING':
@@ -672,32 +1255,69 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
 
     case 'SAVE_HISTORY': {
       const history = state.history.slice(0, state.historyIndex + 1);
-      history.push(JSON.parse(JSON.stringify(state.project)));
-      if (history.length > MAX_HISTORY) history.shift();
-      return { ...state, history, historyIndex: history.length - 1 };
+      const historyLabels = state.historyLabels.slice(0, state.historyIndex + 1);
+      const serialized = JSON.stringify(state.project);
+      // Skip duplicate snapshot if project is unchanged
+      if (history.length > 0 && JSON.stringify(history[history.length - 1]) === serialized) {
+        return state;
+      }
+      history.push(JSON.parse(serialized));
+      historyLabels.push(action.payload?.label ?? 'Edit');
+      if (history.length > MAX_HISTORY) {
+        history.shift();
+        historyLabels.shift();
+      }
+      return { ...state, history, historyLabels, historyIndex: history.length - 1 };
     }
 
     case 'UNDO': {
       if (state.historyIndex <= 0) return state;
       const newIndex = state.historyIndex - 1;
-      const project = JSON.parse(JSON.stringify(state.history[newIndex]));
+      const project: BuilderProject = JSON.parse(JSON.stringify(state.history[newIndex]));
+      const currentPageId = project.pages[state.currentPageId]
+        ? state.currentPageId
+        : project.pageOrder[0] ?? Object.keys(project.pages)[0];
       return {
         ...state,
         project,
+        currentPageId,
         historyIndex: newIndex,
         selection: null,
         editingElementId: null,
+        contextMenu: null,
       };
     }
 
     case 'REDO': {
       if (state.historyIndex >= state.history.length - 1) return state;
       const newIndex = state.historyIndex + 1;
-      const project = JSON.parse(JSON.stringify(state.history[newIndex]));
+      const project: BuilderProject = JSON.parse(JSON.stringify(state.history[newIndex]));
+      const currentPageId = project.pages[state.currentPageId]
+        ? state.currentPageId
+        : project.pageOrder[0] ?? Object.keys(project.pages)[0];
       return {
         ...state,
         project,
+        currentPageId,
         historyIndex: newIndex,
+        selection: null,
+        editingElementId: null,
+        contextMenu: null,
+      };
+    }
+
+    case 'HISTORY_JUMP': {
+      const { index } = action.payload;
+      if (index < 0 || index >= state.history.length) return state;
+      const project: BuilderProject = JSON.parse(JSON.stringify(state.history[index]));
+      const currentPageId = project.pages[state.currentPageId]
+        ? state.currentPageId
+        : project.pageOrder[0] ?? Object.keys(project.pages)[0];
+      return {
+        ...state,
+        project,
+        currentPageId,
+        historyIndex: index,
         selection: null,
         editingElementId: null,
       };
@@ -706,10 +1326,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     // ---- Toast ----
 
     case 'ADD_TOAST': {
-      const toast: ToastMessage = {
-        ...action.payload,
-        id: uid('toast'),
-      };
+      const toast: ToastMessage = { ...action.payload, id: uid('toast') };
       return { ...state, toasts: [...state.toasts.slice(-4), toast] };
     }
 
@@ -718,14 +1335,11 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
 
     // ---- Project ----
 
-    case 'LOAD_PROJECT': {
-      const { project } = action.payload;
-      return createInitialState(project);
-    }
-
-    case 'NEW_PROJECT': {
+    case 'LOAD_PROJECT':
       return createInitialState(action.payload.project);
-    }
+
+    case 'NEW_PROJECT':
+      return createInitialState(action.payload.project);
 
     case 'SET_PROJECT_NAME':
       return {
@@ -738,7 +1352,7 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
         },
       };
 
-    // ---- Clipboard ----
+    // ---- Clipboard & Saved Blocks ----
 
     case 'COPY_ELEMENT':
       return { ...state, clipboardElement: cloneElement(action.payload.element) };
@@ -746,11 +1360,55 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
     case 'PASTE_ELEMENT': {
       if (!state.clipboardElement) return state;
       const el = cloneElement(state.clipboardElement);
-      return builderReducer(state, {
-        type: 'ADD_ELEMENT',
-        payload: { columnId: action.payload.columnId, element: el },
+      return insertElementIntoTarget(state, el, {
+        columnId: action.payload.columnId,
+        containerId: action.payload.containerId,
       });
     }
+
+    case 'COPY_STYLES':
+      return { ...state, copiedStyles: { ...action.payload.styles } };
+
+    case 'PASTE_STYLES': {
+      if (!state.copiedStyles) return state;
+      const { targetId, targetType } = action.payload;
+      if (targetType === 'element') {
+        return builderReducer(state, {
+          type: 'UPDATE_ELEMENT_STYLES',
+          payload: { elementId: targetId, styles: state.copiedStyles },
+        });
+      }
+      if (targetType === 'section') {
+        return builderReducer(state, {
+          type: 'UPDATE_SECTION_STYLES',
+          payload: { sectionId: targetId, styles: state.copiedStyles },
+        });
+      }
+      if (targetType === 'column') {
+        return builderReducer(state, {
+          type: 'UPDATE_COLUMN_STYLES',
+          payload: { columnId: targetId, styles: state.copiedStyles },
+        });
+      }
+      return state;
+    }
+
+    case 'SAVE_BLOCK': {
+      const cloned = cloneSection(action.payload.section);
+      const nextBlocks = [cloned, ...state.savedBlocks].slice(0, 24);
+      saveSavedBlocks(nextBlocks);
+      return { ...state, savedBlocks: nextBlocks };
+    }
+
+    case 'DELETE_SAVED_BLOCK': {
+      const nextBlocks = state.savedBlocks.filter(b => b.id !== action.payload.blockId);
+      saveSavedBlocks(nextBlocks);
+      return { ...state, savedBlocks: nextBlocks };
+    }
+
+    case 'SET_SAVED_BLOCKS':
+      saveSavedBlocks(action.payload.blocks);
+      return { ...state, savedBlocks: action.payload.blocks };
 
     default:
       return state;
@@ -765,19 +1423,15 @@ export function showToast(
   message: string,
   duration = 3000,
 ) {
-  const toastPayload = { type, message, duration };
-  dispatch({ type: 'ADD_TOAST', payload: toastPayload });
-  setTimeout(() => {
-    // We can't reliably get the id here, so we'll let Toast component handle auto-dismiss
-  }, duration);
+  dispatch({ type: 'ADD_TOAST', payload: { type, message, duration } });
 }
 
-/* ========== Public helpers ========== */
+/* ========== Public Selector Helpers ========== */
 
 export function getSelectedElement(state: BuilderState): ElementNode | null {
   if (!state.selection || state.selection.target !== 'element') return null;
   const loc = locateElement(state, state.selection.id);
-  return loc?.found.element ?? null;
+  return loc?.hit.element ?? null;
 }
 
 export function getSelectedSection(state: BuilderState): SectionNode | null {
@@ -785,11 +1439,21 @@ export function getSelectedSection(state: BuilderState): SectionNode | null {
   return findSection(state, state.selection.id)?.section ?? null;
 }
 
+export function getSelectedColumn(state: BuilderState): ColumnNode | null {
+  if (!state.selection || state.selection.target !== 'column') return null;
+  return findColumn(state, state.selection.id)?.col ?? null;
+}
+
+export function getSelectedRow(state: BuilderState): { row: RowNode; section: SectionNode } | null {
+  if (!state.selection || state.selection.target !== 'row') return null;
+  const loc = findRow(state, state.selection.id);
+  return loc ? { row: loc.row, section: loc.section } : null;
+}
+
 export function getCurrentPage(state: BuilderState): PageData | null {
   return state.project.pages[state.currentPageId] ?? null;
 }
 
-/** Get the first column ID in the current page for pasting/adding elements */
 export function getFirstColumnId(state: BuilderState): string | null {
   const page = getCurrentPage(state);
   if (!page || page.sections.length === 0) return null;
@@ -800,14 +1464,101 @@ export function getFirstColumnId(state: BuilderState): string | null {
   return lastRow.columns[0].id;
 }
 
-/** Find the column that contains an element */
 export function getColumnForElement(state: BuilderState, elementId: string): string | null {
   const loc = locateElement(state, elementId);
-  if (!loc) return null;
-  const sections = loc.source === 'page'
-    ? state.project.pages[state.currentPageId].sections
-    : loc.source === 'header'
-    ? [state.project.header]
-    : [state.project.footer];
-  return sections[loc.found.sectionIdx]?.rows[loc.found.rowIdx]?.columns[loc.found.colIdx]?.id ?? null;
+  return loc?.col.id ?? null;
+}
+
+export interface BreadcrumbItem {
+  id: string;
+  target: SelectionTarget;
+  label: string;
+}
+
+export function getBreadcrumb(state: BuilderState): BreadcrumbItem[] {
+  if (!state.selection) return [];
+  const { id, target } = state.selection;
+
+  if (target === 'section') {
+    const loc = findSection(state, id);
+    return loc ? [{ id: loc.section.id, target: 'section', label: loc.section.name }] : [];
+  }
+
+  if (target === 'row') {
+    const loc = findRow(state, id);
+    if (!loc) return [];
+    return [
+      { id: loc.section.id, target: 'section', label: loc.section.name },
+      { id: loc.row.id, target: 'row', label: `Row ${loc.ri + 1}` },
+    ];
+  }
+
+  if (target === 'column') {
+    const loc = findColumn(state, id);
+    if (!loc) return [];
+    return [
+      { id: loc.section.id, target: 'section', label: loc.section.name },
+      { id: loc.row.id, target: 'row', label: `Row ${loc.ri + 1}` },
+      { id: loc.col.id, target: 'column', label: `Col ${loc.ci + 1} (${loc.col.span}/12)` },
+    ];
+  }
+
+  if (target === 'element') {
+    const loc = locateElement(state, id);
+    if (!loc) return [];
+    const items: BreadcrumbItem[] = [
+      { id: loc.section.id, target: 'section', label: loc.section.name },
+      { id: loc.row.id, target: 'row', label: `Row ${loc.rowIdx + 1}` },
+      { id: loc.col.id, target: 'column', label: `Col ${loc.colIdx + 1}` },
+    ];
+    for (const ancestor of loc.hit.trail) {
+      items.push({ id: ancestor.id, target: 'element', label: ancestor.name || ancestor.type });
+    }
+    items.push({
+      id: loc.hit.element.id,
+      target: 'element',
+      label: loc.hit.element.name || loc.hit.element.type,
+    });
+    return items;
+  }
+
+  return [];
+}
+
+export function getElementContextIds(state: BuilderState): {
+  sectionId: string | null;
+  rowId: string | null;
+  columnId: string | null;
+} {
+  if (!state.selection) return { sectionId: null, rowId: null, columnId: null };
+  if (state.selection.target === 'section') {
+    const sec = findSection(state, state.selection.id)?.section;
+    return {
+      sectionId: sec?.id ?? null,
+      rowId: sec?.rows[0]?.id ?? null,
+      columnId: sec?.rows[0]?.columns[0]?.id ?? null,
+    };
+  }
+  if (state.selection.target === 'row') {
+    const loc = findRow(state, state.selection.id);
+    return {
+      sectionId: loc?.section.id ?? null,
+      rowId: loc?.row.id ?? null,
+      columnId: loc?.row.columns[0]?.id ?? null,
+    };
+  }
+  if (state.selection.target === 'column') {
+    const loc = findColumn(state, state.selection.id);
+    return {
+      sectionId: loc?.section.id ?? null,
+      rowId: loc?.row.id ?? null,
+      columnId: loc?.col.id ?? null,
+    };
+  }
+  const loc = locateElement(state, state.selection.id);
+  return {
+    sectionId: loc?.section.id ?? null,
+    rowId: loc?.row.id ?? null,
+    columnId: loc?.col.id ?? null,
+  };
 }
