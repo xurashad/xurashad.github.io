@@ -421,8 +421,8 @@ const FEATURED_LAB_APPS = [
   },
   {
     title: "Fractal Explorer",
-    category: "Mathematics",
-    desc: "Multi-threaded Web Worker Mandelbrot and Julia set explorer with 12 palettes, deep zoom, and PNG export.",
+    category: "Mathematics · WebGL2",
+    desc: "GPU-accelerated fractal observatory spanning 10 complex families, DS64 deep zoom, 3D relief lighting, Orbit Probe Lyapunov analysis, and 4K export.",
     href: "/apps/fractal-explorer",
     image: "/images/apps_backgrounds/fractal-explorer.jfif",
     icon: InfinityIcon,
@@ -539,11 +539,10 @@ function QuantumStateCard() {
               aria-selected={isSelected}
               onClick={() => setSelectedId(eq.id)}
               whileHover={{ x: 4 }}
-              className={`w-full flex items-center justify-between gap-3 text-xs font-mono px-3 py-2 rounded-lg border transition-all cursor-pointer text-left ${
-                isSelected
-                  ? "bg-quantum/10 border-quantum/35 shadow-[0_0_16px_rgba(0,195,245,0.08)]"
-                  : "border-transparent hover:bg-nebula/5 hover:border-nebula/15"
-              }`}
+              className={`w-full flex items-center justify-between gap-3 text-xs font-mono px-3 py-2 rounded-lg border transition-all cursor-pointer text-left ${isSelected
+                ? "bg-quantum/10 border-quantum/35 shadow-[0_0_16px_rgba(0,195,245,0.08)]"
+                : "border-transparent hover:bg-nebula/5 hover:border-nebula/15"
+                }`}
             >
               <span className={isSelected ? "text-foreground/85 font-semibold" : "text-foreground/45"}>
                 {eq.label}

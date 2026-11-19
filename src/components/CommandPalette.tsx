@@ -37,7 +37,7 @@ const PAGES_AND_CONTENT: Omit<PaletteItem, "action">[] = [
   { id: "page-contact", title: "Contact", subtitle: "Collaborations, postdoc & direct channels", group: "Pages", keywords: "contact email github linkedin message", href: "/contact" },
 
   // Apps (all 23)
-  { id: "app-fractal", title: "Fractal Explorer", subtitle: "Mandelbrot & Julia sets with Web Workers", group: "Apps", keywords: "fractal mandelbrot julia math visualizer", href: "/apps/fractal-explorer" },
+  { id: "app-fractal", title: "Fractal Explorer", subtitle: "WebGL2 GPU + Float64 observatory across 10 fractal families", group: "Apps", keywords: "fractal mandelbrot julia burning ship newton webgl2 3d lighting deep zoom", href: "/apps/fractal-explorer" },
   { id: "app-particle", title: "Particle Physics Visualizer", subtitle: "Standard Model, SUSY & 49 particles", group: "Apps", keywords: "particle physics standard model susy", href: "/apps/particle-physics" },
   { id: "app-periodic", title: "Interactive Periodic Table", subtitle: "118 elements, Bohr models & configurations", group: "Apps", keywords: "periodic table chemistry elements", href: "/apps/periodic-table" },
   { id: "app-feynman", title: "Feynman Diagram Generator", subtitle: "QFT diagrams with TikZ LaTeX & SVG export", group: "Apps", keywords: "feynman diagram qft latex tikz svg", href: "/apps/feynman-diagram" },
@@ -311,18 +311,16 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
                   data-palette-index={idx}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   onClick={() => executeItem(item)}
-                  className={`w-full text-left flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer ${
-                    active
-                      ? "bg-quantum/15 border border-quantum/35"
-                      : "border border-transparent hover:bg-white/5"
-                  }`}
+                  className={`w-full text-left flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer ${active
+                    ? "bg-quantum/15 border border-quantum/35"
+                    : "border border-transparent hover:bg-white/5"
+                    }`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      active
-                        ? "bg-quantum/20 text-quantum"
-                        : "bg-white/5 text-foreground/50"
-                    }`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active
+                      ? "bg-quantum/20 text-quantum"
+                      : "bg-white/5 text-foreground/50"
+                      }`}
                   >
                     <GroupIcon size={15} />
                   </div>
