@@ -4,10 +4,10 @@ import { ParticleVisualizer } from "./ParticleVisualizer";
 export const metadata: Metadata = {
   title: "Particle Physics Visualizer",
   description:
-    "Explore the fundamental and composite building blocks of the universe. Browse the Standard Model, Supersymmetric partners, and Hadrons with sortable, searchable particle cards showing mass, charge, spin, and quark composition.",
+    "Explore the fundamental and composite building blocks of the universe in an interactive 3D Quantum Chamber, force-coupling Standard Model matrix, QCD hadron confinement visualizer, and logarithmic mass spectrum.",
   keywords: [
     "particle physics", "standard model", "supersymmetry", "hadrons",
-    "quarks", "leptons", "bosons", "fermions", "physics visualizer",
+    "quarks", "leptons", "bosons", "fermions", "3D physics visualizer", "QCD confinement",
   ],
 };
 
@@ -22,29 +22,29 @@ export default function ParticlePhysicsPage() {
 
       <div className="section-container py-16 pb-32">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-10">
           <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-3">
-            // Science · Physics
+            {"// Science · Physics · 3D Quantum Visualization"}
           </div>
           <h1 className="text-5xl sm:text-6xl font-serif font-bold mb-4">
             <span className="gradient-text-quantum">Particle Physics</span>{" "}
             <span className="text-foreground/60">Visualizer</span>
           </h1>
           <p className="text-foreground/50 max-w-2xl leading-relaxed">
-            Explore the fundamental and composite building blocks of the universe.
-            From quarks and leptons to supersymmetric partners and composite hadrons —
-            sorted, searchable, and colour-coded by family.
+            Explore the fundamental and composite building blocks of the universe in real-time 3D.
+            Inspect electromagnetic waves, Mexican-hat scalar fields, live QCD quark confinement,
+            force-coupling periodic matrices, and logarithmic mass spectra across 49 particles.
           </p>
 
           {/* Feature chips */}
           <div className="flex flex-wrap gap-2 mt-6">
             {[
-              "Standard Model (17 particles)",
-              "Supersymmetry (18 sparticles)",
-              "Hadrons (14 particles)",
-              "Search & filter",
-              "Sort by mass / charge / spin",
-              "Colour-coded families",
+              "3D Quantum Chamber",
+              "Standard Model Force Matrix",
+              "QCD Quark Confinement",
+              "Matter ↔ Antimatter",
+              "Logarithmic Mass Spectrum",
+              "49 Particles",
             ].map((f) => (
               <span
                 key={f}
