@@ -8,10 +8,10 @@ export function createInitialBoard(): Board {
   const b: Board = Array.from({ length: 8 }, () => Array(8).fill(null));
   const order: PieceType[] = ["ROOK", "KNIGHT", "BISHOP", "QUEEN", "KING", "BISHOP", "KNIGHT", "ROOK"];
   for (let c = 0; c < 8; c++) {
-    b[0][c] = { type: order[c], color: "BLACK", hasMoved: false };
-    b[1][c] = { type: "PAWN",   color: "BLACK", hasMoved: false };
-    b[6][c] = { type: "PAWN",   color: "WHITE", hasMoved: false };
-    b[7][c] = { type: order[c], color: "WHITE", hasMoved: false };
+    b[0][c] = { id: `b-${order[c]}-${c}`, type: order[c], color: "BLACK", hasMoved: false };
+    b[1][c] = { id: `b-PAWN-${c}`, type: "PAWN", color: "BLACK", hasMoved: false };
+    b[6][c] = { id: `w-PAWN-${c}`, type: "PAWN", color: "WHITE", hasMoved: false };
+    b[7][c] = { id: `w-${order[c]}-${c}`, type: order[c], color: "WHITE", hasMoved: false };
   }
   return b;
 }
@@ -100,7 +100,14 @@ export function pseudoMoves(
       }
 
       // Castling
-      if (!forAttack && !piece.hasMoved && !isInCheck(board, piece.color, enPassantTarget)) {
+      const homeRow = piece.color === "WHITE" ? 7 : 0;
+      if (
+        !forAttack &&
+        !piece.hasMoved &&
+        pos.row === homeRow &&
+        pos.col === 4 &&
+        !isInCheck(board, piece.color, enPassantTarget)
+      ) {
         const opp = opponent(piece.color);
         // Kingside castling (O-O)
         if (!board[row][5] && !board[row][6]) {
@@ -142,6 +149,7 @@ export function pseudoMoves(
     case "PAWN": {
       const dir = piece.color === "WHITE" ? -1 : 1;
       const startRow = piece.color === "WHITE" ? 6 : 1;
+      const epRank = piece.color === "WHITE" ? 3 : 4;
 
       if (forAttack) {
         // Just the attack squares (used by isSquareAttacked)
@@ -166,13 +174,22 @@ export function pseudoMoves(
             if (t && t.color !== piece.color) {
               moves.push({ from: pos, to: { row: tr, col: tc } });
             }
-            // En passant capture
-            if (enPassantTarget && tr === enPassantTarget.row && tc === enPassantTarget.col) {
-              moves.push({
-                from: pos,
-                to: { row: tr, col: tc },
-                enPassantCapture: { row, col: tc }, // the opponent pawn to remove
-              });
+            // En passant capture: requires legal EP rank, empty destination, and opponent pawn victim
+            if (
+              row === epRank &&
+              enPassantTarget &&
+              tr === enPassantTarget.row &&
+              tc === enPassantTarget.col &&
+              !t
+            ) {
+              const epVictim = board[row][tc];
+              if (epVictim && epVictim.type === "PAWN" && epVictim.color !== piece.color) {
+                moves.push({
+                  from: pos,
+                  to: { row: tr, col: tc },
+                  enPassantCapture: { row, col: tc }, // the opponent pawn to remove
+                });
+              }
             }
           }
         }
@@ -221,24 +238,71 @@ export function isInCheck(board: Board, color: Color, enPassantTarget: Square | 
 /** Apply a move to a cloned board (returns a new cloned board). */
 export function applyMove(board: Board, move: Move): Board {
   const b = cloneBoard(board);
-  const piece = b[move.from.row][move.from.col]!;
-  const moved = { ...piece, hasMoved: true };
+  if (!inBounds(move.from.row, move.from.col) || !inBounds(move.to.row, move.to.col)) {
+    return b;
+  }
+  const piece = b[move.from.row][move.from.col];
+  if (!piece) return b;
 
+  const dest = b[move.to.row][move.to.col];
+  if (dest && dest.color === piece.color) {
+    return b;
+  }
+
+  if (move.enPassantCapture) {
+    if (!inBounds(move.enPassantCapture.row, move.enPassantCapture.col)) return b;
+    const epVictim = b[move.enPassantCapture.row][move.enPassantCapture.col];
+    if (!epVictim || epVictim.color === piece.color || epVictim.type !== "PAWN") {
+      return b;
+    }
+    b[move.enPassantCapture.row][move.enPassantCapture.col] = null;
+  }
+
+  const moved = { ...piece, hasMoved: true };
   b[move.to.row][move.to.col] = moved;
   b[move.from.row][move.from.col] = null;
 
-  if (move.enPassantCapture) {
-    b[move.enPassantCapture.row][move.enPassantCapture.col] = null;
-  }
   if (move.castlingRook) {
-    const rook = b[move.castlingRook.from.row][move.castlingRook.from.col]!;
-    b[move.castlingRook.to.row][move.castlingRook.to.col] = { ...rook, hasMoved: true };
-    b[move.castlingRook.from.row][move.castlingRook.from.col] = null;
+    const rook = b[move.castlingRook.from.row]?.[move.castlingRook.from.col];
+    if (rook && rook.color === piece.color && rook.type === "ROOK") {
+      b[move.castlingRook.to.row][move.castlingRook.to.col] = { ...rook, hasMoved: true };
+      b[move.castlingRook.from.row][move.castlingRook.from.col] = null;
+    }
   }
   if (move.promotion) {
-    b[move.to.row][move.to.col] = { type: move.promotion, color: piece.color, hasMoved: true };
+    b[move.to.row][move.to.col] = { ...moved, type: move.promotion };
   }
   return b;
+}
+
+/**
+ * Canonical move legality gate: verifies bounds, mover ownership, no friendly capture,
+ * and exact presence in `legalMoves`. Returns the canonical legal `Move` or `null`.
+ */
+export function isMoveLegal(
+  board: Board,
+  move: Move,
+  turn: Color,
+  enPassantTarget: Square | null,
+): Move | null {
+  if (!inBounds(move.from.row, move.from.col) || !inBounds(move.to.row, move.to.col)) {
+    return null;
+  }
+  const mover = board[move.from.row][move.from.col];
+  if (!mover || mover.color !== turn) return null;
+
+  const dest = board[move.to.row][move.to.col];
+  if (dest && dest.color === turn) return null;
+
+  const legals = legalMoves(board, mover, move.from, enPassantTarget);
+  return (
+    legals.find(
+      (m) =>
+        m.to.row === move.to.row &&
+        m.to.col === move.to.col &&
+        m.promotion === move.promotion,
+    ) ?? null
+  );
 }
 
 /** Legal moves for one piece (filters moves that would leave own king in check). */
@@ -304,20 +368,18 @@ export function hasInsufficientMaterial(board: Board): boolean {
   // King vs King
   if (pieces.length === 2) return true;
 
-  // King + Minor piece vs King
-  if (pieces.length === 3) {
-    return pieces.some(({ piece }) => piece.type === "BISHOP" || piece.type === "KNIGHT");
+  const knights = pieces.filter(({ piece }) => piece.type === "KNIGHT");
+  const bishops = pieces.filter(({ piece }) => piece.type === "BISHOP");
+
+  // King + Knight vs King
+  if (pieces.length === 3 && knights.length === 1 && bishops.length === 0) {
+    return true;
   }
 
-  // King + Bishop vs King + Bishop
-  if (pieces.length === 4) {
-    const bishops = pieces.filter(({ piece }) => piece.type === "BISHOP");
-    if (bishops.length === 2 && bishops[0].piece.color !== bishops[1].piece.color) {
-      // Same colored squares?
-      const sq1Color = (bishops[0].square.row + bishops[0].square.col) % 2;
-      const sq2Color = (bishops[1].square.row + bishops[1].square.col) % 2;
-      if (sq1Color === sq2Color) return true;
-    }
+  // Kings + Bishops on a single square color parity (e.g. K+B vs K, K+B vs K+B same color, K+BB same color vs K)
+  if (knights.length === 0 && bishops.length > 0) {
+    const firstColor = (bishops[0].square.row + bishops[0].square.col) % 2;
+    return bishops.every(({ square }) => (square.row + square.col) % 2 === firstColor);
   }
 
   return false;
@@ -331,11 +393,11 @@ export function calcStatus(
   enPassantTarget: Square | null,
   halfMoveClock: number,
 ): GameStatus {
-  if (halfMoveClock >= 100) return "DRAW_50";
-  if (hasInsufficientMaterial(board)) return "DRAW_INSUFFICIENT";
   const inCheck = isInCheck(board, turn, enPassantTarget);
   const hasMoves = allLegalMoves(board, turn, enPassantTarget).length > 0;
   if (!hasMoves) return inCheck ? "CHECKMATE" : "STALEMATE";
+  if (halfMoveClock >= 100) return "DRAW_50";
+  if (hasInsufficientMaterial(board)) return "DRAW_INSUFFICIENT";
   return inCheck ? "CHECK" : "IN_PROGRESS";
 }
 
@@ -357,8 +419,43 @@ export function getPositionKey(board: Board, turn: Color, enPassantTarget: Squar
       else str += `${p.color[0]}${p.type[0]}`;
     }
   }
-  if (enPassantTarget) str += `|ep:${enPassantTarget.row},${enPassantTarget.col}`;
+
+  let castling = "";
+  const wK = board[7][4];
+  if (wK?.type === "KING" && wK.color === "WHITE" && !wK.hasMoved) {
+    const wKR = board[7][7];
+    const wQR = board[7][0];
+    if (wKR?.type === "ROOK" && wKR.color === "WHITE" && !wKR.hasMoved) castling += "K";
+    if (wQR?.type === "ROOK" && wQR.color === "WHITE" && !wQR.hasMoved) castling += "Q";
+  }
+  const bK = board[0][4];
+  if (bK?.type === "KING" && bK.color === "BLACK" && !bK.hasMoved) {
+    const bKR = board[0][7];
+    const bQR = board[0][0];
+    if (bKR?.type === "ROOK" && bKR.color === "BLACK" && !bKR.hasMoved) castling += "k";
+    if (bQR?.type === "ROOK" && bQR.color === "BLACK" && !bQR.hasMoved) castling += "q";
+  }
+  str += `|c:${castling || "-"}`;
+
+  if (
+    enPassantTarget &&
+    allLegalMoves(board, turn, enPassantTarget).some((m) => !!m.enPassantCapture)
+  ) {
+    str += `|ep:${enPassantTarget.row},${enPassantTarget.col}`;
+  }
   return str;
+}
+
+export function formatPGN(notation: string[], result?: string): string {
+  const tokens: string[] = [];
+  for (let i = 0; i < notation.length; i += 2) {
+    const moveNo = Math.floor(i / 2) + 1;
+    const whiteMove = notation[i] ?? "";
+    const blackMove = notation[i + 1];
+    tokens.push(blackMove ? `${moveNo}. ${whiteMove} ${blackMove}` : `${moveNo}. ${whiteMove}`);
+  }
+  if (result) tokens.push(result);
+  return tokens.join(" ");
 }
 
 // ── Notation ─────────────────────────────────────────────────────────────────
@@ -377,12 +474,13 @@ export function toAlgebraic(
   const file = FILES[move.to.col];
   const rank = 8 - move.to.row;
   const capture = board[move.to.row][move.to.col] || move.enPassantCapture ? "x" : "";
+  const nextEP = computeEnPassantTarget(move, piece);
 
   if (move.castlingRook) {
     const castlingStr = move.to.col === 6 ? "O-O" : "O-O-O";
     if (resultingBoard && nextTurn) {
-      const inCheck = isInCheck(resultingBoard, nextTurn, null);
-      const movesLeft = allLegalMoves(resultingBoard, nextTurn, null).length > 0;
+      const inCheck = isInCheck(resultingBoard, nextTurn, nextEP);
+      const movesLeft = allLegalMoves(resultingBoard, nextTurn, nextEP).length > 0;
       if (inCheck && !movesLeft) return `${castlingStr}#`;
       if (inCheck) return `${castlingStr}+`;
     }
@@ -415,8 +513,8 @@ export function toAlgebraic(
 
   let checkSuffix = "";
   if (resultingBoard && nextTurn) {
-    const inCheck = isInCheck(resultingBoard, nextTurn, null);
-    const movesLeft = allLegalMoves(resultingBoard, nextTurn, null).length > 0;
+    const inCheck = isInCheck(resultingBoard, nextTurn, nextEP);
+    const movesLeft = allLegalMoves(resultingBoard, nextTurn, nextEP).length > 0;
     if (inCheck && !movesLeft) checkSuffix = "#";
     else if (inCheck) checkSuffix = "+";
   }

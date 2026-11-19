@@ -1,234 +1,396 @@
 "use client";
 
-import { useId } from "react";
-import type { Piece } from "./lib/types";
-
-/**
- * Premium SVG chess pieces with detailed outlines, inner shading,
- * gradient fills, and decorative accents.
- *
- * Each piece has a main body path, an optional detail path for inner
- * lines/decorations, and a highlight path for top-edge sheen.
- */
-
-interface PieceDef {
-  body: string;
-  detail?: string;   // inner lines / accent strokes
-  highlight?: string; // top shine / edge highlight
-}
-
-const PIECES: Record<string, PieceDef> = {
-  KING: {
-    body: `M 22.5,11.63 L 22.5,6 M 20,8 L 25,8
-      M 22.5,11.63 C 22.5,11.63 19,14.25 19,18
-      C 19,20 20,22 22.5,22 C 25,22 26,20 26,18
-      C 26,14.25 22.5,11.63 22.5,11.63 Z
-      M 11.5,37 C 17,40.5 33,40.5 38.5,37
-      L 38.5,30 C 38.5,30 36.5,26 33.5,24
-      C 33.5,24 30,26 22.5,26 C 15,26 11.5,24 11.5,24
-      C 8.5,26 6.5,30 6.5,30 L 6.5,37 Z`,
-    detail: `M 11.5,30 C 17,27 33,27 38.5,30
-      M 11.5,33.5 C 17,30.5 33,30.5 38.5,33.5
-      M 11.5,37 C 17,34 33,34 38.5,37`,
-    highlight: `M 20,8 L 25,8 M 22.5,6 L 22.5,11.63`,
-  },
-
-  QUEEN: {
-    body: `M 9,26 C 17.5,24.5 27.5,24.5 36,26
-      L 38,14 L 31,25 L 30,10 L 25.5,24.5
-      L 22.5,5 L 19.5,24.5 L 15,10 L 14,25
-      L 7,14 L 9,26 Z
-      M 9,26 C 9,28 10.5,31.5 22.5,31.5
-      C 34.5,31.5 36,28 36,26
-      M 11.5,37 C 17,40.5 33,40.5 38.5,37
-      L 38.5,30 C 38.5,30 35,28 22.5,28
-      C 10,28 6.5,30 6.5,30 L 6.5,37 Z`,
-    detail: `M 11.5,30 C 15,28 30,28 38.5,30
-      M 11.5,33.5 C 15,31.5 30,31.5 38.5,33.5
-      M 11.5,37 C 17,34 33,34 38.5,37`,
-    highlight: `M 7,14 A 2,2 0 1 1 11,14 A 2,2 0 1 1 7,14 Z
-      M 13,5.5 A 2,2 0 1 1 17,5.5 A 2,2 0 1 1 13,5.5 Z
-      M 20.5,2 A 2,2 0 1 1 24.5,2 A 2,2 0 1 1 20.5,2 Z
-      M 28,5.5 A 2,2 0 1 1 32,5.5 A 2,2 0 1 1 28,5.5 Z
-      M 34,14 A 2,2 0 1 1 38,14 A 2,2 0 1 1 34,14 Z`,
-  },
-
-  ROOK: {
-    body: `M 9,39 L 36,39 L 36,36 L 9,36 Z
-      M 12.5,32 L 14,29.5 L 31,29.5 L 32.5,32 Z
-      M 12,36 L 12,32 L 33,32 L 33,36 Z
-      M 14,29.5 L 14,16.5 L 31,16.5 L 31,29.5 Z
-      M 14,16.5 L 11,14 L 11,9 L 15,9 L 15,11
-      L 20,11 L 20,9 L 25,9 L 25,11 L 30,11
-      L 30,9 L 34,9 L 34,14 L 31,16.5 Z`,
-    detail: `M 14,29.5 L 31,29.5
-      M 14,16.5 L 31,16.5
-      M 11,14 L 34,14`,
-  },
-
-  BISHOP: {
-    body: `M 9,36 C 12.39,35.03 19.11,36.43 22.5,34
-      C 25.89,36.43 32.61,35.03 36,36
-      C 36,36 37.65,36.54 39,38
-      C 38.32,38.97 37.35,38.99 36,38.5
-      C 32.61,37.53 25.89,38.93 22.5,36.5
-      C 19.11,38.93 12.39,37.53 9,38.5
-      C 7.65,38.99 6.68,38.97 6,38
-      C 7.35,36.54 9,36 9,36 Z
-      M 15,32 C 17.5,34.5 27.5,34.5 30,32
-      C 30,30 27.5,27.5 25.5,26
-      L 22.5,10 L 19.5,26
-      C 17.5,27.5 15,30 15,32 Z
-      M 25,8 A 2.5,2.5 0 1 1 20,8
-      A 2.5,2.5 0 1 1 25,8 Z`,
-    detail: `M 17.5,26 L 27.5,26
-      M 15,32 C 17.5,34.5 27.5,34.5 30,32`,
-    highlight: `M 22.5,10 L 22.5,13.5 M 20.5,12 L 24.5,12`,
-  },
-
-  KNIGHT: {
-    body: `M 22,10 C 32.5,11 38.5,18 38,39
-      L 15,39 C 15,30 25,32.5 23,18
-      M 24,18 C 24.38,20.91 18.45,25.37 16,27
-      C 13,29 13.18,31.34 11,31
-      C 9.958,30.06 12.41,27.96 11,28
-      C 10,28 11.19,29.23 10,30
-      C 9,30 5.997,31 6,26
-      C 6,24 12,14 12,14
-      C 12,14 13.89,12.1 14,10.5
-      C 13.27,9.506 13.5,8.5 13.5,7.5
-      C 14.5,6.5 16.5,10 16.5,10
-      L 22,10 Z`,
-    detail: `M 9.5,25.5 A 0.5,1.5 0 1 1 8.5,25.5
-      A 0.5,1.5 0 1 1 9.5,25.5 Z
-      M 15,15.5 A 0.5,1.5 330 1 1 13.5,16.5
-      A 0.5,1.5 330 1 1 15,15.5 Z`,
-    highlight: `M 11.5,30 C 15,29 17,25 17,25`,
-  },
-
-  PAWN: {
-    body: `M 22.5,9 C 19.016,9 16.2,11.816 16.2,15.3
-      C 16.2,17.3 17.1,19.1 18.5,20.2
-      C 16.5,21.5 15,23.5 15,26
-      C 15,29 17.5,31 20,32
-      L 20,36 L 11,36 L 11,39 L 34,39 L 34,36
-      L 25,36 L 25,32 C 27.5,31 30,29 30,26
-      C 30,23.5 28.5,21.5 26.5,20.2
-      C 27.9,19.1 28.8,17.3 28.8,15.3
-      C 28.8,11.816 25.984,9 22.5,9 Z`,
-  },
-};
+import { memo, useId } from "react";
+import { CHESS_THEMES } from "./lib/themes";
+import type { BoardThemeId, Piece } from "./lib/types";
 
 interface Props {
-  piece: Piece;
+  piece: Omit<Piece, "id"> & { id?: string };
   size?: number;
   className?: string;
+  themeId?: BoardThemeId;
 }
 
-export function ChessPieceSVG({ piece, size, className }: Props) {
+export const ChessPieceSVG = memo(function ChessPieceSVG({
+  piece,
+  size,
+  className,
+  themeId = "celestial",
+}: Props) {
+  const reactId = useId().replace(/:/g, "");
   const isWhite = piece.color === "WHITE";
-  const reactId = useId();
-  const uid = `${piece.type}-${piece.color}-${reactId}`;
+  const palette = CHESS_THEMES[themeId]?.svgPieces ?? CHESS_THEMES.celestial.svgPieces;
 
-  // Premium color palettes
-  const gradFrom  = isWhite ? "#faf6ef" : "#2a1a4a";
-  const gradTo    = isWhite ? "#e8dcc8" : "#1a0e30";
-  const gradMid   = isWhite ? "#f2ead8" : "#221540";
-  const stroke    = isWhite ? "#6b5a3e" : "#9b7cdb";
-  const strokeW   = isWhite ? 1.5 : 1.3;
-  const detailClr = isWhite ? "#b8a080" : "#7b5fc0";
-  const highlightClr = isWhite ? "#fffdf5" : "#c8b0ff";
-  const glowColor = isWhite ? "rgba(255,248,230,0.6)" : "rgba(140,100,255,0.5)";
-  const shadowClr = isWhite ? "rgba(80,60,30,0.4)" : "rgba(10,5,30,0.6)";
+  const grad = isWhite ? palette.lightGrad : palette.darkGrad;
+  const stroke = isWhite ? palette.lightStroke : palette.darkStroke;
+  const detail = isWhite ? palette.lightDetail : palette.darkDetail;
+  const trim = isWhite ? palette.lightTrim : palette.darkTrim;
+  const highlight = isWhite ? palette.lightHighlight : palette.darkHighlight;
+  const shadow = isWhite ? palette.lightShadow : palette.darkShadow;
 
-  const def = PIECES[piece.type];
+  const bodyGradId = `body-${reactId}`;
+  const sheenGradId = `sheen-${reactId}`;
+  const trimGradId = `trim-${reactId}`;
 
   return (
     <svg
-      viewBox="0 0 45 45"
+      viewBox="0 0 48 48"
       width={size}
       height={size}
       className={`pointer-events-none select-none ${className ?? ""}`}
-      style={{ filter: `drop-shadow(0 2px 4px ${shadowClr})` }}
+      style={{
+        filter: `drop-shadow(0 3px 4px ${shadow})`,
+      }}
       aria-label={`${piece.color.toLowerCase()} ${piece.type.toLowerCase()}`}
     >
       <defs>
-        {/* Main body gradient */}
-        <linearGradient id={`grad-${uid}`} x1="0%" y1="0%" x2="30%" y2="100%">
-          <stop offset="0%" stopColor={gradFrom} />
-          <stop offset="50%" stopColor={gradMid} />
-          <stop offset="100%" stopColor={gradTo} />
+        {/* Cylindrical 3D shading across the piece silhouette */}
+        <linearGradient id={bodyGradId} x1="12%" y1="6%" x2="92%" y2="94%">
+          <stop offset="0%" stopColor={grad[0]} />
+          <stop offset="48%" stopColor={grad[1]} />
+          <stop offset="100%" stopColor={grad[2]} />
         </linearGradient>
 
-        {/* Inner glow */}
-        <radialGradient id={`inner-${uid}`} cx="40%" cy="30%" r="60%">
-          <stop offset="0%" stopColor={isWhite ? "rgba(255,255,255,0.4)" : "rgba(160,120,255,0.25)"} />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
+        {/* Soft vertical specular sheen */}
+        <linearGradient id={sheenGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={highlight} stopOpacity="0.06" />
+          <stop offset="32%" stopColor={highlight} stopOpacity={isWhite ? "0.42" : "0.24"} />
+          <stop offset="68%" stopColor={highlight} stopOpacity="0.02" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.16" />
+        </linearGradient>
 
-        {/* Outer glow filter */}
-        <filter id={`glow-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation={isWhite ? "1" : "1.5"} result="blur" />
-          <feFlood floodColor={glowColor} result="color" />
-          <feComposite in="color" in2="blur" operator="in" result="glow" />
-          <feMerge>
-            <feMergeNode in="glow" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-
-        {/* Bevel / edge highlight */}
-        <filter id={`bevel-${uid}`} x="-5%" y="-5%" width="110%" height="110%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="blur" />
-          <feOffset dx="0" dy="-0.5" result="off" />
-          <feComposite in="SourceGraphic" in2="off" operator="over" />
-        </filter>
+        {/* Metallic accent trim gradient */}
+        <linearGradient id={trimGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={highlight} />
+          <stop offset="50%" stopColor={trim} />
+          <stop offset="100%" stopColor={detail} />
+        </linearGradient>
       </defs>
 
-      <g filter={`url(#glow-${uid})`}>
-        {/* Body fill with gradient */}
-        <path
-          d={def.body}
-          fill={`url(#grad-${uid})`}
-          stroke={stroke}
-          strokeWidth={strokeW}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Inner glow overlay */}
-        <path
-          d={def.body}
-          fill={`url(#inner-${uid})`}
-          stroke="none"
-        />
-
-        {/* Detail lines (inner decorations) */}
-        {def.detail && (
+      {piece.type === "PAWN" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Base plinth */}
           <path
-            d={def.detail}
+            d="M 11.5,41.5 L 36.5,41.5 C 37.3,41.5 37.5,39 36.4,38.2 L 33.4,36.2 L 14.6,36.2 L 11.6,38.2 C 10.5,39 10.7,41.5 11.5,41.5 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Turned stem */}
+          <path
+            d="M 15.2,36.2 C 16.5,31.5 18.8,26.8 19.3,22.2 L 28.7,22.2 C 29.2,26.8 31.5,31.5 32.8,36.2 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 15.2,36.2 C 16.5,31.5 18.8,26.8 19.3,22.2 L 28.7,22.2 C 29.2,26.8 31.5,31.5 32.8,36.2 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          {/* Collar ring */}
+          <rect
+            x="16.8"
+            y="19.6"
+            width="14.4"
+            height="3"
+            rx="1.5"
+            fill={`url(#${trimGradId})`}
+            stroke={stroke}
+            strokeWidth="1.2"
+          />
+          {/* Orb head */}
+          <circle
+            cx="24"
+            cy="13.5"
+            r="6.2"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <circle cx="24" cy="13.5" r="6.0" fill={`url(#${sheenGradId})`} />
+          {/* Specular crescent */}
+          <path
+            d="M 20.6,11.2 A 3.8,3.8 0 0 1 24.4,9.5"
             fill="none"
-            stroke={detailClr}
-            strokeWidth="0.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={isWhite ? 0.6 : 0.5}
+            stroke={highlight}
+            strokeWidth="1.3"
+            opacity="0.78"
           />
-        )}
+          {/* Base trim band */}
+          <line x1="14.2" y1="38.2" x2="33.8" y2="38.2" stroke={`url(#${trimGradId})`} strokeWidth="1.4" />
+        </g>
+      )}
 
-        {/* Highlight accents (crosses, crowns, etc.) */}
-        {def.highlight && (
+      {piece.type === "ROOK" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Plinth */}
           <path
-            d={def.highlight}
-            fill={piece.type === "QUEEN" ? highlightClr : "none"}
-            stroke={highlightClr}
-            strokeWidth={piece.type === "QUEEN" ? "0.8" : "1.2"}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={isWhite ? 0.8 : 0.7}
+            d="M 10,41.5 L 38,41.5 L 38,37.8 L 34.5,35.6 L 13.5,35.6 L 10,37.8 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
           />
-        )}
-      </g>
+          {/* Tapered tower */}
+          <path
+            d="M 13.8,35.6 L 15.6,17.2 L 32.4,17.2 L 34.2,35.6 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 13.8,35.6 L 15.6,17.2 L 32.4,17.2 L 34.2,35.6 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          {/* Turret & crenellations */}
+          <path
+            d="M 15.6,17.2 L 12.2,14.2 L 12.2,7.8 L 16.8,7.8 L 16.8,10.8 L 21.4,10.8 L 21.4,7.8 L 26.6,7.8 L 26.6,10.8 L 31.2,10.8 L 31.2,7.8 L 35.8,7.8 L 35.8,14.2 L 32.4,17.2 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Subtle vertical masonry fluting */}
+          <line x1="20.2" y1="19.5" x2="19.4" y2="33.5" stroke={detail} strokeWidth="0.9" opacity="0.55" />
+          <line x1="27.8" y1="19.5" x2="28.6" y2="33.5" stroke={detail} strokeWidth="0.9" opacity="0.55" />
+          {/* Metallic collar & base rings */}
+          <line x1="12.8" y1="14.2" x2="35.2" y2="14.2" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+          <line x1="15.2" y1="17.2" x2="32.8" y2="17.2" stroke={detail} strokeWidth="1" />
+          <line x1="11.5" y1="38.1" x2="36.5" y2="38.1" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+        </g>
+      )}
+
+      {piece.type === "KNIGHT" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Pedestal base */}
+          <path
+            d="M 10.5,41.5 L 37.5,41.5 L 37.5,38 L 34,35.6 L 14,35.6 L 10.5,38 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Sculpted Staunton horse silhouette */}
+          <path
+            d="M 14.5,35.6 C 14.5,29.5 19.2,26.8 21.6,23.2 C 18.6,24.4 14.8,26.4 11.4,25.2 C 9.2,24.4 8.2,21.6 10.1,19.4 C 12.2,17 15.2,13.6 16.5,11.2 L 16.8,7 L 20.6,10 L 23.6,6.8 L 24.4,10.3 C 32.8,11.5 36.6,20.2 34.4,35.6 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 14.5,35.6 C 14.5,29.5 19.2,26.8 21.6,23.2 C 18.6,24.4 14.8,26.4 11.4,25.2 C 9.2,24.4 8.2,21.6 10.1,19.4 C 12.2,17 15.2,13.6 16.5,11.2 L 16.8,7 L 20.6,10 L 23.6,6.8 L 24.4,10.3 C 32.8,11.5 36.6,20.2 34.4,35.6 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          {/* Golden mane spine */}
+          <path
+            d="M 24.8,11.6 C 31.2,13.8 34.2,21.8 32.5,34"
+            fill="none"
+            stroke={`url(#${trimGradId})`}
+            strokeWidth="1.8"
+            opacity="0.9"
+          />
+          {/* Bridle / jaw shadow detail */}
+          <path
+            d="M 16.8,18.2 C 18.8,17.2 21.2,18.8 22.8,21.4"
+            fill="none"
+            stroke={detail}
+            strokeWidth="1"
+            opacity="0.65"
+          />
+          {/* Eye & nostril */}
+          <circle cx="17.8" cy="14.2" r="1.25" fill={trim} stroke={stroke} strokeWidth="0.7" />
+          <circle cx="11.6" cy="21.8" r="0.85" fill={stroke} opacity="0.8" />
+          {/* Base trim */}
+          <line x1="12" y1="38.1" x2="36" y2="38.1" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+        </g>
+      )}
+
+      {piece.type === "BISHOP" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Base */}
+          <path
+            d="M 10,41.5 L 38,41.5 C 38.6,41.5 38.6,38.8 37.2,38 L 33.8,35.8 L 14.2,35.8 L 10.8,38 C 9.4,38.8 9.4,41.5 10,41.5 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Slender body */}
+          <path
+            d="M 14.6,35.8 C 16.5,30.2 18.5,25.8 19.2,22.2 L 28.8,22.2 C 29.5,25.8 31.5,30.2 33.4,35.8 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Collar */}
+          <rect
+            x="16.2"
+            y="19.6"
+            width="15.6"
+            height="3"
+            rx="1.5"
+            fill={`url(#${trimGradId})`}
+            stroke={stroke}
+            strokeWidth="1.2"
+          />
+          {/* Pointed Mitre */}
+          <path
+            d="M 18.5,19.6 C 15.8,16 17,10.5 24,7.4 C 31,10.5 32.2,16 29.5,19.6 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 18.5,19.6 C 15.8,16 17,10.5 24,7.4 C 31,10.5 32.2,16 29.5,19.6 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          {/* Diagonal mitre cleft & cross */}
+          <line x1="20.6" y1="11.2" x2="26.2" y2="16.8" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+          <line x1="24" y1="11.6" x2="24" y2="16.2" stroke={highlight} strokeWidth="1.1" opacity="0.8" />
+          <line x1="21.8" y1="13.8" x2="26.2" y2="13.8" stroke={highlight} strokeWidth="1.1" opacity="0.8" />
+          {/* Apex finial */}
+          <circle
+            cx="24"
+            cy="5.4"
+            r="2.2"
+            fill={`url(#${trimGradId})`}
+            stroke={stroke}
+            strokeWidth="1.1"
+          />
+          {/* Base trim */}
+          <line x1="12.2" y1="38.2" x2="35.8" y2="38.2" stroke={`url(#${trimGradId})`} strokeWidth="1.4" />
+        </g>
+      )}
+
+      {piece.type === "QUEEN" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Base */}
+          <path
+            d="M 9.5,41.5 L 38.5,41.5 L 38.5,38.2 L 34.8,35.6 L 13.2,35.6 L 9.5,38.2 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Royal waist */}
+          <path
+            d="M 13.5,35.6 C 15.2,30 16.8,25.5 16.5,21.5 L 31.5,21.5 C 31.2,25.5 32.8,30 34.5,35.6 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Coronet spikes */}
+          <path
+            d="M 16.5,21.5 L 8.8,13.5 L 15.2,18.2 L 15.6,9.5 L 20.5,17.4 L 24,7.6 L 27.5,17.4 L 32.4,9.5 L 32.8,18.2 L 39.2,13.5 L 31.5,21.5 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.45"
+          />
+          <path
+            d="M 16.5,21.5 L 8.8,13.5 L 15.2,18.2 L 15.6,9.5 L 20.5,17.4 L 24,7.6 L 27.5,17.4 L 32.4,9.5 L 32.8,18.2 L 39.2,13.5 L 31.5,21.5 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          {/* Coronet pearls */}
+          {[
+            [8.4, 12.6],
+            [15.6, 8.6],
+            [24, 6.4],
+            [32.4, 8.6],
+            [39.6, 12.6],
+          ].map(([cx, cy], idx) => (
+            <circle
+              key={idx}
+              cx={cx}
+              cy={cy}
+              r={idx === 2 ? 2.1 : 1.7}
+              fill={`url(#${trimGradId})`}
+              stroke={stroke}
+              strokeWidth="1"
+            />
+          ))}
+          {/* Collar & base trim bands */}
+          <rect
+            x="15.2"
+            y="20.4"
+            width="17.6"
+            height="2.7"
+            rx="1.3"
+            fill={`url(#${trimGradId})`}
+            stroke={stroke}
+            strokeWidth="1.1"
+          />
+          <path
+            d="M 14.5,33.2 C 20,31.5 28,31.5 33.5,33.2"
+            fill="none"
+            stroke={detail}
+            strokeWidth="1"
+            opacity="0.7"
+          />
+          <line x1="11.2" y1="38.2" x2="36.8" y2="38.2" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+        </g>
+      )}
+
+      {piece.type === "KING" && (
+        <g strokeLinejoin="round" strokeLinecap="round">
+          {/* Imperial Cross */}
+          <path
+            d="M 24,5 L 24,12.5 M 20.4,8.2 L 27.6,8.2"
+            stroke={`url(#${trimGradId})`}
+            strokeWidth="2.4"
+          />
+          <path
+            d="M 24,5 L 24,12.5 M 20.4,8.2 L 27.6,8.2"
+            stroke={stroke}
+            strokeWidth="0.9"
+            opacity="0.55"
+          />
+          {/* Crown lobes */}
+          <path
+            d="M 15.8,21.8 C 11.4,19.4 9.8,14.8 12.2,12.2 C 14.8,9.8 19.6,11.6 22.6,15.2 C 23.4,13 24.6,13 25.4,15.2 C 28.4,11.6 33.2,9.8 35.8,12.2 C 38.2,14.8 36.6,19.4 32.2,21.8 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Center dome */}
+          <path
+            d="M 20.2,20.8 C 20.2,14.8 22,12.2 24,12.2 C 26,12.2 27.8,14.8 27.8,20.8 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.4"
+          />
+          {/* Stem & base */}
+          <path
+            d="M 13.4,35.6 C 14.8,30.2 16,25.5 15.8,21.8 L 32.2,21.8 C 32,25.5 33.2,30.2 34.6,35.6 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          <path
+            d="M 13.4,35.6 C 14.8,30.2 16,25.5 15.8,21.8 L 32.2,21.8 C 32,25.5 33.2,30.2 34.6,35.6 Z"
+            fill={`url(#${sheenGradId})`}
+          />
+          <path
+            d="M 9.5,41.5 L 38.5,41.5 L 38.5,38.2 L 34.8,35.6 L 13.2,35.6 L 9.5,38.2 Z"
+            fill={`url(#${bodyGradId})`}
+            stroke={stroke}
+            strokeWidth="1.5"
+          />
+          {/* Imperial collar & base bands */}
+          <rect
+            x="14.8"
+            y="20.6"
+            width="18.4"
+            height="2.8"
+            rx="1.4"
+            fill={`url(#${trimGradId})`}
+            stroke={stroke}
+            strokeWidth="1.1"
+          />
+          <path
+            d="M 14.8,32.5 C 20,30.5 28,30.5 33.2,32.5"
+            fill="none"
+            stroke={detail}
+            strokeWidth="1"
+            opacity="0.7"
+          />
+          <line x1="11.2" y1="38.2" x2="36.8" y2="38.2" stroke={`url(#${trimGradId})`} strokeWidth="1.5" />
+        </g>
+      )}
     </svg>
   );
-}
+});

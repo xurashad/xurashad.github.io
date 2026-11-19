@@ -1,13 +1,17 @@
 export type PieceType = "PAWN" | "ROOK" | "KNIGHT" | "BISHOP" | "QUEEN" | "KING";
-export type Color    = "WHITE" | "BLACK";
+export type Color = "WHITE" | "BLACK";
 
 export interface Piece {
+  id: string;
   type: PieceType;
   color: Color;
   hasMoved: boolean;
 }
 
-export interface Square { row: number; col: number }
+export interface Square {
+  row: number;
+  col: number;
+}
 
 export interface Move {
   from: Square;
@@ -28,10 +32,25 @@ export type GameStatus =
   | "DRAW_50"           // fifty-move rule
   | "DRAW_INSUFFICIENT" // insufficient material to checkmate
   | "DRAW_REPETITION"   // threefold repetition
+  | "TIME_OUT"
   | "PROMOTION";
 
 export type GameMode = "pvp" | "pvc";
 export type AIDifficulty = "easy" | "medium" | "hard";
+
+export type BoardThemeId = "celestial" | "marble" | "emerald" | "quantum";
+export type GraphicsQuality = "lite" | "balanced" | "ultra";
+export type TimeControlId = "unlimited" | "blitz3" | "blitz5" | "rapid10";
+export type CameraPreset = "classic" | "hero" | "top" | "flank";
+
+export interface MoveAnimationMeta {
+  move: Move;
+  seq: number;
+  isCapture: boolean;
+  capturedColor?: Color;
+  isCastle: boolean;
+  isPromotion: boolean;
+}
 
 export type Board = (Piece | null)[][];
 
@@ -41,5 +60,8 @@ export interface HistoryEntry {
   status: GameStatus;
   enPassantTarget: Square | null;
   halfMoveClock: number;
-  positionHash?: string;
+  positionHash: string;
+  lastMove: Move | null;
+  capturedPiece: Piece | null;
+  notation: string;
 }

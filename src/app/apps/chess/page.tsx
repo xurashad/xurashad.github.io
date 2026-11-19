@@ -4,10 +4,18 @@ import { ChessGame } from "./ChessGame";
 export const metadata: Metadata = {
   title: "Celestial Chess",
   description:
-    "A fully-featured celestial-themed chess game with 2D and 3D views. Supports all legal moves — castling, en passant, pawn promotion. Play against a friend (PvP) or challenge the computer (alpha-beta minimax AI). Features 3D board, move notation, captured-piece display, board flip, undo, and Web Audio SFX.",
+    "A luxury celestial-themed 3D and 2D chess game with sculpted Staunton pieces, four artisanal themes, tactical hints, move replay, chess clocks, PGN export, and Web Audio soundscape.",
   keywords: [
-    "chess", "celestial chess", "3D chess", "online chess", "chess game", "browser chess",
-    "en passant", "castling", "pawn promotion", "chess AI",
+    "chess",
+    "celestial chess",
+    "3D chess",
+    "online chess",
+    "chess game",
+    "browser chess",
+    "en passant",
+    "castling",
+    "pawn promotion",
+    "chess AI",
   ],
 };
 
@@ -22,23 +30,33 @@ export default function ChessPage() {
 
       <div className="section-container pt-6 sm:pt-8 pb-16">
         {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-quantum/10 pb-4">
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-quantum/15 pb-4">
           <div>
-            <div className="text-[11px] font-mono text-quantum/65 tracking-widest uppercase mb-1">
-              // Games · Grandmaster Strategy
+            <div className="text-[11px] font-mono text-quantum/75 tracking-widest uppercase mb-1">
+              {"// Games · Grandmaster Strategy"}
             </div>
             <h1 className="text-3xl sm:text-4xl font-serif font-bold">
               <span className="gradient-text-quantum">Celestial</span>{" "}
-              <span className="text-foreground/70">Chess</span>
+              <span className="text-foreground/80">Chess</span>
             </h1>
           </div>
-          <div className="flex flex-wrap gap-1.5 max-w-lg">
+          <div className="flex flex-wrap gap-1.5 max-w-xl">
             {[
-              "3D & 2D Views", "FIDE Rules", "En Passant", "Castling", "Promotion",
-              "Web Audio SFX", "3 AI Levels", "Drag & Drop",
-              "Material Lead", "Draw Detection",
-            ].map(f => (
-              <span key={f} className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-quantum/25 bg-quantum/5 text-quantum/70">
+              "Sculpted 3D & 2D",
+              "4 Luxury Themes",
+              "FIDE Rules",
+              "Tactical Hints",
+              "Move Replay",
+              "Chess Clocks",
+              "Drag & Drop",
+              "PGN Export",
+              "Web Audio SFX",
+              "3 AI Levels",
+            ].map((f) => (
+              <span
+                key={f}
+                className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-quantum/25 bg-quantum/10 text-quantum/85"
+              >
                 {f}
               </span>
             ))}
