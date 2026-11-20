@@ -113,28 +113,17 @@ const APPS: App[] = [
 
   /* ── Generators ──────────────────────────────────── */
   {
-    id: "fibonacci-generator",
+    id: "sequences-constants-studio",
     image: "fibonacci.jfif",
-    title: "Fibonacci Generator",
-    desc: "Generate Fibonacci sequences of arbitrary size using BigInt arithmetic. Download the full sequence or just the Nth number as a JSON file.",
-    icon: Hash,
-    category: "Generators",
-    accent: "olive",
-    tags: ["Fibonacci", "Mathematics", "JSON", "Generator"],
-    mine: true,
-    links: [{ label: "Open App", href: "/apps/fibonacci" }],
-  },
-  {
-    id: "prime-generator",
-    image: "prime.jfif",
-    title: "Prime Sequence Generator",
-    desc: "Generate the first n prime numbers using an optimised sieve. Preview results in-browser and download the full sequence as a JSON file.",
+    title: "Sequences & Constants Studio",
+    desc: "Compute 19 famous OEIS integer sequences (Fibonacci, Lucas, Segmented-Sieve Primes, Mersenne, Catalan, Partitions, Recamán) and 15 arbitrary-precision irrational constants (π, φ, e, √2, ln 2, ζ(3), G, γ) in a Web Worker — with Ulam/Sacks spirals, digit normality analysis, and Number Theory Lab.",
     icon: Zap,
     category: "Generators",
-    accent: "olive",
-    tags: ["Primes", "Mathematics", "JSON", "Generator"],
+    accent: "quantum",
+    featured: true,
+    tags: ["Fibonacci", "Primes", "Irrational Constants", "OEIS", "Web Worker"],
     mine: true,
-    links: [{ label: "Open App", href: "/apps/prime" }],
+    links: [{ label: "Open App", href: "/apps/sequences" }],
   },
 
   /* ── Professional ────────────────────────────────── */
@@ -356,7 +345,7 @@ const APPS: App[] = [
 const CATEGORIES: { label: Category; emoji: string; desc: string }[] = [
   { label: "All", emoji: "⚛️", desc: `All ${APPS.length} projects` },
   { label: "Scientific", emoji: "🔬", desc: "Physics, maths & science tools" },
-  { label: "Generators", emoji: "♾️", desc: "Mathematical sequence generators" },
+  { label: "Generators", emoji: "♾️", desc: "Mathematical sequences & irrational constants" },
   { label: "Professional", emoji: "💼", desc: "Professional-grade builders" },
   { label: "AI", emoji: "🤖", desc: "AI-powered applications" },
   { label: "Utilities", emoji: "🔧", desc: "Practical everyday tools" },

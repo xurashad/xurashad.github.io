@@ -1,0 +1,20 @@
+/* Sequences & Constants Studio — Light & Dark mode styling */
+
+.seq-katex .katex {
+  font-size: 0.96rem;
+}
+
+.seq-katex .katex-display {
+  margin: 0.25rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+
+.seq-digit-match {
+  background: rgba(0, 195, 245, 0.28);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+  box-shadow: 0 0 0 1px rgba(0, 195, 245, 0.5);
+}
