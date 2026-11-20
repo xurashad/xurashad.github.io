@@ -39,7 +39,7 @@ const PAGES_AND_CONTENT: Omit<PaletteItem, "action">[] = [
   // Apps (all 23)
   { id: "app-fractal", title: "Fractal Explorer", subtitle: "WebGL2 GPU + Float64 observatory across 10 fractal families", group: "Apps", keywords: "fractal mandelbrot julia burning ship newton webgl2 3d lighting deep zoom", href: "/apps/fractal-explorer" },
   { id: "app-particle", title: "Particle Physics Visualizer", subtitle: "Standard Model, SUSY & 49 particles", group: "Apps", keywords: "particle physics standard model susy", href: "/apps/particle-physics" },
-  { id: "app-periodic", title: "Interactive Periodic Table", subtitle: "118 elements, Bohr models & configurations", group: "Apps", keywords: "periodic table chemistry elements", href: "/apps/periodic-table" },
+  { id: "app-periodic", title: "Interactive Periodic Table", subtitle: "118 elements, 3D Bohr & quantum orbitals, spectra & temperature simulator", group: "Apps", keywords: "periodic table chemistry elements orbitals spectra temperature", href: "/apps/periodic-table" },
   { id: "app-feynman", title: "Feynman Diagram Generator", subtitle: "QFT diagrams with TikZ LaTeX & SVG export", group: "Apps", keywords: "feynman diagram qft latex tikz svg", href: "/apps/feynman-diagram" },
   { id: "app-earth", title: "Earth Explorer", subtitle: "Interactive 3D globe via CesiumJS", group: "Apps", keywords: "earth globe 3d cesium maps", href: "/apps/earth-explorer" },
   { id: "app-fibonacci", title: "Fibonacci Generator", subtitle: "Arbitrary-precision BigInt sequences", group: "Apps", keywords: "fibonacci sequence bigint math json", href: "/apps/fibonacci" },

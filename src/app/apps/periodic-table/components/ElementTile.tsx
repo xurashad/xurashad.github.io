@@ -1,36 +1,95 @@
 "use client";
 
-import { memo, useCallback, useRef } from "react";
-import type { Element } from "../lib/types";
-import { getCategoryInfo } from "../lib/types";
-import { getPhaseIcon } from "../lib/atomUtils";
+import { memo, useCallback, type CSSProperties } from "react";
+import {
+  BLOCK_INFO,
+  ORIGIN_INFO,
+  getCategoryInfo,
+  type ColorMode,
+  type Element,
+  type HeatmapProperty,
+  type TemperatureUnit,
+} from "../lib/types";
+import { getElementExtra } from "../lib/elementExtras";
+import {
+  PHASE_STYLES,
+  formatAtomicMass,
+  formatPropertyCompact,
+  getDiscoveryEra,
+  getElementPropertyValue,
+  getPhaseAtTemperature,
+  getPhaseIcon,
+} from "../lib/atomUtils";
 
 interface Props {
   element: Element;
+  colorMode: ColorMode;
+  tempK: number;
+  tempUnit: TemperatureUnit;
+  heatmapProperty: HeatmapProperty;
+  heatmapStyle?: { bg: string; fg: string } | null;
+  gridCol: number;
+  gridRow: number;
+  compact?: boolean;
+  highlight: boolean;
+  focused?: boolean;
+  dimmed?: boolean;
+  compareSlot?: "A" | "B" | null;
   onClick: (el: Element) => void;
   onHover?: (el: Element | null, pos: { x: number; y: number }) => void;
   onCompareSelect?: (el: Element) => void;
-  highlight: boolean;
-  /** If set, use this color as background instead of category color */
-  heatmapColor?: string | null;
-  /** If true, this element is outside the current filter range */
-  dimmed?: boolean;
-  /** If true, this element is selected for comparison */
-  compareSelected?: boolean;
 }
 
 export const ElementTile = memo(function ElementTile({
   element,
+  colorMode,
+  tempK,
+  tempUnit,
+  heatmapProperty,
+  heatmapStyle,
+  gridCol,
+  gridRow,
+  compact = false,
+  highlight,
+  focused = false,
+  dimmed = false,
+  compareSlot = null,
   onClick,
   onHover,
   onCompareSelect,
-  highlight,
-  heatmapColor,
-  dimmed = false,
-  compareSelected = false,
 }: Props) {
-  const cat = getCategoryInfo(element.category);
-  const tileRef = useRef<HTMLButtonElement>(null);
+  const extra = getElementExtra(element.number);
+  const dynamicPhase = getPhaseAtTemperature(element, tempK);
+
+  // Determine theme-aware accent palette based on active colorMode
+  const theme = (() => {
+    if (colorMode === "block") {
+      const b = BLOCK_INFO[element.block];
+      return { hex: b.hex, light: b.lightText, dark: b.darkText };
+    }
+    if (colorMode === "phase") {
+      const p = PHASE_STYLES[dynamicPhase];
+      return { hex: p.hex, light: p.lightText, dark: p.darkText };
+    }
+    if (colorMode === "origin") {
+      const o = ORIGIN_INFO[extra.origin];
+      return { hex: o.hex, light: o.lightText, dark: o.darkText };
+    }
+    if (colorMode === "era") {
+      const era = getDiscoveryEra(extra.discoveryYear);
+      return { hex: era.hex, light: era.lightText, dark: era.darkText };
+    }
+    const cat = getCategoryInfo(element.category);
+    return { hex: cat.hex, light: cat.lightText, dark: cat.darkText };
+  })();
+
+  const isHeatmap = colorMode === "heatmap";
+  const hasHeatmapColor = isHeatmap && Boolean(heatmapStyle);
+  const isMissingHeatmap = isHeatmap && !heatmapStyle;
+  const isPredictedOrUnknown =
+    Boolean(element.phase_predicted) ||
+    element.category.toLowerCase().startsWith("unknown") ||
+    (colorMode === "phase" && dynamicPhase === "Unknown");
 
   const handleMouseEnter = useCallback(
     (e: React.MouseEvent) => {
@@ -51,66 +110,132 @@ export const ElementTile = memo(function ElementTile({
     [element, onCompareSelect]
   );
 
-  const bgStyle = heatmapColor
-    ? { backgroundColor: heatmapColor }
-    : { backgroundColor: `${cat.hex}15`, borderColor: `${cat.hex}35` };
+  // Contextual bottom micro-label
+  const microLabel = (() => {
+    if (isHeatmap) {
+      const val = getElementPropertyValue(element, heatmapProperty);
+      return formatPropertyCompact(val, heatmapProperty, tempUnit);
+    }
+    if (colorMode === "phase") return dynamicPhase === "Unknown" ? "?" : dynamicPhase;
+    if (colorMode === "era") {
+      if (extra.discoveryYear === null) return "—";
+      return extra.discoveryYear < 0
+        ? `${Math.abs(extra.discoveryYear)} BC`
+        : `${extra.discoveryYear}`;
+    }
+    if (colorMode === "block") return `${element.block}-blk`;
+    return compact ? formatAtomicMass(element) : element.name;
+  })();
+
+  const customStyle: CSSProperties = {
+    gridColumnStart: gridCol,
+    gridRowStart: gridRow,
+    ["--tile-glow" as string]: hasHeatmapColor
+      ? `${heatmapStyle!.bg}`
+      : `${theme.hex}55`,
+    ["--tile-light" as string]: theme.light,
+    ["--tile-dark" as string]: theme.dark,
+    ...(hasHeatmapColor
+      ? {
+          backgroundColor: heatmapStyle!.bg,
+          color: heatmapStyle!.fg,
+          borderColor: "rgba(148, 163, 184, 0.35)",
+        }
+      : isMissingHeatmap
+        ? {}
+        : {
+            backgroundColor: `${theme.hex}1c`,
+            borderColor: `${theme.hex}55`,
+          }),
+  };
 
   return (
     <button
-      ref={tileRef}
+      type="button"
       onClick={() => onClick(element)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onContextMenu={handleContextMenu}
+      style={customStyle}
       className={`
-        element-tile
-        relative flex flex-col items-center justify-center
-        rounded-md p-0.5 md:p-1 text-center
-        transition-all duration-200 ease-out
-        hover:scale-[1.18] hover:z-20 border
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300
-        ${!heatmapColor ? "" : "text-white"}
-        ${highlight ? "ring-2 ring-white/80 shadow-lg scale-105 z-10" : ""}
-        ${dimmed ? "opacity-15 scale-95" : ""}
-        ${compareSelected ? "ring-2 ring-cyan-400 shadow-cyan-400/30 shadow-lg" : ""}
+        pt-tile group flex flex-col items-center justify-between
+        rounded-md border text-center select-none overflow-hidden
+        ${compact ? "p-0.5 min-h-[38px]" : "px-1 py-1 min-h-[54px] sm:min-h-[60px]"}
+        ${isPredictedOrUnknown ? "border-dashed" : "border-solid"}
+        ${
+          isMissingHeatmap
+            ? "pt-hatch bg-slate-100/80 dark:bg-white/[0.03] border-slate-300/60 dark:border-white/10 text-slate-500 dark:text-slate-400"
+            : !hasHeatmapColor
+              ? "text-[color:var(--tile-light)] dark:text-[color:var(--tile-dark)]"
+              : ""
+        }
+        hover:scale-[1.14] hover:z-20
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400
+        ${highlight ? "ring-2 ring-cyan-400 dark:ring-white/85 shadow-lg scale-[1.06] z-10" : ""}
+        ${focused ? "ring-2 ring-amber-400 shadow-lg z-10" : ""}
+        ${dimmed ? "opacity-20 scale-[0.95] grayscale-[40%]" : ""}
+        ${compareSlot ? "ring-2 ring-cyan-500 shadow-lg shadow-cyan-500/25 z-10" : ""}
       `}
-      style={{
-        gridColumnStart: element.xpos,
-        gridRowStart: element.ypos,
-        ...bgStyle,
-        // Glow on hover via box-shadow
-        ...(heatmapColor ? {} : {}),
-      }}
       aria-label={`${element.name} (${element.symbol}), atomic number ${element.number}`}
-      title={`${element.name} — ${element.category}\nRight-click to compare`}
+      title={`${element.name} (${element.symbol}) · Z=${element.number}\nClick for 3D details · Right-click to compare`}
     >
-      {/* Phase indicator */}
-      <span className="absolute top-0.5 right-0.5 text-[6px] opacity-50 hidden sm:block leading-none">
-        {getPhaseIcon(element.phase)}
-      </span>
+      {/* Top row: Atomic Number + Compare/Phase/Radioactive indicator */}
+      <div className="w-full flex items-center justify-between leading-none px-0.5">
+        <span
+          className={`font-mono font-semibold opacity-75 ${
+            compact ? "text-[7px]" : "text-[8px] sm:text-[9px]"
+          }`}
+        >
+          {element.number}
+        </span>
 
-      {/* Atomic number */}
-      <span className="text-[0.5rem] sm:text-[0.6rem] font-semibold opacity-70 leading-none" style={{ color: heatmapColor ? undefined : cat.hex }}>
-        {element.number}
-      </span>
+        {compareSlot ? (
+          <span className="px-1 rounded text-[7px] font-mono font-bold bg-cyan-500 text-slate-950 leading-tight">
+            {compareSlot}
+          </span>
+        ) : (
+          <span
+            className={`leading-none flex items-center gap-0.5 ${
+              compact ? "text-[6px]" : "text-[7px] sm:text-[8px]"
+            }`}
+          >
+            {extra.radioactive && !compact && (
+              <span
+                className="opacity-70"
+                title="Radioactive"
+                aria-hidden="true"
+              >
+                ☢
+              </span>
+            )}
+            <span className="opacity-55 hidden sm:inline">
+              {getPhaseIcon(dynamicPhase)}
+            </span>
+          </span>
+        )}
+      </div>
 
-      {/* Symbol */}
-      <span className="text-sm sm:text-base md:text-lg font-bold leading-tight" style={{ color: heatmapColor ? undefined : cat.hex }}>
+      {/* Center: Element Symbol */}
+      <span
+        className={`font-bold tracking-tight leading-none ${
+          compact
+            ? "text-[11px] sm:text-xs"
+            : "text-sm sm:text-base lg:text-[17px]"
+        }`}
+      >
         {element.symbol}
       </span>
 
-      {/* Name */}
-      <span className="text-[0.4rem] sm:text-[0.55rem] truncate w-full opacity-60 leading-none hidden sm:block" style={{ color: heatmapColor ? undefined : cat.hex }}>
-        {element.name}
+      {/* Bottom: Name / Contextual property */}
+      <span
+        className={`w-full truncate leading-none opacity-80 ${
+          compact
+            ? "text-[6px] font-mono"
+            : "text-[7px] sm:text-[8.5px] font-medium"
+        }`}
+      >
+        {microLabel}
       </span>
-
-      {/* Hover glow overlay */}
-      <style jsx>{`
-        .element-tile:hover {
-          box-shadow: 0 0 15px 2px ${heatmapColor || cat.hex}40,
-                      0 4px 12px rgba(0,0,0,0.3);
-        }
-      `}</style>
     </button>
   );
 });

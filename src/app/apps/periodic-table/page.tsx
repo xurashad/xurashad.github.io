@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import { PeriodicTableApp } from "./PeriodicTableApp";
 
 export const metadata: Metadata = {
-  title: "Interactive Periodic Table with 3D Atom Models | Rashad Hamidi",
+  title: "Interactive Periodic Table with 3D Atom & Orbital Models | Rashad Hamidi",
   description:
-    "Explore all 118 elements with interactive 3D atom models, property heatmaps, element comparison, and detailed electron configurations. A premium chemistry visualization tool.",
+    "Explore all 118 elements with packed 3D Bohr nuclei, 3D quantum orbital clouds, live temperature state simulation, optical emission spectra, cosmic origins, discovery timeline, periodic trends, and side-by-side comparison.",
   keywords: [
-    "periodic table", "chemistry", "elements", "3D atom model", "atomic",
-    "electron configuration", "Bohr model", "interactive", "science",
-    "element comparison", "heatmap", "electronegativity", "melting point",
+    "periodic table",
+    "chemistry",
+    "elements",
+    "3D atom model",
+    "quantum orbitals",
+    "electron configuration",
+    "emission spectrum",
+    "temperature simulator",
+    "periodic trends",
+    "element comparison",
+    "heatmap",
   ],
 };
 
@@ -23,34 +31,35 @@ export default function PeriodicTablePage() {
 
       <div className="section-container py-16 pb-32">
         {/* Header */}
-        <div className="mb-10">
-          <div className="text-xs font-mono text-quantum/55 tracking-widest uppercase mb-3">
-            // Science · Chemistry · 3D Visualization
+        <div className="mb-8">
+          <div className="text-xs font-mono text-quantum/65 tracking-widest uppercase mb-3">
+            {"// Science · Chemistry · Quantum & 3D Visualization"}
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold mb-4">
             <span className="gradient-text-quantum">Interactive</span>{" "}
-            <span className="text-foreground/60">Periodic Table</span>
+            <span className="text-foreground/70">Periodic Table</span>
           </h1>
-          <p className="text-foreground/50 max-w-2xl leading-relaxed">
-            All 118 elements at your fingertips. Explore 3D atom models with orbiting electrons,
-            visualize property heatmaps, compare elements side-by-side, and dive deep into
-            electron configurations and ionization energies.
+          <p className="text-foreground/60 max-w-2xl leading-relaxed">
+            Explore all 118 elements with 3D packed-nucleon Bohr models and quantum orbital clouds,
+            a live temperature state-of-matter simulator, physical optical emission spectra,
+            astrophysical cosmic origins, discovery timeline, and interactive periodic trends.
           </p>
 
           {/* Feature chips */}
-          <div className="flex flex-wrap gap-2 mt-6">
+          <div className="flex flex-wrap gap-2 mt-5">
             {[
-              "118 Elements",
-              "3D Atom Models",
-              "Property Heatmaps",
-              "Element Comparison",
-              "Electron Configurations",
-              "Interactive Search",
-              "Ionization Energies",
+              "3D Bohr & Quantum Orbitals",
+              "Temperature Simulator (0–6500 K)",
+              "Optical Emission Spectra",
+              "Cosmic Origins",
+              "Discovery Time-Lapse",
+              "Periodic Trends Chart",
+              "18 & 32-Col Layouts",
+              "Side-by-Side Comparison",
             ].map((f) => (
               <span
                 key={f}
-                className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-quantum/20 bg-quantum/5 text-quantum/60"
+                className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-quantum/25 bg-quantum/8 text-quantum/80 dark:text-quantum/70"
               >
                 {f}
               </span>
