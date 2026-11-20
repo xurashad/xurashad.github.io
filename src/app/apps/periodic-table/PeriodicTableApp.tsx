@@ -203,13 +203,13 @@ export function PeriodicTableApp() {
   // ---- Unified Matching Filter ----
   const hasAnyFilter = Boolean(
     searchLower ||
-      categoryFilter ||
-      blockFilter ||
-      originFilter ||
-      groupFilter !== null ||
-      periodFilter !== null ||
-      fSeriesFilter !== null ||
-      phaseFilter !== null
+    categoryFilter ||
+    blockFilter ||
+    originFilter ||
+    groupFilter !== null ||
+    periodFilter !== null ||
+    fSeriesFilter !== null ||
+    phaseFilter !== null
   );
 
   const matchingIds = useMemo(() => {
@@ -503,11 +503,10 @@ export function PeriodicTableApp() {
               key={v.id}
               type="button"
               onClick={() => setWorkspaceView(v.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                workspaceView === v.id
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${workspaceView === v.id
+                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
             >
               {v.icon}
               {v.label}
@@ -553,11 +552,10 @@ export function PeriodicTableApp() {
                 key={u}
                 type="button"
                 onClick={() => setTempUnit(u)}
-                className={`px-2 py-1 rounded-lg text-[11px] font-mono font-medium transition-colors ${
-                  tempUnit === u
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2 py-1 rounded-lg text-[11px] font-mono font-medium transition-colors ${tempUnit === u
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
               >
                 {u === "K" ? "K" : `°${u}`}
               </button>
@@ -571,11 +569,10 @@ export function PeriodicTableApp() {
               onClick={() =>
                 setTableLayout((l) => (l === "standard" ? "wide" : "standard"))
               }
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono border transition-colors ${
-                tableLayout === "wide"
-                  ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-semibold"
-                  : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
-              }`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono border transition-colors ${tableLayout === "wide"
+                ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-semibold"
+                : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
+                }`}
               title="Toggle 18-column compact vs true 32-column wide layout"
             >
               <Columns2 size={13} />
@@ -594,11 +591,10 @@ export function PeriodicTableApp() {
                 setCompareMode((m) => !m);
               }
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-              compareMode || compareA
-                ? "border-cyan-500/60 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300"
-                : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${compareMode || compareA
+              ? "border-cyan-500/60 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300"
+              : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
+              }`}
           >
             <ArrowRightLeft size={13} />
             {compareA && !compareB
@@ -622,11 +618,10 @@ export function PeriodicTableApp() {
                   setColorMode(m.id);
                   setTimelinePlaying(false);
                 }}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all ${
-                  colorMode === m.id
-                    ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-700 dark:text-cyan-200 shadow-sm"
-                    : "border-slate-200 dark:border-white/8 bg-white/70 dark:bg-white/[0.025] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-white/[0.06]"
-                }`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all ${colorMode === m.id
+                  ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-700 dark:text-cyan-200 shadow-sm"
+                  : "border-slate-200 dark:border-white/8 bg-white/70 dark:bg-white/[0.025] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-white/[0.06]"
+                  }`}
               >
                 {m.icon}
                 {m.label}
@@ -741,9 +736,8 @@ export function PeriodicTableApp() {
                         onClick={() =>
                           setPhaseFilter((prev) => (prev === ph ? null : ph))
                         }
-                        className={`px-2 py-1 rounded-lg text-[11px] font-mono border transition-all ${
-                          active ? "ring-1 ring-cyan-400 font-semibold" : "opacity-85 hover:opacity-100"
-                        }`}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-mono border transition-all ${active ? "ring-1 ring-cyan-400 font-semibold" : "opacity-85 hover:opacity-100"
+                          }`}
                         style={{
                           backgroundColor: `${st.hex}18`,
                           borderColor: `${st.hex}45`,
@@ -766,11 +760,10 @@ export function PeriodicTableApp() {
                     key={p.label}
                     type="button"
                     onClick={() => setTempK(p.k)}
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-mono border transition-colors ${
-                      Math.abs(tempK - p.k) < 1
-                        ? "border-cyan-500 bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 font-semibold"
-                        : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
-                    }`}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-mono border transition-colors ${Math.abs(tempK - p.k) < 1
+                      ? "border-cyan-500 bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 font-semibold"
+                      : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
+                      }`}
                   >
                     {p.label}
                   </button>
@@ -835,11 +828,10 @@ export function PeriodicTableApp() {
                         setTimelinePlaying(false);
                         setTimelineYear(m.year);
                       }}
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-mono border transition-colors ${
-                        timelineYear === m.year
-                          ? "border-cyan-500 bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 font-semibold"
-                          : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
-                      }`}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-mono border transition-colors ${timelineYear === m.year
+                        ? "border-cyan-500 bg-cyan-500/20 text-cyan-700 dark:text-cyan-200 font-semibold"
+                        : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.08]"
+                        }`}
                     >
                       {m.label}
                     </button>
@@ -877,13 +869,12 @@ export function PeriodicTableApp() {
                         prev === cat.key ? null : cat.key
                       )
                     }
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                      active
-                        ? "ring-1 ring-cyan-400 shadow-sm"
-                        : categoryFilter && !active
-                          ? "opacity-35 hover:opacity-80 border-transparent"
-                          : "border-transparent hover:bg-slate-100 dark:hover:bg-white/[0.05]"
-                    }`}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium border transition-all ${active
+                      ? "ring-1 ring-cyan-400 shadow-sm"
+                      : categoryFilter && !active
+                        ? "opacity-35 hover:opacity-80 border-transparent"
+                        : "border-transparent hover:bg-slate-100 dark:hover:bg-white/[0.05]"
+                      }`}
                     style={{
                       backgroundColor: active ? `${cat.hex}22` : undefined,
                       borderColor: active ? `${cat.hex}65` : undefined,
@@ -923,13 +914,12 @@ export function PeriodicTableApp() {
                     onClick={() =>
                       setBlockFilter((prev) => (prev === blk ? null : blk))
                     }
-                    className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs border transition-all ${
-                      active
-                        ? "ring-1 ring-cyan-400 font-semibold"
-                        : blockFilter && !active
-                          ? "opacity-35 hover:opacity-80"
-                          : "hover:opacity-100"
-                    }`}
+                    className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs border transition-all ${active
+                      ? "ring-1 ring-cyan-400 font-semibold"
+                      : blockFilter && !active
+                        ? "opacity-35 hover:opacity-80"
+                        : "hover:opacity-100"
+                      }`}
                     style={{
                       backgroundColor: `${info.hex}18`,
                       borderColor: `${info.hex}45`,
@@ -961,13 +951,12 @@ export function PeriodicTableApp() {
                         prev === origKey ? null : origKey
                       )
                     }
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-                      active
-                        ? "ring-1 ring-cyan-400 font-semibold"
-                        : originFilter && !active
-                          ? "opacity-35 hover:opacity-80"
-                          : ""
-                    }`}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${active
+                      ? "ring-1 ring-cyan-400 font-semibold"
+                      : originFilter && !active
+                        ? "opacity-35 hover:opacity-80"
+                        : ""
+                      }`}
                     style={{
                       backgroundColor: `${info.hex}18`,
                       borderColor: `${info.hex}45`,
@@ -992,9 +981,8 @@ export function PeriodicTableApp() {
       {workspaceView === "table" && (
         <div className="overflow-x-auto pb-2">
           <div
-            className={`grid gap-[3px] p-2.5 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white/70 dark:bg-[#080b14]/75 backdrop-blur-md shadow-sm ${
-              tableLayout === "wide" ? "min-w-[1180px]" : "min-w-[920px]"
-            }`}
+            className={`grid gap-[3px] p-2.5 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white/70 dark:bg-[#080b14]/75 backdrop-blur-md shadow-sm ${tableLayout === "wide" ? "min-w-[1180px]" : "min-w-[920px]"
+              }`}
             style={{
               gridTemplateColumns:
                 tableLayout === "wide"
@@ -1022,11 +1010,10 @@ export function PeriodicTableApp() {
                 onClick={() =>
                   setPeriodFilter((prev) => (prev === p ? null : p))
                 }
-                className={`flex items-center justify-center text-[10px] font-mono rounded transition-colors ${
-                  periodFilter === p
-                    ? "bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 font-bold"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/5"
-                }`}
+                className={`flex items-center justify-center text-[10px] font-mono rounded transition-colors ${periodFilter === p
+                  ? "bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 font-bold"
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/5"
+                  }`}
                 style={{ gridColumnStart: 1, gridRowStart: p + 1 }}
                 title={`Filter Period ${p}`}
               >
@@ -1043,11 +1030,10 @@ export function PeriodicTableApp() {
                   onClick={() =>
                     setGroupFilter((prev) => (prev === g ? null : g))
                   }
-                  className={`py-0.5 text-[10px] font-mono rounded text-center transition-colors ${
-                    groupFilter === g
-                      ? "bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 font-bold"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/5"
-                  }`}
+                  className={`py-0.5 text-[10px] font-mono rounded text-center transition-colors ${groupFilter === g
+                    ? "bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 font-bold"
+                    : "text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/5"
+                    }`}
                   style={{ gridColumnStart: g + 1, gridRowStart: 1 }}
                   title={`Filter Group ${g}`}
                 >
@@ -1108,11 +1094,10 @@ export function PeriodicTableApp() {
                       prev === "lanthanide" ? null : "lanthanide"
                     )
                   }
-                  className={`flex items-center justify-center text-[10px] font-mono rounded-md border transition-colors ${
-                    fSeriesFilter === "lanthanide"
-                      ? "bg-indigo-500/30 border-indigo-400 text-indigo-800 dark:text-indigo-200 font-bold"
-                      : "bg-indigo-500/12 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/22"
-                  }`}
+                  className={`flex items-center justify-center text-[10px] font-mono rounded-md border transition-colors ${fSeriesFilter === "lanthanide"
+                    ? "bg-indigo-500/30 border-indigo-400 text-indigo-800 dark:text-indigo-200 font-bold"
+                    : "bg-indigo-500/12 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/22"
+                    }`}
                   style={{ gridColumnStart: 4, gridRowStart: 7 }}
                   title="Filter Lanthanides (57–71)"
                 >
@@ -1125,11 +1110,10 @@ export function PeriodicTableApp() {
                       prev === "actinide" ? null : "actinide"
                     )
                   }
-                  className={`flex items-center justify-center text-[10px] font-mono rounded-md border transition-colors ${
-                    fSeriesFilter === "actinide"
-                      ? "bg-pink-500/30 border-pink-400 text-pink-800 dark:text-pink-200 font-bold"
-                      : "bg-pink-500/12 border-pink-500/30 text-pink-700 dark:text-pink-300 hover:bg-pink-500/22"
-                  }`}
+                  className={`flex items-center justify-center text-[10px] font-mono rounded-md border transition-colors ${fSeriesFilter === "actinide"
+                    ? "bg-pink-500/30 border-pink-400 text-pink-800 dark:text-pink-200 font-bold"
+                    : "bg-pink-500/12 border-pink-500/30 text-pink-700 dark:text-pink-300 hover:bg-pink-500/22"
+                    }`}
                   style={{ gridColumnStart: 4, gridRowStart: 8 }}
                   title="Filter Actinides (89–103)"
                 >
