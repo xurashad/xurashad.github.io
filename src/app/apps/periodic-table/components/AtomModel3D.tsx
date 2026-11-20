@@ -746,11 +746,10 @@ export function AtomModel3D({
               <button
                 type="button"
                 onClick={() => setInternalMode("bohr")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${
-                  activeMode === "bohr"
-                    ? "bg-cyan-500/25 text-cyan-200 border border-cyan-400/30"
-                    : "text-slate-300/70 hover:text-white"
-                }`}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${activeMode === "bohr"
+                  ? "bg-cyan-500/25 text-cyan-200 border border-cyan-400/30"
+                  : "text-slate-300/70 hover:text-white"
+                  }`}
               >
                 <Orbit size={11} />
                 Bohr 3D
@@ -758,11 +757,10 @@ export function AtomModel3D({
               <button
                 type="button"
                 onClick={() => setInternalMode("quantum")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${
-                  activeMode === "quantum"
-                    ? "bg-fuchsia-500/25 text-fuchsia-200 border border-fuchsia-400/30"
-                    : "text-slate-300/70 hover:text-white"
-                }`}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${activeMode === "quantum"
+                  ? "bg-fuchsia-500/25 text-fuchsia-200 border border-fuchsia-400/30"
+                  : "text-slate-300/70 hover:text-white"
+                  }`}
               >
                 <Sparkles size={11} />
                 Orbital Cloud
@@ -783,11 +781,10 @@ export function AtomModel3D({
                         ? `${orb}-orbital (element valence block)`
                         : `Inspect ${orb}-orbital geometry`
                     }
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${
-                      activeOrbital === orb
-                        ? "bg-white/20 text-white font-bold"
-                        : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${activeOrbital === orb
+                      ? "bg-white/20 text-white font-bold"
+                      : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     {orb}
                   </button>
