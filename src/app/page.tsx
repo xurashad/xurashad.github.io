@@ -1122,7 +1122,7 @@ export default function HomePage() {
                 Featured <span className="gradient-text-quantum">Interactive Lab</span>
               </h2>
               <Link href="/apps" className="text-xs text-foreground/45 hover:text-quantum transition-colors font-mono flex items-center gap-1">
-                All 23 apps <ArrowRight size={10} />
+                All 24 apps <ArrowRight size={10} />
               </Link>
             </div>
           </motion.div>

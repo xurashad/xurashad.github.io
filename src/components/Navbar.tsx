@@ -50,7 +50,8 @@ export function Navbar() {
   const pathname = usePathname();
   const isBuilderEditor = Boolean(
     pathname?.includes("/website-builder/editor") ||
-      pathname?.includes("/wetex/editor"),
+      pathname?.includes("/wetex/editor") ||
+      pathname?.includes("/markdown-studio/editor"),
   );
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

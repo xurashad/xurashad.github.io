@@ -21,7 +21,8 @@ export function KitsuneLoader() {
     !mounted ||
     !enabled ||
     pathname?.includes("/website-builder/editor") ||
-    pathname?.includes("/wetex/editor")
+    pathname?.includes("/wetex/editor") ||
+    pathname?.includes("/markdown-studio/editor")
   )
     return null;
 

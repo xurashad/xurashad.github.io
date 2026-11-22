@@ -73,7 +73,8 @@ export function MusicToggle() {
   const pathname = usePathname();
   const isBuilderEditor = Boolean(
     pathname?.includes("/website-builder/editor") ||
-      pathname?.includes("/wetex/editor"),
+      pathname?.includes("/wetex/editor") ||
+      pathname?.includes("/markdown-studio/editor"),
   );
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -103,7 +104,8 @@ export function MusicToggle() {
         _started ||
         _userMuted ||
         window.location.pathname.includes("/website-builder/editor") ||
-        window.location.pathname.includes("/wetex/editor")
+        window.location.pathname.includes("/wetex/editor") ||
+        window.location.pathname.includes("/markdown-studio/editor")
       )
         return;
       audio.play().then(() => {

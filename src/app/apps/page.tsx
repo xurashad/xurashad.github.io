@@ -144,6 +144,22 @@ const APPS: App[] = [
     ],
   },
   {
+    id: "markdown-studio",
+    image: "markdown-studio.jfif",
+    title: "Markdown Studio",
+    desc: "Illuminated multi-file Markdown IDE & writing suite with live GFM preview, 13 callouts, KaTeX math, client-side Mermaid & Chart SVGs, interactive task lists, 16:9 Slide Deck mode, visual builders, readability linter, and PDF/HTML/ZIP export.",
+    icon: FileText,
+    category: "Professional",
+    accent: "quantum",
+    featured: true,
+    tags: ["Markdown", "GFM", "KaTeX", "Mermaid", "Slide Deck"],
+    mine: true,
+    links: [
+      { label: "Focus Studio", href: "/apps/markdown-studio/editor", newTab: true },
+      { label: "Overview", href: "/apps/markdown-studio" },
+    ],
+  },
+  {
     id: "website-builder-pro",
     image: "website-builder.jfif",
     title: "Website Builder Pro",

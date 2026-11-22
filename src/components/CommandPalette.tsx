@@ -38,6 +38,7 @@ const PAGES_AND_CONTENT: Omit<PaletteItem, "action">[] = [
 
   // Apps (all 24)
   { id: "app-wetex", title: "WeTeX — Online LaTeX Studio", subtitle: "Multi-file LaTeX IDE, live compiler, BibTeX, TikZ, SyncTeX & PDF export", group: "Apps", keywords: "wetex latex tex editor compiler pdf bibtex tikz math equations overleaf scientific writing", href: "/apps/wetex" },
+  { id: "app-markdown-studio", title: "Markdown Studio", subtitle: "Multi-file Markdown IDE with GFM, KaTeX, Mermaid SVG, Slide Decks & PDF/HTML/ZIP export", group: "Apps", keywords: "markdown studio writer editor gfm mermaid katex slides tables frontmatter export", href: "/apps/markdown-studio" },
   { id: "app-fractal", title: "Fractal Explorer", subtitle: "WebGL2 GPU + Float64 observatory across 10 fractal families", group: "Apps", keywords: "fractal mandelbrot julia burning ship newton webgl2 3d lighting deep zoom", href: "/apps/fractal-explorer" },
   { id: "app-particle", title: "Particle Physics Visualizer", subtitle: "Standard Model, SUSY & 49 particles", group: "Apps", keywords: "particle physics standard model susy", href: "/apps/particle-physics" },
   { id: "app-periodic", title: "Interactive Periodic Table", subtitle: "118 elements, 3D Bohr & quantum orbitals, spectra & temperature simulator", group: "Apps", keywords: "periodic table chemistry elements orbitals spectra temperature", href: "/apps/periodic-table" },

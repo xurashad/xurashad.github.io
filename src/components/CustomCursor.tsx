@@ -79,7 +79,8 @@ export function CustomCursor() {
   const isFinePointer = useSyncExternalStore(subscribeFinePointer, getFinePointerSnapshot, getServerSnapshot);
   const isExcluded = Boolean(
     pathname?.includes("/website-builder/editor") ||
-      pathname?.includes("/wetex/editor"),
+      pathname?.includes("/wetex/editor") ||
+      pathname?.includes("/markdown-studio/editor"),
   );
   const active = isFinePointer && !isExcluded;
 
