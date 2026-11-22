@@ -26,7 +26,7 @@ interface PaletteItem {
 const PAGES_AND_CONTENT: Omit<PaletteItem, "action">[] = [
   // Pages
   { id: "page-home", title: "Home", subtitle: "Portfolio & research overview", group: "Pages", keywords: "home hero physics quantum", href: "/" },
-  { id: "page-apps", title: "Apps & Tools", subtitle: "23 interactive browser applications", group: "Pages", keywords: "apps tools lab software interactive", href: "/apps" },
+  { id: "page-apps", title: "Apps & Tools", subtitle: "24 interactive browser applications", group: "Pages", keywords: "apps tools lab software interactive", href: "/apps" },
   { id: "page-datasets", title: "Datasets", subtitle: "Open scientific datasets (CC0)", group: "Pages", keywords: "datasets data json primes particles elements", href: "/datasets" },
   { id: "page-blog", title: "Blog", subtitle: "Long-form physics, cosmology & mental model essays", group: "Pages", keywords: "blog articles essays writing", href: "/blog" },
   { id: "page-documents", title: "Documents", subtitle: "Mathematica notebooks & academic papers", group: "Pages", keywords: "documents mathematica notebooks pdf papers", href: "/documents" },
@@ -36,7 +36,8 @@ const PAGES_AND_CONTENT: Omit<PaletteItem, "action">[] = [
   { id: "page-cv", title: "Curriculum Vitae", subtitle: "Academic profile, publications, talks & coursework", group: "Pages", keywords: "cv resume durham publications education", href: "/cv" },
   { id: "page-contact", title: "Contact", subtitle: "Collaborations, postdoc & direct channels", group: "Pages", keywords: "contact email github linkedin message", href: "/contact" },
 
-  // Apps (all 23)
+  // Apps (all 24)
+  { id: "app-wetex", title: "WeTeX — Online LaTeX Studio", subtitle: "Multi-file LaTeX IDE, live compiler, BibTeX, TikZ, SyncTeX & PDF export", group: "Apps", keywords: "wetex latex tex editor compiler pdf bibtex tikz math equations overleaf scientific writing", href: "/apps/wetex" },
   { id: "app-fractal", title: "Fractal Explorer", subtitle: "WebGL2 GPU + Float64 observatory across 10 fractal families", group: "Apps", keywords: "fractal mandelbrot julia burning ship newton webgl2 3d lighting deep zoom", href: "/apps/fractal-explorer" },
   { id: "app-particle", title: "Particle Physics Visualizer", subtitle: "Standard Model, SUSY & 49 particles", group: "Apps", keywords: "particle physics standard model susy", href: "/apps/particle-physics" },
   { id: "app-periodic", title: "Interactive Periodic Table", subtitle: "118 elements, 3D Bohr & quantum orbitals, spectra & temperature simulator", group: "Apps", keywords: "periodic table chemistry elements orbitals spectra temperature", href: "/apps/periodic-table" },

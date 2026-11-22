@@ -27,7 +27,11 @@ const SOCIALS = [
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname?.includes("/website-builder/editor")) return null;
+  if (
+    pathname?.includes("/website-builder/editor") ||
+    pathname?.includes("/wetex/editor")
+  )
+    return null;
 
   return (
     <footer className="relative border-t border-white/5 dark:border-white/5">

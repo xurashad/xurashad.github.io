@@ -17,7 +17,13 @@ export function KitsuneLoader() {
   const pathname = usePathname();
   const [enabled] = useKitsuneEnabled();
 
-  if (!mounted || !enabled || pathname?.includes("/website-builder/editor")) return null;
+  if (
+    !mounted ||
+    !enabled ||
+    pathname?.includes("/website-builder/editor") ||
+    pathname?.includes("/wetex/editor")
+  )
+    return null;
 
   return <KitsuneCompanion />;
 }

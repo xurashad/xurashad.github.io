@@ -48,7 +48,10 @@ const itemVariants: Variants = {
 
 export function Navbar() {
   const pathname = usePathname();
-  const isBuilderEditor = Boolean(pathname?.includes("/website-builder/editor"));
+  const isBuilderEditor = Boolean(
+    pathname?.includes("/website-builder/editor") ||
+      pathname?.includes("/wetex/editor"),
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);

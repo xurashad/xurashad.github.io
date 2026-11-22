@@ -77,7 +77,10 @@ function classifyPointerTarget(target: EventTarget | null, lockedGrab: boolean):
 export function CustomCursor() {
   const pathname = usePathname();
   const isFinePointer = useSyncExternalStore(subscribeFinePointer, getFinePointerSnapshot, getServerSnapshot);
-  const isExcluded = Boolean(pathname?.includes("/website-builder/editor"));
+  const isExcluded = Boolean(
+    pathname?.includes("/website-builder/editor") ||
+      pathname?.includes("/wetex/editor"),
+  );
   const active = isFinePointer && !isExcluded;
 
   const rootRef = useRef<HTMLDivElement>(null);

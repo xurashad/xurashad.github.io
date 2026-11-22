@@ -9,7 +9,7 @@ import {
   Search, BookOpen, Download, Shuffle, Type,
   QrCode, Gamepad2, Crown, ExternalLink,
   LayoutList, Filter, Sparkles, Braces, Infinity,
-  ImagePlus, Paintbrush,
+  ImagePlus, Paintbrush, Sigma,
 } from "lucide-react";
 import { WaveDivider } from "@/components/ui";
 
@@ -37,7 +37,7 @@ interface App {
   mine: boolean;
   featured?: boolean;
   image?: string;
-  links: { label: string; href: string }[];
+  links: { label: string; href: string; newTab?: boolean }[];
 }
 
 /* ─── Real Data ───────────────────────────────────────────────────────────── */
@@ -127,6 +127,22 @@ const APPS: App[] = [
   },
 
   /* ── Professional ────────────────────────────────── */
+  {
+    id: "wetex",
+    image: "wetex.jfif",
+    title: "WeTeX — Online LaTeX Studio",
+    desc: "Multi-file online LaTeX IDE & real-time compiler with Real TeX Live 2026 PDF compilation, instant KaTeX mathematical typesetting, BibTeX & DOI citations, TikZ vector diagrams, SyncTeX navigation, 9 templates, visual table & equation builders, version history, and PDF/ZIP/TeXLive.net export.",
+    icon: Sigma,
+    category: "Professional",
+    accent: "quantum",
+    featured: true,
+    tags: ["LaTeX", "Online Compiler", "BibTeX", "TikZ", "PDF Export"],
+    mine: true,
+    links: [
+      { label: "Focus Studio", href: "/apps/wetex/editor", newTab: true },
+      { label: "Overview", href: "/apps/wetex" },
+    ],
+  },
   {
     id: "website-builder-pro",
     image: "website-builder.jfif",
@@ -446,8 +462,8 @@ function AppCard({ app, index }: { app: App; index: number }) {
       {/* Links */}
       <div className="flex flex-wrap gap-2 mt-auto">
         {app.links.map((l) => {
-          const isExternal = l.href.startsWith("http");
-          const cls = `flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play" || l.label === "Launch"
+          const isExternal = l.href.startsWith("http") || Boolean(l.newTab);
+          const cls = `flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 ${l.label === "Open App" || l.label === "Play" || l.label === "Launch" || l.label === "Focus Studio"
             ? ac.link
             : "bg-white/5 text-foreground/50 hover:text-foreground/80 hover:bg-white/8 border-white/8"
             }`;
@@ -526,7 +542,7 @@ function AppRow({ app, index }: { app: App; index: number }) {
           </div>
         </div>
         <div className="flex-shrink-0 self-end sm:self-center">
-          {app.links[0].href.startsWith("http") ? (
+          {app.links[0].href.startsWith("http") || Boolean(app.links[0].newTab) ? (
             <a
               href={app.links[0].href}
               target="_blank"

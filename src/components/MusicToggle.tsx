@@ -71,7 +71,10 @@ function getAudio(): HTMLAudioElement {
 
 export function MusicToggle() {
   const pathname = usePathname();
-  const isBuilderEditor = Boolean(pathname?.includes("/website-builder/editor"));
+  const isBuilderEditor = Boolean(
+    pathname?.includes("/website-builder/editor") ||
+      pathname?.includes("/wetex/editor"),
+  );
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackTitle, setTrackTitle] = useState<string>("");
@@ -96,7 +99,13 @@ export function MusicToggle() {
     }
 
     const startMusic = () => {
-      if (_started || _userMuted || window.location.pathname.includes("/website-builder/editor")) return;
+      if (
+        _started ||
+        _userMuted ||
+        window.location.pathname.includes("/website-builder/editor") ||
+        window.location.pathname.includes("/wetex/editor")
+      )
+        return;
       audio.play().then(() => {
         _started = true;
         setIsPlaying(true);
